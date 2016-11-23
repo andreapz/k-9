@@ -230,7 +230,7 @@ public class K9 extends Application {
     private static boolean mStartIntegratedInbox = false;
     private static boolean mMeasureAccounts = true;
     private static boolean mCountSearchMessages = true;
-    private static boolean mHideSpecialAccounts = false;
+    private static boolean mHideSpecialAccounts = true;
     private static boolean mAutofitWidth;
     private static boolean mQuietTimeEnabled = false;
     private static boolean mNotificationDuringQuietTimeEnabled = true;

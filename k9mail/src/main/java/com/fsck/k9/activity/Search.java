@@ -1,7 +1,9 @@
 package com.fsck.k9.activity;
 
 
-public class Search extends MessageList {
+import com.fsck.k9.fragment.MailFragment;
+
+public class Search extends MailFragment {
     protected static boolean isActive = false;
 
     public static boolean isActive() {

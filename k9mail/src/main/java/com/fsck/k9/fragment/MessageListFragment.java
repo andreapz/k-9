@@ -629,15 +629,15 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
 
-        mContext = activity.getApplicationContext();
+        mContext = context.getApplicationContext();
 
         try {
-            mFragmentListener = (MessageListFragmentListener) activity;
+            mFragmentListener = ((MessageListFragmentGetListener) context).getListner();
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.getClass() +
+            throw new ClassCastException(context.getClass() +
                     " must implement MessageListFragmentListener");
         }
     }
@@ -2969,6 +2969,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         void remoteSearchStarted();
         void goBack();
         void updateMenu();
+    }
+
+    public interface MessageListFragmentGetListener {
+        MessageListFragmentListener getListner();
     }
 
     public void onReverseSort() {
