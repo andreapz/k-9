@@ -156,6 +156,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return mMessageListWasDisplayed;
     }
 
+    public MessageListFragment getMessageListFragment() {
+        return mMessageListFragment;
+    }
+
     public enum DisplayMode {
         MESSAGE_LIST,
         MESSAGE_VIEW,
@@ -171,8 +175,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
         mInflater = inflater;
 
-//        mView = inflater.inflate(R.layout.message_list_fragment, container, false);
-//
         if (!useSplitView()) {
             mViewSwitcher = (ViewSwitcher) ((Activity)mContext).findViewById(R.id.container);
             mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
@@ -194,16 +196,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         initializeLayout();
         initializeFragments();
         displayViews();
-
-//        ChangeLog cl = new ChangeLog(this);
-//        if (cl.isFirstRun()) {
-//            cl.getLogDialog().show();
-//        }
-
         //setupGestureDetector(this);
-
-//        return super.onCreateView(inflater, container, savedInstanceState);
-//        return mView;
     }
 
     private void resetView() {
@@ -234,19 +227,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 R.id.message_list_container);
         mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
                 R.id.message_view_container);
-
-
-//        FragmentTransaction ft = fragmentManager.beginTransaction();
-//        mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
-//                (K9.isThreadedViewEnabled() && !mNoThreading));
-//        ft.add(R.id.message_list_container, mMessageListFragment);
-//        ft.commit();
-
-//        MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-//        FragmentTransaction ft = getFragmentManager().beginTransaction();
-//        ft.replace(R.id.message_view_container, fragment);
-//        mMessageViewFragment = fragment;
-//        ft.commit();
     }
 
     private void removeMessageListFragment() {
@@ -603,9 +583,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      *         The {@link Menu} instance that should be modified. May be {@code null}; in that case
      *         the method does nothing and immediately returns.
      */
-    private void configureMenu(Menu menu) {
+    private boolean configureMenu(Menu menu) {
         if (menu == null) {
-            return;
+            return false;
         }
 
         // Set visibility of account/folder settings menu items
@@ -772,6 +752,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 menu.findItem(R.id.search).setVisible(true);
             }
         }
+
+        return true;
     }
 
     private final class StorageListenerImplementation implements StorageManager.StorageListener {
@@ -1089,8 +1071,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
 //    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        configureMenu(menu);
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return configureMenu(menu);
 //        super.onPrepareOptionsMenu(menu);
     }
 
