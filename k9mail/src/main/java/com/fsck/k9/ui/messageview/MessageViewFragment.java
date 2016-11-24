@@ -39,6 +39,7 @@ import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
+import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.ProgressDialogFragment;
 import com.fsck.k9.helper.FileBrowserHelper;
 import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
@@ -105,15 +106,15 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     private AttachmentViewInfo currentAttachmentViewInfo;
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
 
-        mContext = activity.getApplicationContext();
+        mContext = context.getApplicationContext();
 
         try {
-            mFragmentListener = (MessageViewFragmentListener) activity;
+            mFragmentListener = ((MessageViewFragmentGetListener) context).getMessageViewFragmentListner();
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.getClass() +
+            throw new ClassCastException(context.getClass() +
                     " must implement MessageViewFragmentListener");
         }
     }
@@ -703,6 +704,10 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         void showNextMessageOrReturn();
         void messageHeaderViewAvailable(MessageHeader messageHeaderView);
         void updateMenu();
+    }
+
+    public interface MessageViewFragmentGetListener {
+        MessageViewFragmentListener getMessageViewFragmentListner();
     }
 
     public boolean isInitialized() {

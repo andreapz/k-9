@@ -11,12 +11,13 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.R;
-import com.fsck.k9.fragment.MailFragment;
+import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
@@ -31,7 +32,8 @@ import de.cketti.library.changelog.ChangeLog;
  * From this Activity the user can perform all standard message operations.
  */
 public class MessageList extends K9Activity
-    implements MessageListFragment.MessageListFragmentGetListener {
+    implements MessageListFragment.MessageListFragmentGetListener,
+        MessageViewFragment.MessageViewFragmentGetListener {
 
     // for this activity
     private static final String EXTRA_SEARCH = "search";
@@ -102,9 +104,17 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public MessageListFragment.MessageListFragmentListener getListner() {
-        if(mMailFragment != null) {
-            return mMailFragment;
+    public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
+        if(mMailPresenter != null) {
+            return mMailPresenter;
+        }
+        return null;
+    }
+
+    @Override
+    public MessageViewFragment.MessageViewFragmentListener getMessageViewFragmentListner() {
+        if(mMailPresenter != null) {
+            return mMailPresenter;
         }
         return null;
     }
@@ -131,7 +141,7 @@ public class MessageList extends K9Activity
 //    private ViewGroup mMessageViewContainer;
 //    private View mMessageViewPlaceHolder;
 
-    private MailFragment mMailFragment;
+    private MailPresenter mMailPresenter;
     private MessageListFragment mMessageListFragment;
 //    private MessageViewFragment mMessageViewFragment;
 //    private int mFirstBackStackId = -1;
@@ -175,7 +185,24 @@ public class MessageList extends K9Activity
             return;
         }
 
-        setContentView(R.layout.message_list_container);
+        mMailPresenter = new MailPresenter(this, getIntent());
+
+        if (useSplitView()) {
+            setContentView(R.layout.split_message_list);
+        } else {
+            setContentView(R.layout.message_list);
+//            mViewSwitcher = (ViewSwitcher) findViewById(R.id.container);
+//            mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_left));
+//            mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_right));
+//            mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_right));
+//            mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
+//            mViewSwitcher.setOnSwitchCompleteListener(mMailPresenter);
+        }
+
+//        FrameLayout fl = (FrameLayout) findViewById(R.id.mail_container);
+
+        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+
 //        if (useSplitView()) {
 //            setContentView(R.layout.split_message_list);
 //        } else {
@@ -188,7 +215,7 @@ public class MessageList extends K9Activity
 ////            mViewSwitcher.setOnSwitchCompleteListener(this);
 //        }
 
-        showMailFragment();
+//        showMailFragment();
 //        initializeActionBar();
 
         // Enable gesture detection for MessageLists
@@ -249,16 +276,16 @@ public class MessageList extends K9Activity
 //    }
 
 
-    private void showMailFragment() {
-        FragmentManager fragmentManager = getFragmentManager();
-//        fragmentManager.addOnBackStackChangedListener(this);
-
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        mMailFragment = MailFragment.newInstance();
-        ft.add(R.id.mail_container, mMailFragment);
-        ft.commit();
-
-    }
+//    private void showMailFragment() {
+//        FragmentManager fragmentManager = getFragmentManager();
+////        fragmentManager.addOnBackStackChangedListener(this);
+//
+//        FragmentTransaction ft = fragmentManager.beginTransaction();
+//        mMailPresenter = MailPresenter.newInstance(getIntent().getAction(), getIntent().getExtras());
+//        ft.add(R.id.mail_container, mMailPresenter);
+//        ft.commit();
+//
+//    }
 
 //    **
 //     * Create fragment instances if necessary.
@@ -339,8 +366,8 @@ public class MessageList extends K9Activity
     public boolean dispatchKeyEvent(KeyEvent event) {
         boolean ret = false;
         if (KeyEvent.ACTION_DOWN == event.getAction()) {
-            if(mMailFragment != null) {
-                ret = mMailFragment.onCustomKeyDown(event.getKeyCode(), event);
+            if(mMailPresenter != null) {
+                ret = mMailPresenter.onCustomKeyDown(event.getKeyCode(), event);
             }
         }
         if (!ret) {
@@ -351,10 +378,10 @@ public class MessageList extends K9Activity
 
     @Override
     public void onBackPressed() {
-        if(mMailFragment != null) {
-            if (mMailFragment.getDisplayMode() == MailFragment.DisplayMode.MESSAGE_VIEW
-                    && mMailFragment.getMessageListWasDisplayed()) {
-                mMailFragment.showMessageList();
+        if(mMailPresenter != null) {
+            if (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
+                    && mMailPresenter.getMessageListWasDisplayed()) {
+                mMailPresenter.showMessageList();
             }
             else {
                 super.onBackPressed();

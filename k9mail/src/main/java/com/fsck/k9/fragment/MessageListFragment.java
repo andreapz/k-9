@@ -635,7 +635,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mContext = context.getApplicationContext();
 
         try {
-            mFragmentListener = ((MessageListFragmentGetListener) context).getListner();
+            mFragmentListener = ((MessageListFragmentGetListener) context).getMessageListFragmentListner();
         } catch (ClassCastException e) {
             throw new ClassCastException(context.getClass() +
                     " must implement MessageListFragmentListener");
@@ -2972,7 +2972,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
     public interface MessageListFragmentGetListener {
-        MessageListFragmentListener getListner();
+        MessageListFragmentListener getMessageListFragmentListner();
     }
 
     public void onReverseSort() {

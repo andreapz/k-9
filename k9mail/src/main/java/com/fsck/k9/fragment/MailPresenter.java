@@ -2,7 +2,7 @@ package com.fsck.k9.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
-import android.app.Fragment;
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
 import android.app.FragmentTransaction;
@@ -45,7 +45,6 @@ import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.mailstore.StorageManager;
-import com.fsck.k9.preferences.StorageEditor;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
@@ -64,17 +63,18 @@ import java.util.List;
  * Created by andreaputzu on 22/11/16.
  */
 
-public class MailFragment extends Fragment implements
-        MessageListFragmentListener,
-        MessageViewFragmentListener, OnBackStackChangedListener, OnSwipeGestureListener,
-        OnSwitchCompleteListener {
+public class MailPresenter implements MessageListFragmentListener, MessageViewFragmentListener,
+        OnBackStackChangedListener, OnSwipeGestureListener, OnSwitchCompleteListener {
 
     private static final String ARG_ACTION = "ARG_ACTION";
     private static final String ARG_URI = "ARG_URI";
     private static final String ARG_SHORTCUT = "shortcut";
-    private static final String ARG_SPECIAL_FOLDER = "special_folder";
+    private static final String EXTRA_SPECIAL_FOLDER = "special_folder";
     private static final String ARG_SEARCH = "search";
     private static final String ARG_NO_THREADING = "no_threading";
+    private static final String ARG_EXTRAS = "ARG_EXTRAS";
+
+    private static final String ACTION_NULL = "ACTION_NULL";
 
     // used for remote search
     public static final String EXTRA_SEARCH_ACCOUNT = "com.fsck.k9.search_account";
@@ -87,16 +87,22 @@ public class MailFragment extends Fragment implements
     // Used for navigating to next/previous message
     private static final int PREVIOUS = 1;
     private static final int NEXT = 2;
+    private final Context mContext;
+    private final Intent mIntent;
 
-    private View mView;
+//    private View mView;
 
-    public static MailFragment newInstance() {
-        MailFragment fragment = new MailFragment();
-        Bundle args = new Bundle();
-//        args.putString(ARG_ACTION, action);
-        fragment.setArguments(args);
-        return fragment;
-    }
+//    public static MailPresenter newInstance(String action, Bundle extras) {
+//        MailPresenter fragment = new MailPresenter();
+//        Bundle mArgs = new Bundle();
+//        if(action == null) {
+//            action = ACTION_NULL;
+//        }
+//        mArgs.putString(ARG_ACTION, action);
+//        mArgs.putBundle(ARG_EXTRAS, extras);
+//        fragment.setArguments(mArgs);
+//        return fragment;
+//    }
 
     private String mAction;
     private LayoutInflater mInflater;
@@ -156,29 +162,30 @@ public class MailFragment extends Fragment implements
         SPLIT_VIEW
     }
 
+    public MailPresenter(Context context, Intent intent) {
+        mContext = context;
+        mIntent = intent;
+    }
+
     @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
         mInflater = inflater;
 
-        mView = inflater.inflate(R.layout.message_list_fragment, container, false);
-
-        if (useSplitView()) {
-            mView = inflater.inflate(R.layout.split_message_list, container, false);
-        } else {
-            mView = inflater.inflate(R.layout.message_list, container, false);
-            mViewSwitcher = (ViewSwitcher) mView.findViewById(R.id.container);
-            mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.slide_in_left));
-            mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.slide_out_right));
-            mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.slide_in_right));
-            mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.slide_out_left));
+//        mView = inflater.inflate(R.layout.message_list_fragment, container, false);
+//
+        if (!useSplitView()) {
+            mViewSwitcher = (ViewSwitcher) ((Activity)mContext).findViewById(R.id.container);
+            mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
+            mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
+            mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
+            mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
 
         initializeActionBar();
 
         if (!decodeExtras()) {
-            Toast.makeText(getActivity(),"RETURN FRAGMENT",Toast.LENGTH_LONG);
+            Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
          //   return;
         }
 
@@ -195,15 +202,16 @@ public class MailFragment extends Fragment implements
 
         //setupGestureDetector(this);
 
-        return super.onCreateView(inflater, container, savedInstanceState);
+//        return super.onCreateView(inflater, container, savedInstanceState);
+//        return mView;
     }
 
     private void resetView() {
-        if (mFirstBackStackId >= 0) {
-            getFragmentManager().popBackStackImmediate(mFirstBackStackId,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            mFirstBackStackId = -1;
-        }
+//        if (mFirstBackStackId >= 0) {
+//            getFragmentManager().popBackStackImmediate(mFirstBackStackId,
+//                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
+//            mFirstBackStackId = -1;
+//        }
         removeMessageListFragment();
         removeMessageViewFragment();
 
@@ -221,18 +229,18 @@ public class MailFragment extends Fragment implements
     }
 
     private void findFragments() {
-        FragmentManager fragmentManager = getFragmentManager();
-//        mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
-//                R.id.message_list_container);
+        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
+                R.id.message_list_container);
         mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
                 R.id.message_view_container);
 
 
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
-                (K9.isThreadedViewEnabled() && !mNoThreading));
-        ft.add(R.id.message_list_container, mMessageListFragment);
-        ft.commit();
+//        FragmentTransaction ft = fragmentManager.beginTransaction();
+//        mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
+//                (K9.isThreadedViewEnabled() && !mNoThreading));
+//        ft.add(R.id.message_list_container, mMessageListFragment);
+//        ft.commit();
 
 //        MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
 //        FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -242,7 +250,7 @@ public class MailFragment extends Fragment implements
     }
 
     private void removeMessageListFragment() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
         ft.remove(mMessageListFragment);
         mMessageListFragment = null;
         ft.commit();
@@ -254,7 +262,7 @@ public class MailFragment extends Fragment implements
      * @see #findFragments()
      */
     private void initializeFragments() {
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
         fragmentManager.addOnBackStackChangedListener(this);
 
         boolean hasMessageListFragment = (mMessageListFragment != null);
@@ -285,7 +293,7 @@ public class MailFragment extends Fragment implements
      *
      * @param savedInstanceState
      *         The saved instance state that was passed to the activity as argument to
-     *         {@link #onCreate(Bundle)}. May be {@code null}.
+     *         {@link # onCreateView(Bundle)}. May be {@code null}.
      */
     private void initializeDisplayMode(Bundle savedInstanceState) {
         if (useSplitView()) {
@@ -310,15 +318,14 @@ public class MailFragment extends Fragment implements
     }
 
     private void initializeLayout() {
-        mMessageViewContainer = (ViewGroup) mView.findViewById(R.id.message_view_container);
+        mMessageViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.message_view_container);
 
-        LayoutInflater layoutInflater = mInflater;
-        mMessageViewPlaceHolder = layoutInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
+        mMessageViewPlaceHolder = mInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
     }
 
     private boolean useSplitView() {
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
-        int orientation = getResources().getConfiguration().orientation;
+        int orientation = mContext.getResources().getConfiguration().orientation;
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS ||
                 (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE &&
@@ -326,7 +333,7 @@ public class MailFragment extends Fragment implements
     }
 
     private void initializeActionBar() {
-        mActionBar = getActivity().getActionBar();
+        mActionBar = ((Activity)mContext).getActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actionbar_custom);
@@ -385,7 +392,7 @@ public class MailFragment extends Fragment implements
      */
     private void removeMessageViewFragment() {
         if (mMessageViewFragment != null) {
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
             ft.remove(mMessageViewFragment);
             mMessageViewFragment = null;
             ft.commit();
@@ -400,16 +407,16 @@ public class MailFragment extends Fragment implements
     }
 
     private boolean decodeExtras() {
-        Bundle args = getArguments();
-        String action = args.getString(ARG_ACTION);
+
+        String action = mIntent.getAction();
 
         if (Intent.ACTION_VIEW.equals(action)) {
-            Uri uri = args.getParcelable(ARG_URI);
+            Uri uri = mIntent.getData();
             if(uri != null) {
                 List<String> segmentList = uri.getPathSegments();
 
                 String accountId = segmentList.get(0);
-                Collection<Account> accounts = Preferences.getPreferences(getActivity()).getAvailableAccounts();
+                Collection<Account> accounts = Preferences.getPreferences(mContext).getAvailableAccounts();
                 for (Account account : accounts) {
                     if (String.valueOf(account.getAccountNumber()).equals(accountId)) {
                         String folderName = segmentList.get(1);
@@ -421,19 +428,19 @@ public class MailFragment extends Fragment implements
             }
         } else if (ARG_SHORTCUT.equals(action)) {
             // Handle shortcut intents
-            String specialFolder = args.getString(ARG_SPECIAL_FOLDER);
+            String specialFolder = mIntent.getStringExtra(EXTRA_SPECIAL_FOLDER);
             if (SearchAccount.UNIFIED_INBOX.equals(specialFolder)) {
-                mSearch = SearchAccount.createUnifiedInboxAccount(getActivity()).getRelatedSearch();
+                mSearch = SearchAccount.createUnifiedInboxAccount(mContext).getRelatedSearch();
             } else if (SearchAccount.ALL_MESSAGES.equals(specialFolder)) {
-                mSearch = SearchAccount.createAllMessagesAccount(getActivity()).getRelatedSearch();
+                mSearch = SearchAccount.createAllMessagesAccount(mContext).getRelatedSearch();
             }
-        } else if (args.getString(SearchManager.QUERY) != null) {
+        } else if (mIntent.getStringExtra(SearchManager.QUERY) != null) {
             // check if this intent comes from the system search ( remote )
             if (Intent.ACTION_SEARCH.equals(action)) {
                 //Query was received from Search Dialog
-                String query = args.getString(SearchManager.QUERY).trim();
+                String query = mIntent.getStringExtra(SearchManager.QUERY).trim();
 
-                mSearch = new LocalSearch(getString(R.string.search_results));
+                mSearch = new LocalSearch(mContext.getString(R.string.search_results));
                 mSearch.setManualSearch(true);
                 mNoThreading = true;
 
@@ -441,7 +448,7 @@ public class MailFragment extends Fragment implements
                 mSearch.or(new SearchSpecification.SearchCondition(SearchSpecification.SearchField.SUBJECT, SearchSpecification.Attribute.CONTAINS, query));
                 mSearch.or(new SearchSpecification.SearchCondition(SearchSpecification.SearchField.MESSAGE_CONTENTS, SearchSpecification.Attribute.CONTAINS, query));
 
-                Bundle appData = args.getBundle(SearchManager.APP_DATA);
+                Bundle appData = mIntent.getBundleExtra(SearchManager.APP_DATA);
                 if (appData != null) {
                     mSearch.addAccountUuid(appData.getString(EXTRA_SEARCH_ACCOUNT));
                     // searches started from a folder list activity will provide an account, but no folder
@@ -454,12 +461,12 @@ public class MailFragment extends Fragment implements
             }
         } else {
             // regular LocalSearch object was passed
-            mSearch = args.getParcelable(ARG_SEARCH);
-            mNoThreading = args.getBoolean(ARG_NO_THREADING, false);
+            mSearch = mIntent.getParcelableExtra(ARG_SEARCH);
+            mNoThreading = mIntent.getBooleanExtra(ARG_NO_THREADING, false);
         }
 
         if (mMessageReference == null) {
-            mMessageReference = args.getParcelable(EXTRA_MESSAGE_REFERENCE);
+            mMessageReference = mIntent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
         }
 
         if (mMessageReference != null) {
@@ -470,8 +477,8 @@ public class MailFragment extends Fragment implements
 
         if (mSearch == null) {
             // We've most likely been started by an old unread widget
-            String accountUuid = args.getString(ARG_ACCOUNT);
-            String folderName =args.getString(ARG_FOLDER);
+            String accountUuid = mIntent.getStringExtra(ARG_ACCOUNT);
+            String folderName = mIntent.getStringExtra(ARG_FOLDER);
 
             mSearch = new LocalSearch(folderName);
             mSearch.addAccountUuid((accountUuid == null) ? "invalid" : accountUuid);
@@ -480,7 +487,7 @@ public class MailFragment extends Fragment implements
             }
         }
 
-        Preferences prefs = Preferences.getPreferences(getActivity().getApplicationContext());
+        Preferences prefs = Preferences.getPreferences(mContext.getApplicationContext());
 
         String[] accountUuids = mSearch.getAccountUuids();
         if (mSearch.searchAllAccounts()) {
@@ -497,7 +504,7 @@ public class MailFragment extends Fragment implements
         }
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
-        if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(getActivity()))) {
+        if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(mContext))) {
             Log.i(K9.LOG_TAG, "not opening MessageList of unavailable account");
             //onAccountUnavailable();
             return false;
@@ -515,12 +522,12 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void openMessage(MessageReference messageReference) {
-        Preferences prefs = Preferences.getPreferences(getActivity().getApplicationContext());
+        Preferences prefs = Preferences.getPreferences(mContext.getApplicationContext());
         Account account = prefs.getAccount(messageReference.getAccountUuid());
         String folderName = messageReference.getFolderName();
 
         if (folderName.equals(account.getDraftsFolderName())) {
-            MessageActions.actionEditDraft(getActivity(), messageReference);
+            MessageActions.actionEditDraft(mContext, messageReference);
         } else {
             mMessageViewContainer.removeView(mMessageViewPlaceHolder);
 
@@ -529,7 +536,7 @@ public class MailFragment extends Fragment implements
             }
 
             MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
             ft.replace(R.id.message_view_container, fragment);
             mMessageViewFragment = fragment;
             ft.commit();
@@ -771,7 +778,7 @@ public class MailFragment extends Fragment implements
         @Override
         public void onUnmount(String providerId) {
             if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
-                getActivity().runOnUiThread(new Runnable() {
+                ((Activity)mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         onAccountUnavailable();
@@ -787,22 +794,22 @@ public class MailFragment extends Fragment implements
     }
 
     protected void onAccountUnavailable() {
-        Toast.makeText(getActivity(),"Account Unavaible Finish Activity", Toast.LENGTH_LONG);
-        getActivity().finish();
+        Toast.makeText(mContext,"Account Unavaible Finish Activity", Toast.LENGTH_LONG);
+        ((Activity)mContext).finish();
         // TODO inform user about account unavailability using Toast
-        Accounts.listAccounts(getActivity());
+        Accounts.listAccounts(mContext);
     }
 
-    @Override
+//    @Override
     public void onPause() {
-        super.onPause();
+//        super.onPause();
 
-        StorageManager.getInstance(getActivity().getApplication()).removeListener(mStorageListener);
+        StorageManager.getInstance(((Activity)mContext).getApplication()).removeListener(mStorageListener);
     }
 
-    @Override
+//    @Override
     public void onResume() {
-        super.onResume();
+//        super.onResume();
 
         if (!(this instanceof Search)) {
             //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
@@ -810,24 +817,24 @@ public class MailFragment extends Fragment implements
             Search.setActive(false);
         }
 
-        if (mAccount != null && !mAccount.isAvailable(getActivity())) {
+        if (mAccount != null && !mAccount.isAvailable(mContext)) {
             onAccountUnavailable();
             return;
         }
-        StorageManager.getInstance(getActivity().getApplication()).addListener(mStorageListener);
+        StorageManager.getInstance(((Activity)mContext).getApplication()).addListener(mStorageListener);
     }
 
-    @Override
+//    @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+//        super.onSaveInstanceState(outState);
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(STATE_FIRST_BACK_STACK_ID, mFirstBackStackId);
     }
 
-    @Override
+//    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+//        super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
             // Restore last state for checked position.
             mMessageListWasDisplayed = savedInstanceState.getBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED);
@@ -996,7 +1003,7 @@ public class MailFragment extends Fragment implements
                 return true;
             }*/
             case KeyEvent.KEYCODE_H: {
-                Toast toast = Toast.makeText(getActivity(), getActivity().getString(R.string.message_list_help_key), Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(mContext, mContext.getString(R.string.message_list_help_key), Toast.LENGTH_LONG);
                 toast.show();
                 return true;
             }
@@ -1028,7 +1035,7 @@ public class MailFragment extends Fragment implements
                 return true;
             }
         }
-        Toast.makeText(getActivity(),"onKeyUp fragment",Toast.LENGTH_LONG);
+        Toast.makeText(mContext,"onKeyUp fragment",Toast.LENGTH_LONG);
         return true;
 //        return super.onKeyUp(keyCode, event);
     }
@@ -1056,38 +1063,38 @@ public class MailFragment extends Fragment implements
     }
 
     private void onShowFolderList() {
-        FolderList.actionHandleAccount(getActivity(), mAccount);
-        getActivity().finish();
+        FolderList.actionHandleAccount(mContext, mAccount);
+        ((Activity)mContext).finish();
     }
 
     private void onAccounts() {
-        Accounts.listAccounts(getActivity());
-        getActivity().finish();
+        Accounts.listAccounts(mContext);
+        ((Activity)mContext).finish();
     }
 
     private void onEditPrefs() {
-        Prefs.actionPrefs(getActivity());
+        Prefs.actionPrefs(mContext);
     }
 
     private void onEditAccount() {
-        AccountSettings.actionSettings(getActivity(), mAccount);
+        AccountSettings.actionSettings(mContext, mAccount);
     }
 
-    @Override
+//    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().getMenuInflater().inflate(R.menu.message_list_option, menu);
+        ((Activity)mContext).getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
         mMenuButtonCheckMail= menu.findItem(R.id.check_mail);
-        super.onCreateOptionsMenu(menu, inflater);
+//        super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Override
+//    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         configureMenu(menu);
-        super.onPrepareOptionsMenu(menu);
+//        super.onPrepareOptionsMenu(menu);
     }
 
-    @Override
+//    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         switch (itemId) {
@@ -1242,7 +1249,7 @@ public class MailFragment extends Fragment implements
             }
             case R.id.folder_settings: {
                 if (mFolderName != null) {
-                    FolderSettings.actionSettings(getActivity(), mAccount, mFolderName);
+                    FolderSettings.actionSettings(mContext, mAccount, mFolderName);
                 }
                 return true;
             }
@@ -1251,13 +1258,13 @@ public class MailFragment extends Fragment implements
                 return true;
             }
             default: {
-                return super.onOptionsItemSelected(item);
+                return true; //super.onOptionsItemSelected(item);
             }
         }
     }
 
     private void onToggleTheme() {
-        Toast.makeText(getActivity(), "TOGGLE THEME NOT WORKING", Toast.LENGTH_LONG);
+        Toast.makeText(mContext, "TOGGLE THEME NOT WORKING", Toast.LENGTH_LONG);
 //        if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
 //            K9.setK9MessageViewThemeSetting(K9.Theme.LIGHT);
 //        } else {
@@ -1267,7 +1274,7 @@ public class MailFragment extends Fragment implements
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
-//                Context appContext = getActivity().getApplicationContext();
+//                Context appContext = mContext.getApplicationContext();
 //                Preferences prefs = Preferences.getPreferences(appContext);
 //                StorageEditor editor = prefs.getStorage().edit();
 //                K9.save(editor);
@@ -1292,7 +1299,7 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void updateMenu() {
-        Toast.makeText(getActivity(), "invalidateOptionsMenu", Toast.LENGTH_LONG);
+        Toast.makeText(mContext, "invalidateOptionsMenu", Toast.LENGTH_LONG);
 //        invalidateOptionsMenu();
     }
 
@@ -1351,7 +1358,7 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void setProgress(boolean b) {
-        Toast.makeText(getActivity(),"setProgressBarIndeterminateVisibility not working", Toast.LENGTH_LONG);
+        Toast.makeText(mContext,"setProgressBarIndeterminateVisibility not working", Toast.LENGTH_LONG);
 //        setProgressBarIndeterminateVisibility(enable);
     }
 
@@ -1410,13 +1417,13 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void setMessageListProgress(int progress) {
-        Toast.makeText(getActivity(), "setProgress NOT WORKING", Toast.LENGTH_LONG);
+        Toast.makeText(mContext, "setProgress NOT WORKING", Toast.LENGTH_LONG);
 //        setProgress(progress);
     }
 
     @Override
     public void onResendMessage(MessageReference messageReference) {
-        MessageActions.actionEditDraft(getActivity(), messageReference);
+        MessageActions.actionEditDraft(mContext, messageReference);
     }
 
     @Override
@@ -1426,7 +1433,7 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void onForward(MessageReference messageReference, Parcelable decryptionResultForReply) {
-        MessageActions.actionForward(getActivity(), messageReference, decryptionResultForReply);
+        MessageActions.actionForward(mContext, messageReference, decryptionResultForReply);
     }
 
     @Override
@@ -1436,7 +1443,7 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void onReply(MessageReference messageReference, Parcelable decryptionResultForReply) {
-        MessageActions.actionReply(getActivity(), messageReference, false, decryptionResultForReply);
+        MessageActions.actionReply(mContext, messageReference, false, decryptionResultForReply);
     }
 
     @Override
@@ -1446,12 +1453,12 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void onReplyAll(MessageReference messageReference, Parcelable decryptionResultForReply) {
-        MessageActions.actionReply(getActivity(), messageReference, true, decryptionResultForReply);
+        MessageActions.actionReply(mContext, messageReference, true, decryptionResultForReply);
     }
 
     @Override
     public void onCompose(Account account) {
-        MessageActions.actionCompose(getActivity(), account);
+        MessageActions.actionCompose(mContext, account);
     }
 
     @Override
@@ -1466,7 +1473,7 @@ public class MailFragment extends Fragment implements
     }
 
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
 
         ft.replace(R.id.message_list_container, fragment);
         if (addToBackStack)
@@ -1518,7 +1525,7 @@ public class MailFragment extends Fragment implements
             // TODO Handle the case where we're searching from within a search result.
 //            startSearch(null, false, null, false);
         }
-        Toast.makeText(getActivity(),"startSearch not working", Toast.LENGTH_LONG);
+        Toast.makeText(mContext,"startSearch not working", Toast.LENGTH_LONG);
         return true;
     }
 
@@ -1542,13 +1549,13 @@ public class MailFragment extends Fragment implements
 
     @Override
     public void goBack() {
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             showMessageList();
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else if (mMessageListFragment.isManualSearch()) {
-            getActivity().finish();
+            ((Activity)mContext).finish();
         } else if (!mSingleFolderMode) {
             onAccounts();
         } else {
