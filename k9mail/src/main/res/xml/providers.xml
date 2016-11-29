@@ -631,4 +631,9 @@
         <incoming uri="imap+ssl+://imap.bestpractical.com"  username="$user" />
         <outgoing uri="smtp+tls+://smtp.bestpractical.com:2525" />
     </provider>
+<!-- Tiscali -->
+    <provider id="tiscali.it" label="Tiscali.it" domain="tiscali.it" >
+        <incoming uri="imap+ssl+://imap-mobileapp.tiscali.it" username="$user" />
+        <outgoing uri="smtp+ssl+://smtp.tiscali.it" username="$user" />
+    </provider>
 </providers>

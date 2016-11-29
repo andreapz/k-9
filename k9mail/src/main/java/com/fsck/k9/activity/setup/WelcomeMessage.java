@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.activity.K9Activity;
+import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.helper.HtmlConverter;
 
 /**
@@ -46,7 +47,8 @@ public class WelcomeMessage extends K9Activity implements OnClickListener{
                 break;
             }
             case R.id.import_settings: {
-                Accounts.importSettings(this);
+                NavigationDrawerActivity.importSettings(this);
+//                Accounts.importSettings(this);
                 finish();
                 break;
             }

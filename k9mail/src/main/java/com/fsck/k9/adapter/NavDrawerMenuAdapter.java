@@ -5,9 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.fsck.k9.R;
@@ -21,12 +18,7 @@ import java.util.List;
  * Created by Annalisa Sini on 21/11/2016.
  */
 
-public class NavDrawerMenuAdapter extends BaseAdapter {
-
-    public static final int HEADER = 0;
-    public static final int ITEM = 1;
-
-    Context mContext;
+public class NavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
 
     // data set
     private List<NavDrawerMenuItem> mItems;
@@ -42,16 +34,15 @@ public class NavDrawerMenuAdapter extends BaseAdapter {
         mItems = data;
         mVisibleItems.addAll(data);
         // init item status hash map. Elements all collapsed
-        setItemsStatus(mVisibleItems);
+        setItemsStatus(mVisibleItems, false);
         // init depth level
         setItemsDepth(mVisibleItems, -1);
     }
 
-    private void setItemsStatus(List<NavDrawerMenuItem> items) {
-        // FIXME for items initially opened?
+    private void setItemsStatus(List<NavDrawerMenuItem> items, boolean status) {
         for(NavDrawerMenuItem item : items) {
             // items initially collapsed
-            mItemsOpenStatus.put(item.getSectionId(), false);
+            mItemsOpenStatus.put(item.getSectionId(), status);
         }
     }
 
@@ -64,34 +55,13 @@ public class NavDrawerMenuAdapter extends BaseAdapter {
         }
     }
 
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
-
-        View view;
-        LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        switch (type) {
-            case HEADER:
-                view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
-                return new HeaderViewHolder(view);
-            case ITEM:
-                view = inflater.inflate(R.layout.nav_drawer_menu_item, parent, false);
-                return new ItemViewHolder(view);
-        }
-        return null;
-    }
-
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         if(holder instanceof HeaderViewHolder) {
             // TODO
             final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
-            headerViewHolder.mAccountTv.setText("Name Surname");
-            headerViewHolder.mAccountTv.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    headerViewHolder.mAccountTv.setText(" Name Surname clicked");
-                }
-            });
-            headerViewHolder.mSettinsIv.setOnClickListener(new View.OnClickListener() {
+            headerViewHolder.mAccountTv.setVisibility(View.GONE);
+
+            headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                 }
@@ -150,11 +120,11 @@ public class NavDrawerMenuAdapter extends BaseAdapter {
                         int childPosition = getFirstChildPosition(position);
                         if(newStatus) { // expandable item just opened
                             mVisibleItems.addAll(childPosition, item.getSections());
-                            setItemsStatus(item.getSections());
+                            setItemsStatus(item.getSections(), false);
                             setItemsDepth(item.getSections(), getItemDepth(position));
                         } else { // expandable item just closed
                             // remove all elements with depth > item depth (consider nested children)
-                            setItemsStatus(getItemsToHide(position));
+                            setItemsStatus(getItemsToHide(position), false);
                             mVisibleItems.removeAll(getItemsToHide(position));
                         }
                         notifyDataSetChanged();
@@ -226,30 +196,3 @@ public class NavDrawerMenuAdapter extends BaseAdapter {
     }
 }
 
-class ItemViewHolder extends RecyclerView.ViewHolder {
-    public RelativeLayout mItemContainerRl;
-    public TextView mItemTitleTv;
-    public ImageView mItemIconIv;
-    public ImageView mItemToggleIv;
-
-    public ItemViewHolder(View itemView) {
-        super(itemView);
-        mItemContainerRl = (RelativeLayout) itemView.findViewById(R.id.item_container);
-        mItemTitleTv = (TextView) itemView.findViewById(R.id.item_title);
-        mItemIconIv = (ImageView) itemView.findViewById(R.id.item_icon);
-        mItemToggleIv = (ImageView) itemView.findViewById(R.id.item_toggle);
-    }
-}
-
-class HeaderViewHolder extends RecyclerView.ViewHolder {
-
-    public ImageView mSettinsIv;
-    public TextView mAccountTv;
-
-    public HeaderViewHolder(View itemView) {
-
-        super(itemView);
-        mSettinsIv = (ImageView) itemView.findViewById(R.id.settings);
-        mAccountTv = (TextView) itemView.findViewById(R.id.account);
-    }
-}

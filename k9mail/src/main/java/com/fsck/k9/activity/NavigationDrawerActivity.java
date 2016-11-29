@@ -16,12 +16,14 @@
 
 package com.fsck.k9.activity;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.RecyclerView;
@@ -29,15 +31,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
+import com.fsck.k9.activity.setup.WelcomeMessage;
+import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.MailNavDrawerManuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
-import com.fsck.k9.fragment.ContainerFragment;
-import com.fsck.k9.listener.BottomNavigationViewListener;
-import com.fsck.k9.listener.ContentFragmentListener;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.model.NavDrawerMenuItem;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -68,7 +76,12 @@ import java.util.List;
  * An action should be an operation performed on the current contents of the window,
  * for example enabling or disabling a data overlay on top of the current content.</p>
  */
-public class NavigationDrawerActivity extends K9Activity implements BottomNavigationViewListener {
+public class NavigationDrawerActivity extends K9Activity {
+
+    public static final String ACTION_IMPORT_SETTINGS = "importSettings";
+    public static final String EXTRA_STARTUP = "startup";
+    private static final int ACTIVITY_REQUEST_PICK_SETTINGS_FILE = 100;
+    private static final int DIALOG_NO_FILE_MANAGER = 40;
 
     public static final String SELECTED_TAB = "SELECTED_TAB";
     public static final int MAIL_TAB_SELECTED = 0;
@@ -88,24 +101,109 @@ public class NavigationDrawerActivity extends K9Activity implements BottomNaviga
     private NavDrawerMenuAdapter mOffersAdapter;
     private NavDrawerMenuAdapter mNewsAdapter;
     private NavDrawerMenuAdapter mVideoAdapter;
+    private MailNavDrawerManuAdapter mMailAdapter;
 
     private int mSelectedTab;
-    private ContentFragmentListener mContentFragmentListener;
+    private BottomNavigationView mBottomNav;
 
+    List<LocalFolder> mMailTabMenuItems;
     List<NavDrawerMenuItem> mOffersTabMenuItems;
     List<NavDrawerMenuItem> mNewsTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
+    Account mAccount;
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(MenuItem item) {
+
+            switch (item.getItemId()) {
+                case R.id.menu_mail:
+                    mSelectedTab = NavigationDrawerActivity.MAIL_TAB_SELECTED;
+                    onMailTabClicked();
+                    break;
+                case R.id.menu_news:
+                    mSelectedTab = NavigationDrawerActivity.NEWS_TAB_SELECTED;
+                    onNewsTabClicked();
+                    break;
+                case R.id.menu_video:
+                    mSelectedTab = NavigationDrawerActivity.VIDEO_TAB_SELECTED;
+                    onVideoTabClicked();
+                    break;
+                case R.id.menu_offers:
+                    mSelectedTab = NavigationDrawerActivity.OFFERS_TAB_SELECTED;
+                    onOffersTabClicked();
+                    break;
+            }
+            setSelectedTab(mSelectedTab);
+            return true;
+        }
+    };
+
+    private MessagingListener mListener = new MessagingListener() {
+
+        @Override
+        public void listFolders(Account account, List<LocalFolder> folders) {
+
+            //news tab drawer menu
+            mMailTabMenuItems = folders;
+            mMailAdapter = new MailNavDrawerManuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this);
+            super.listFoldersFinished(account);
+        }
+
+        @Override
+        public void listFoldersFailed(Account account, String message) {
+            mMailTabMenuItems = new ArrayList<>();
+            mMailAdapter = new MailNavDrawerManuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this);
+            super.listFoldersFailed(account, message);
+        }
+    };
+
+    public static void importSettings(Context context) {
+        Intent intent = new Intent(context, NavigationDrawerActivity.class);
+        intent.setAction(ACTION_IMPORT_SETTINGS);
+        context.startActivity(intent);
+    }
+
+    public static void listMessage(Context context) {
+        Intent intent = new Intent(context, NavigationDrawerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra(EXTRA_STARTUP, false);
+        context.startActivity(intent);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+        Intent intent = getIntent();
+        //onNewIntent(intent);
+
+        // see if we should show the welcome message
+        if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
+            onImport();
+        } else if (accounts.size() < 1) {
+            WelcomeMessage.showWelcomeMessage(this);
+            finish();
+            return;
+        }
+
+        if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_navigation_drawer);
 
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (RecyclerView) findViewById(R.id.left_drawer);
+        mBottomNav = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
 
-        initData();
+        initNavigationDrawerMenuData();
 
         // set a custom shadow that overlays the main content when the drawer opens
 //        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -140,15 +238,12 @@ public class NavigationDrawerActivity extends K9Activity implements BottomNaviga
         // init values
         if (savedInstanceState == null) {
             mSelectedTab = DEFAULT_SELECTED_TAB;
-            Bundle bundle = new Bundle();
-            bundle.putInt(SELECTED_TAB, mSelectedTab);
-            showContainerFragment(ContainerFragment.class.getCanonicalName(), bundle);
+            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(mSelectedTab).getItemId());
+            menuItem.performClick();
         } else {
             mSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
-            ContainerFragment bottomNavigationViewFragment = (ContainerFragment) getFragmentManager().findFragmentById(R.id.content_frame);
-            if(bottomNavigationViewFragment != null) {
-                mContentFragmentListener = bottomNavigationViewFragment;
-            }
+            // selected item not automatically saved after rotation
+            setSelectedTab(mSelectedTab);
         }
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
@@ -166,11 +261,37 @@ public class NavigationDrawerActivity extends K9Activity implements BottomNaviga
         outState.putInt(SELECTED_TAB, mSelectedTab);
     }
 
+    private void onImport() {
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*");
+
+        PackageManager packageManager = getPackageManager();
+        List<ResolveInfo> infos = packageManager.queryIntentActivities(i, 0);
+
+        if (infos.size() > 0) {
+            startActivityForResult(Intent.createChooser(i, null),
+                    ACTIVITY_REQUEST_PICK_SETTINGS_FILE);
+        } else {
+            showDialog(DIALOG_NO_FILE_MANAGER);
+        }
+    }
+
+    private void setSelectedTab(int position) {
+        for(int i=0; i<mBottomNav.getMenu().size(); i++) {
+            if(i == position) {
+                mBottomNav.getMenu().getItem(i).setChecked(true);
+            } else {
+                mBottomNav.getMenu().getItem(i).setChecked(false);
+            }
+        }
+    }
+
     private void setAdapterBasedOnSelectedTab(int selectedTab) {
-        NavDrawerMenuAdapter selectedAdapter = null;
+        BaseNavDrawerMenuAdapter selectedAdapter = null;
         switch (selectedTab) {
             case MAIL_TAB_SELECTED:
-//                selectedAdapter = mOffersAdapter;
+                selectedAdapter = mMailAdapter;
                 break;
             case NEWS_TAB_SELECTED:
                 selectedAdapter = mNewsAdapter;
@@ -185,21 +306,6 @@ public class NavigationDrawerActivity extends K9Activity implements BottomNaviga
 
         if(mDrawerList != null && selectedAdapter != null) {
             mDrawerList.setAdapter(selectedAdapter);
-        }
-    }
-
-    private void showContainerFragment(String fragmentName, Bundle args){
-
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-
-        Fragment fragment = Fragment.instantiate(this, fragmentName, args);
-        ft.add(R.id.content_frame, fragment);
-        ft.commit();
-
-        if(fragment instanceof ContainerFragment) {
-            ContainerFragment bottomNavigationViewFragment = (ContainerFragment) fragment;
-            mContentFragmentListener = bottomNavigationViewFragment;
         }
     }
 
@@ -219,8 +325,16 @@ public class NavigationDrawerActivity extends K9Activity implements BottomNaviga
     }
 
     // populate the drawer navigation
-    private void initData() {
+    private void initNavigationDrawerMenuData() {
 
+        // mail tab
+        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+        if(accounts != null && !accounts.isEmpty()) {
+            mAccount = accounts.get(0);
+            MessagingController.getInstance(getApplication()).listFolders(mAccount, false, mListener);
+        }
+
+        // news, video and offers
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
 
         //news tab drawer menu
@@ -289,29 +403,25 @@ public class NavigationDrawerActivity extends K9Activity implements BottomNaviga
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    @Override
-    public void onMailTabClicked() {
+    private void onMailTabClicked() {
         mSelectedTab = MAIL_TAB_SELECTED;
         setAdapterBasedOnSelectedTab(mSelectedTab);
         // TODO show content
     }
 
-    @Override
-    public void onNewsTabClicked() {
+    private void onNewsTabClicked() {
         mSelectedTab = NEWS_TAB_SELECTED;
         setAdapterBasedOnSelectedTab(mSelectedTab);
         // TODO show content
     }
 
-    @Override
-    public void onVideoTabClicked() {
+    private void onVideoTabClicked() {
         mSelectedTab = VIDEO_TAB_SELECTED;
         setAdapterBasedOnSelectedTab(mSelectedTab);
         // TODO show content
     }
 
-    @Override
-    public void onOffersTabClicked() {
+    private void onOffersTabClicked() {
         mSelectedTab = OFFERS_TAB_SELECTED;
         // TODO show content
     }
