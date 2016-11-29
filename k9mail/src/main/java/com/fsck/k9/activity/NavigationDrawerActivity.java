@@ -226,6 +226,7 @@ public class NavigationDrawerActivity extends K9Activity {
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(mTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                setAdapterBasedOnSelectedTab(mSelectedTab);
             }
 
             public void onDrawerOpened(View drawerView) {
