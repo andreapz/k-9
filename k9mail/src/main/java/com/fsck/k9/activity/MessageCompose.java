@@ -672,7 +672,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     @Override
-    public Object onRetainNonConfigurationInstance() {
+    public Object getLastCustomNonConfigurationInstance() {
         if (currentMessageBuilder != null) {
             currentMessageBuilder.detachCallback();
         }

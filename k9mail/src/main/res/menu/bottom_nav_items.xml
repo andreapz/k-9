@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_mail"
+        android:title="@string/app_name"
+        android:icon="@drawable/ic_email_black_24dp" />
+
+    <item
+        android:id="@+id/menu_news"
+        android:title="@string/app_name"
+        android:icon="@drawable/ic_email_black_24dp" />
+
+    <item
+        android:id="@+id/menu_video"
+        android:title="@string/app_name"
+        android:icon="@drawable/ic_email_black_24dp" />
+
+    <item
+        android:id="@+id/menu_offers"
+        android:title="@string/app_name"
+        android:icon="@drawable/ic_email_black_24dp" />
+
+</menu>

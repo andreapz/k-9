@@ -1,7 +1,6 @@
 package com.fsck.k9.activity;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
