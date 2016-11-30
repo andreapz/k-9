@@ -1,7 +1,7 @@
 package com.fsck.k9.fragment;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
+
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
@@ -15,6 +15,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -313,7 +315,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void initializeActionBar() {
-        mActionBar = ((Activity)mContext).getActionBar();
+        mActionBar = ((AppCompatActivity)mContext).getSupportActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actionbar_custom);

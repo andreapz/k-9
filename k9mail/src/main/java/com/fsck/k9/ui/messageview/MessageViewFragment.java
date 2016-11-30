@@ -105,18 +105,29 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     private AttachmentViewInfo currentAttachmentViewInfo;
 
+    private MessageViewFragmentListener getFragmentListner() {
+
+        MessageViewFragmentListener listener = null;
+
+        if(getActivity() instanceof MessageListFragment.MessageListFragmentGetListener) {
+            try {
+                listener = ((MessageViewFragmentGetListener) getActivity()).getMessageViewFragmentListner();
+            } catch (ClassCastException e) {
+                throw new ClassCastException(getActivity().getClass() +
+                        " must implement MessageListFragmentListener");
+            }
+        }
+
+        return listener;
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
 
         mContext = context.getApplicationContext();
 
-        try {
-            mFragmentListener = ((MessageViewFragmentGetListener) context).getMessageViewFragmentListner();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.getClass() +
-                    " must implement MessageViewFragmentListener");
-        }
+        mFragmentListener = getFragmentListner();
     }
 
     @Override
@@ -125,13 +136,16 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
         // This fragments adds options to the action bar
         setHasOptionsMenu(true);
+        mContext = getActivity().getApplicationContext();
 
-        Context context = getActivity().getApplicationContext();
-        mController = MessagingController.getInstance(context);
-        downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        if(mFragmentListener == null) {
+            mFragmentListener = getFragmentListner();
+        }
+        mController = MessagingController.getInstance(mContext);
+        downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         messageCryptoPresenter = new MessageCryptoPresenter(savedInstanceState, messageCryptoMvpView);
         messageLoaderHelper =
-                new MessageLoaderHelper(context, getLoaderManager(), getFragmentManager(), messageLoaderCallbacks);
+                new MessageLoaderHelper(mContext, getLoaderManager(), getFragmentManager(), messageLoaderCallbacks);
         mInitialized = true;
     }
 

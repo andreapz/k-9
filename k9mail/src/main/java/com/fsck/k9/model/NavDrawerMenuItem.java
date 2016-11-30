@@ -12,7 +12,7 @@ import java.util.List;
  * Created by Annalisa Sini on 21/11/2016.
  */
 
-public class NavDrawerMenuItem implements Serializable{
+public class NavDrawerMenuItem implements Serializable {
     private static final long serialVersionUID = 4054223372059735340L;
 
     private String title;

@@ -30,8 +30,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.setup.WelcomeMessage;
@@ -40,8 +42,12 @@ import com.fsck.k9.adapter.MailNavDrawerManuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.fragment.MailPresenter;
+import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.ui.messageview.MessageViewFragment;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +82,10 @@ import java.util.List;
  * An action should be an operation performed on the current contents of the window,
  * for example enabling or disabling a data overlay on top of the current content.</p>
  */
-public class NavigationDrawerActivity extends K9Activity {
+public class NavigationDrawerActivity extends K9Activity
+        implements MessageListFragment.MessageListFragmentGetListener,
+        MessageViewFragment.MessageViewFragmentGetListener
+{
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
     public static final String EXTRA_STARTUP = "startup";
@@ -112,6 +121,9 @@ public class NavigationDrawerActivity extends K9Activity {
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     Account mAccount;
+
+    private MailPresenter mMailPresenter;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -158,6 +170,7 @@ public class NavigationDrawerActivity extends K9Activity {
             super.listFoldersFailed(account, message);
         }
     };
+    private FrameLayout mViewContainer;
 
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
@@ -248,6 +261,36 @@ public class NavigationDrawerActivity extends K9Activity {
         }
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
+
+
+        mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
+                
+        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
+
+        if (useSplitView()) {
+            getLayoutInflater().inflate(R.layout.split_message_list, mViewContainer, true);
+        } else {
+            getLayoutInflater().inflate(R.layout.message_list, mViewContainer, true);
+        }
+
+        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+
+    }
+
+    private Intent getMailIntent(Account account) {
+        LocalSearch search = new LocalSearch(account.getAutoExpandFolderName());
+        search.addAllowedFolder(account.getAutoExpandFolderName());
+        search.addAccountUuid(account.getUuid());
+        return MessageList.intentDisplaySearch(this, search, false, true, true);
+    }
+
+    private boolean useSplitView() {
+        K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
+        int orientation = getResources().getConfiguration().orientation;
+
+        return (splitViewMode == K9.SplitViewMode.ALWAYS ||
+                (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE &&
+                        orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -425,5 +468,21 @@ public class NavigationDrawerActivity extends K9Activity {
     private void onOffersTabClicked() {
         mSelectedTab = OFFERS_TAB_SELECTED;
         // TODO show content
+    }
+
+    @Override
+    public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
+        if(mMailPresenter != null) {
+            return mMailPresenter;
+        }
+        return null;
+    }
+
+    @Override
+    public MessageViewFragment.MessageViewFragmentListener getMessageViewFragmentListner() {
+        if(mMailPresenter != null) {
+            return mMailPresenter;
+        }
+        return null;
     }
 }

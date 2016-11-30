@@ -634,21 +634,35 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         mContext = context.getApplicationContext();
 
-        try {
-            mFragmentListener = ((MessageListFragmentGetListener) context).getMessageListFragmentListner();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.getClass() +
-                    " must implement MessageListFragmentListener");
+        mFragmentListener = getFragmentListner();
+    }
+
+    private MessageListFragmentListener getFragmentListner() {
+
+        MessageListFragmentListener listener = null;
+
+        if(getActivity() instanceof MessageListFragmentGetListener) {
+            try {
+                listener = ((MessageListFragmentGetListener) getActivity()).getMessageListFragmentListner();
+            } catch (ClassCastException e) {
+                throw new ClassCastException(getActivity().getClass() +
+                        " must implement MessageListFragmentListener");
+            }
         }
+
+        return listener;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context appContext = getActivity().getApplicationContext();
+        mContext = getActivity().getApplicationContext();
+        if(mFragmentListener == null) {
+            mFragmentListener = getFragmentListner();
+        }
 
-        mPreferences = Preferences.getPreferences(appContext);
+        mPreferences = Preferences.getPreferences(mContext);
         mController = MessagingController.getInstance(getActivity().getApplication());
 
         mPreviewLines = K9.messageListPreviewLines();
@@ -662,7 +676,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         restoreInstanceState(savedInstanceState);
         decodeArguments();
 
-        createCacheBroadcastReceiver(appContext);
+        createCacheBroadcastReceiver(mContext);
 
         mInitialized = true;
     }
