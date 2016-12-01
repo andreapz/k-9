@@ -60,11 +60,15 @@ import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 
 /**
  * Created by andreaputzu on 22/11/16.
  */
 
+@Singleton
 public class MailPresenter implements MessageListFragmentListener, MessageViewFragmentListener,
         OnBackStackChangedListener, OnSwipeGestureListener, OnSwitchCompleteListener {
 
@@ -90,7 +94,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final int PREVIOUS = 1;
     private static final int NEXT = 2;
     private final Context mContext;
-    private final Intent mIntent;
+    private Intent mIntent;
 
 //    private View mView;
 
@@ -168,8 +172,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         SPLIT_VIEW
     }
 
+    @Inject
     public MailPresenter(Context context, Intent intent) {
         mContext = context;
+        mIntent = intent;
+    }
+
+    public void setIntent(Intent intent) {
         mIntent = intent;
     }
 
@@ -784,16 +793,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         Accounts.listAccounts(mContext);
     }
 
-//    @Override
+
     public void onPause() {
-//        super.onPause();
 
         StorageManager.getInstance(((Activity)mContext).getApplication()).removeListener(mStorageListener);
     }
 
-//    @Override
+
     public void onResume() {
-//        super.onResume();
 
         if (!(this instanceof Search)) {
             //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
@@ -808,19 +815,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         StorageManager.getInstance(((Activity)mContext).getApplication()).addListener(mStorageListener);
     }
 
-//    @Override
     public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(STATE_FIRST_BACK_STACK_ID, mFirstBackStackId);
     }
 
-//    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-//        super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
-            // Restore last state for checked position.
             mMessageListWasDisplayed = savedInstanceState.getBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED);
             mFirstBackStackId = savedInstanceState.getInt(STATE_FIRST_BACK_STACK_ID);
         }

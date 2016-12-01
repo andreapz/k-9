@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.ApplicationComponent;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
@@ -53,6 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 
 /**
@@ -122,8 +125,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     Account mAccount;
 
-    private MailPresenter mMailPresenter;
-
+    @Inject MailPresenter mMailPresenter;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -191,7 +193,11 @@ public class NavigationDrawerActivity extends K9Activity
         super.onCreate(savedInstanceState);
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
-        Intent intent = getIntent();
+
+        Intent intent = getMailIntent(accounts.get(0));
+        if(mMailPresenter == null) {
+            buildDaggerComponent(intent);
+        }
         //onNewIntent(intent);
 
         // see if we should show the welcome message
@@ -265,7 +271,9 @@ public class NavigationDrawerActivity extends K9Activity
 
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
                 
-        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
+//        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
+
+//        mMailPresenter.setIntent(intent);
 
         if (useSplitView()) {
             getLayoutInflater().inflate(R.layout.split_message_list, mViewContainer, true);
@@ -275,6 +283,17 @@ public class NavigationDrawerActivity extends K9Activity
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
+        mBottomNav.bringToFront();
+
+    }
+
+    private void buildDaggerComponent(Intent intent) {
+        ApplicationComponent component = ((K9) getApplicationContext()).getComponent();
+        DaggerNavigationDrawerActivityComponent.builder()
+                .applicationComponent(component)
+                .activityModule(new ActivityModule(this, intent))
+                .build()
+                .inject(this);
     }
 
     private Intent getMailIntent(Account account) {
@@ -297,12 +316,39 @@ public class NavigationDrawerActivity extends K9Activity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
+        if(mMailPresenter != null) {
+            mMailPresenter.onSaveInstanceState(outState);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
+        if(mMailPresenter != null) {
+            mMailPresenter.onSaveInstanceState(outState);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mMailPresenter != null) {
+            mMailPresenter.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mMailPresenter != null) {
+            mMailPresenter.onPause();
+        }
     }
 
     private void onImport() {
@@ -470,19 +516,25 @@ public class NavigationDrawerActivity extends K9Activity
         // TODO show content
     }
 
+    private void forceBuildDaggerComponent() {
+        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+        Intent intent = getMailIntent(accounts.get(0));
+        buildDaggerComponent(intent);
+    }
+
     @Override
     public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
-        if(mMailPresenter != null) {
-            return mMailPresenter;
+        if(mMailPresenter == null) {
+            forceBuildDaggerComponent();
         }
-        return null;
+        return mMailPresenter;
     }
 
     @Override
     public MessageViewFragment.MessageViewFragmentListener getMessageViewFragmentListner() {
-        if(mMailPresenter != null) {
-            return mMailPresenter;
+        if(mMailPresenter == null) {
+            forceBuildDaggerComponent();
         }
-        return null;
+        return mMailPresenter;
     }
 }

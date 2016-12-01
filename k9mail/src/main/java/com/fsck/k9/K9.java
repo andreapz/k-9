@@ -608,6 +608,10 @@ public class K9 extends Application {
         });
 
         notifyObservers();
+
+        mComponent = DaggerApplicationComponent.builder()
+                .applicationModule(new ApplicationModule(this))
+                .build();
     }
 
     /**
@@ -1361,5 +1365,15 @@ public class K9 extends Application {
             editor.putInt(KEY_LAST_ACCOUNT_DATABASE_VERSION, LocalStore.DB_VERSION);
             editor.commit();
         }
+    }
+
+    public ApplicationComponent mComponent;
+
+    public ApplicationComponent getComponent() {
+        return mComponent;
+    }
+
+    public void setComponent(ApplicationComponent component) {
+        mComponent = component;
     }
 }
