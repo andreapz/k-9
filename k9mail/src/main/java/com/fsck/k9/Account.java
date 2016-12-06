@@ -59,6 +59,7 @@ public class Account implements BaseAccount, StoreConfig {
      * Default value for the inbox folder (never changes for POP3 and IMAP)
      */
     public static final String INBOX = "INBOX";
+    public static final int DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES = 60;
 
     /**
      * This local folder is used to store messages to be sent.
@@ -281,7 +282,8 @@ public class Account implements BaseAccount, StoreConfig {
     protected Account(Context context) {
         mUuid = UUID.randomUUID().toString();
         mLocalStorageProviderId = StorageManager.getInstance(context).getDefaultProviderId();
-        mAutomaticCheckIntervalMinutes = -1;
+        // imported from Tiscali Mail
+        mAutomaticCheckIntervalMinutes = DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES;
         mIdleRefreshMinutes = 24;
         mPushPollOnConnect = true;
         mDisplayCount = K9.DEFAULT_VISIBLE_LIMIT;
@@ -291,10 +293,13 @@ public class Account implements BaseAccount, StoreConfig {
         mNotifySync = true;
         mNotifySelfNewMail = true;
         mNotifyContactsMailOnly = false;
-        mFolderDisplayMode = FolderMode.NOT_SECOND_CLASS;
-        mFolderSyncMode = FolderMode.FIRST_CLASS;
-        mFolderPushMode = FolderMode.FIRST_CLASS;
-        mFolderTargetMode = FolderMode.NOT_SECOND_CLASS;
+
+        // imported from Tiscali Mail
+        mFolderDisplayMode = FolderMode.ALL;
+        mFolderSyncMode = FolderMode.ALL;
+        mFolderPushMode = FolderMode.ALL;
+        mFolderTargetMode = FolderMode.ALL;
+
         mSortType = DEFAULT_SORT_TYPE;
         mSortAscending.put(DEFAULT_SORT_TYPE, DEFAULT_SORT_ASCENDING);
         mShowPictures = ShowPictures.NEVER;
@@ -386,7 +391,9 @@ public class Account implements BaseAccount, StoreConfig {
         mTransportUri = Base64.decode(storage.getString(mUuid + ".transportUri", null));
         mDescription = storage.getString(mUuid + ".description", null);
         mAlwaysBcc = storage.getString(mUuid + ".alwaysBcc", mAlwaysBcc);
-        mAutomaticCheckIntervalMinutes = storage.getInt(mUuid + ".automaticCheckIntervalMinutes", -1);
+        // imported from Tiscali Mail
+        mAutomaticCheckIntervalMinutes = storage.getInt(mUuid + ".automaticCheckIntervalMinutes", DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES);
+
         mIdleRefreshMinutes = storage.getInt(mUuid + ".idleRefreshMinutes", 24);
         mPushPollOnConnect = storage.getBoolean(mUuid + ".pushPollOnConnect", true);
         mDisplayCount = storage.getInt(mUuid + ".displayCount", K9.DEFAULT_VISIBLE_LIMIT);
@@ -403,10 +410,13 @@ public class Account implements BaseAccount, StoreConfig {
         mNotifySync = storage.getBoolean(mUuid + ".notifyMailCheck", false);
         mDeletePolicy =  DeletePolicy.fromInt(storage.getInt(mUuid + ".deletePolicy", DeletePolicy.NEVER.setting));
         mInboxFolderName = storage.getString(mUuid  + ".inboxFolderName", INBOX);
+
+        // imported from Tiscali Mail
         mDraftsFolderName = storage.getString(mUuid  + ".draftsFolderName", "Drafts");
         mSentFolderName = storage.getString(mUuid  + ".sentFolderName", "Sent");
-        mTrashFolderName = storage.getString(mUuid  + ".trashFolderName", "Trash");
-        mArchiveFolderName = storage.getString(mUuid  + ".archiveFolderName", "Archive");
+        mTrashFolderName = storage.getString(mUuid  + ".trashFolderName", "Trashcan");
+        mArchiveFolderName = storage.getString(mUuid  + ".archiveFolderName", "Archivio");
+
         mSpamFolderName = storage.getString(mUuid  + ".spamFolderName", "Spam");
         mExpungePolicy = getEnumStringPref(storage, mUuid + ".expungePolicy", Expunge.EXPUNGE_IMMEDIATELY);
         mSyncRemoteDeletions = storage.getBoolean(mUuid  + ".syncRemoteDeletions", true);
@@ -454,13 +464,33 @@ public class Account implements BaseAccount, StoreConfig {
         mNotificationSetting.setLed(storage.getBoolean(mUuid + ".led", true));
         mNotificationSetting.setLedColor(storage.getInt(mUuid + ".ledColor", mChipColor));
 
-        mFolderDisplayMode = getEnumStringPref(storage, mUuid  + ".folderDisplayMode", FolderMode.NOT_SECOND_CLASS);
+        try {
+            mFolderDisplayMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderDisplayMode",
+                    FolderMode.ALL.name()));
+        } catch (Exception e) {
+            mFolderDisplayMode = FolderMode.ALL;
+        }
 
-        mFolderSyncMode = getEnumStringPref(storage, mUuid  + ".folderSyncMode", FolderMode.FIRST_CLASS);
+        try {
+            mFolderSyncMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderSyncMode",
+                    FolderMode.ALL.name()));
+        } catch (Exception e) {
+            mFolderSyncMode = FolderMode.ALL;
+        }
 
-        mFolderPushMode = getEnumStringPref(storage, mUuid  + ".folderPushMode", FolderMode.FIRST_CLASS);
+        try {
+            mFolderPushMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderPushMode",
+                    FolderMode.ALL.name()));
+        } catch (Exception e) {
+            mFolderPushMode = FolderMode.ALL;
+        }
 
-        mFolderTargetMode = getEnumStringPref(storage, mUuid  + ".folderTargetMode", FolderMode.NOT_SECOND_CLASS);
+        try {
+            mFolderTargetMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderTargetMode",
+                    FolderMode.ALL.name()));
+        } catch (Exception e) {
+            mFolderTargetMode = FolderMode.ALL;
+        }
 
         searchableFolders = getEnumStringPref(storage, mUuid  + ".searchableFolders", Searchable.ALL);
 
@@ -1745,34 +1775,35 @@ public class Account implements BaseAccount, StoreConfig {
         final Account.FolderMode displayMode = getFolderDisplayMode();
 
         switch (displayMode) {
-            case FIRST_CLASS: {
-                // Count messages in the INBOX and non-special first class folders
-                search.and(SearchField.DISPLAY_CLASS, FolderClass.FIRST_CLASS.name(),
-                        Attribute.EQUALS);
-                break;
-            }
-            case FIRST_AND_SECOND_CLASS: {
-                // Count messages in the INBOX and non-special first and second class folders
-                search.and(SearchField.DISPLAY_CLASS, FolderClass.FIRST_CLASS.name(),
-                        Attribute.EQUALS);
-
-                // TODO: Create a proper interface for creating arbitrary condition trees
-                SearchCondition searchCondition = new SearchCondition(SearchField.DISPLAY_CLASS,
-                        Attribute.EQUALS, FolderClass.SECOND_CLASS.name());
-                ConditionsTreeNode root = search.getConditions();
-                if (root.mRight != null) {
-                    root.mRight.or(searchCondition);
-                } else {
-                    search.or(searchCondition);
-                }
-                break;
-            }
-            case NOT_SECOND_CLASS: {
-                // Count messages in the INBOX and non-special non-second-class folders
-                search.and(SearchField.DISPLAY_CLASS, FolderClass.SECOND_CLASS.name(),
-                        Attribute.NOT_EQUALS);
-                break;
-            }
+            // imported from Tiscali Mail
+//            case FIRST_CLASS: {
+//                // Count messages in the INBOX and non-special first class folders
+//                search.and(SearchField.DISPLAY_CLASS, FolderClass.FIRST_CLASS.name(),
+//                        Attribute.EQUALS);
+//                break;
+//            }
+//            case FIRST_AND_SECOND_CLASS: {
+//                // Count messages in the INBOX and non-special first and second class folders
+//                search.and(SearchField.DISPLAY_CLASS, FolderClass.FIRST_CLASS.name(),
+//                        Attribute.EQUALS);
+//
+//                // TODO: Create a proper interface for creating arbitrary condition trees
+//                SearchCondition searchCondition = new SearchCondition(SearchField.DISPLAY_CLASS,
+//                        Attribute.EQUALS, FolderClass.SECOND_CLASS.name());
+//                ConditionsTreeNode root = search.getConditions();
+//                if (root.mRight != null) {
+//                    root.mRight.or(searchCondition);
+//                } else {
+//                    search.or(searchCondition);
+//                }
+//                break;
+//            }
+//            case NOT_SECOND_CLASS: {
+//                // Count messages in the INBOX and non-special non-second-class folders
+//                search.and(SearchField.DISPLAY_CLASS, FolderClass.SECOND_CLASS.name(),
+//                        Attribute.NOT_EQUALS);
+//                break;
+//            }
             default:
             case ALL: {
                 // Count messages in the INBOX and non-special folders
