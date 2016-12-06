@@ -45,7 +45,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
 </p>
     ]]></string>
   <!--Default signature-->
-  <string name="default_signature">-- \nInviato dal mio dispositivo Android con K-9 Mail. Perdonate la brevità.</string>
+  <string name="default_signature">-- \nInviato dall\'app Tiscali Mail.</string>
   <!--General strings that include the app name-->
   <string name="account_delete_dlg_instructions_fmt">L\'account \"<xliff:g id="account">%s</xliff:g>\" sarà rimosso da K-9 Mail.</string>
   <string name="account_recreate_dlg_instructions_fmt">Tutti i dati per \"<xliff:g id="account">%s</xliff:g>\" saranno rimossi da K-9 Mail, ma le impostazioni dell\'account saranno conservate.</string>
