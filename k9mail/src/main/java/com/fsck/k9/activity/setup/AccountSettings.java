@@ -73,10 +73,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_MANAGE_IDENTITIES = "manage_identities";
     private static final String PREFERENCE_FREQUENCY = "account_check_frequency";
     private static final String PREFERENCE_DISPLAY_COUNT = "account_display_count";
-    private static final String PREFERENCE_DEFAULT = "account_default";
     private static final String PREFERENCE_SHOW_PICTURES = "show_pictures_enum";
     private static final String PREFERENCE_NOTIFY = "account_notify";
-    private static final String PREFERENCE_NOTIFY_NEW_MAIL_MODE = "folder_notify_new_mail_mode";
     private static final String PREFERENCE_NOTIFY_SELF = "account_notify_self";
     private static final String PREFERENCE_NOTIFY_CONTACTS_MAIL_ONLY = "account_notify_contacts_mail_only";
     private static final String PREFERENCE_NOTIFY_SYNC = "account_notify_sync";
@@ -88,7 +86,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_INCOMING = "incoming";
     private static final String PREFERENCE_OUTGOING = "outgoing";
     private static final String PREFERENCE_DISPLAY_MODE = "folder_display_mode";
-    private static final String PREFERENCE_SYNC_MODE = "folder_sync_mode";
     private static final String PREFERENCE_PUSH_MODE = "folder_push_mode";
     private static final String PREFERENCE_PUSH_POLL_ON_CONNECT = "push_poll_on_connect";
     private static final String PREFERENCE_MAX_PUSH_FOLDERS = "max_push_folders";
@@ -127,6 +124,7 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_TRASH_FOLDER = "trash_folder";
     private static final String PREFERENCE_ALWAYS_SHOW_CC_BCC = "always_show_cc_bcc";
 
+    private static final String PREFERENCE_CHANGE_PASSWORD = "change_password";
 
     private Account mAccount;
     private boolean mIsMoveCapable = false;
@@ -143,9 +141,7 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mDisplayCount;
     private ListPreference mMessageAge;
     private ListPreference mMessageSize;
-    private CheckBoxPreference mAccountDefault;
     private CheckBoxPreference mAccountNotify;
-    private ListPreference mAccountNotifyNewMailMode;
     private CheckBoxPreference mAccountNotifySelf;
     private CheckBoxPreference mAccountNotifyContactsMailOnly;
     private ListPreference mAccountShowPictures;
@@ -156,7 +152,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mAccountVibrateTimes;
     private RingtonePreference mAccountRingtone;
     private ListPreference mDisplayMode;
-    private ListPreference mSyncMode;
     private ListPreference mPushMode;
     private ListPreference mTargetMode;
     private ListPreference mDeletePolicy;
@@ -185,6 +180,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private PreferenceScreen mSearchScreen;
     private CheckBoxPreference mCloudSearchEnabled;
     private ListPreference mRemoteSearchNumResults;
+
+    private PreferenceScreen mChangePassword;
     /*
      * Temporarily removed because search results aren't displayed to the user.
      * So this feature is useless.
@@ -335,20 +332,6 @@ public class AccountSettings extends K9PreferenceActivity {
             }
         });
 
-        mSyncMode = (ListPreference) findPreference(PREFERENCE_SYNC_MODE);
-        mSyncMode.setValue(mAccount.getFolderSyncMode().name());
-        mSyncMode.setSummary(mSyncMode.getEntry());
-        mSyncMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mSyncMode.findIndexOfValue(summary);
-                mSyncMode.setSummary(mSyncMode.getEntries()[index]);
-                mSyncMode.setValue(summary);
-                return false;
-            }
-        });
-
-
         mTargetMode = (ListPreference) findPreference(PREFERENCE_TARGET_MODE);
         mTargetMode.setValue(mAccount.getFolderTargetMode().name());
         mTargetMode.setSummary(mTargetMode.getEntry());
@@ -459,10 +442,6 @@ public class AccountSettings extends K9PreferenceActivity {
                 return false;
             }
         });
-
-        mAccountDefault = (CheckBoxPreference) findPreference(PREFERENCE_DEFAULT);
-        mAccountDefault.setChecked(
-            mAccount.equals(Preferences.getPreferences(this).getDefaultAccount()));
 
         mAccountShowPictures = (ListPreference) findPreference(PREFERENCE_SHOW_PICTURES);
         mAccountShowPictures.setValue("" + mAccount.getShowPictures());
@@ -575,19 +554,6 @@ public class AccountSettings extends K9PreferenceActivity {
 
         mAccountNotify = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFY);
         mAccountNotify.setChecked(mAccount.isNotifyNewMail());
-
-        mAccountNotifyNewMailMode = (ListPreference) findPreference(PREFERENCE_NOTIFY_NEW_MAIL_MODE);
-        mAccountNotifyNewMailMode.setValue(mAccount.getFolderNotifyNewMailMode().name());
-        mAccountNotifyNewMailMode.setSummary(mAccountNotifyNewMailMode.getEntry());
-        mAccountNotifyNewMailMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mAccountNotifyNewMailMode.findIndexOfValue(summary);
-                mAccountNotifyNewMailMode.setSummary(mAccountNotifyNewMailMode.getEntries()[index]);
-                mAccountNotifyNewMailMode.setValue(summary);
-                return false;
-            }
-        });
 
         mAccountNotifySelf = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFY_SELF);
         mAccountNotifySelf.setChecked(mAccount.isNotifySelfNewMail());
@@ -726,6 +692,20 @@ public class AccountSettings extends K9PreferenceActivity {
             mCryptoMenu.setEnabled(false);
             mCryptoMenu.setSummary(R.string.account_settings_no_openpgp_provider_installed);
         }
+
+        // change password preference added from Tiscali Mail
+        mChangePassword = (PreferenceScreen) findPreference(PREFERENCE_CHANGE_PASSWORD);
+        mChangePassword.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onChangePasswordSettings();
+                        return true;
+                    }
+                });
+    }
+
+    private void onChangePasswordSettings() {
+        TiscaliAccountSetupUserPassword.actionEditUserPasswordSettings(this, mAccount);
     }
 
     private void removeListEntry(ListPreference listPreference, String remove) {
@@ -749,14 +729,10 @@ public class AccountSettings extends K9PreferenceActivity {
     }
 
     private void saveSettings() {
-        if (mAccountDefault.isChecked()) {
-            Preferences.getPreferences(this).setDefaultAccount(mAccount);
-        }
 
         mAccount.setDescription(mAccountDescription.getText());
         mAccount.setMarkMessageAsReadOnView(mMarkMessageAsReadOnView.isChecked());
         mAccount.setNotifyNewMail(mAccountNotify.isChecked());
-        mAccount.setFolderNotifyNewMailMode(FolderMode.valueOf(mAccountNotifyNewMailMode.getValue()));
         mAccount.setNotifySelfNewMail(mAccountNotifySelf.isChecked());
         mAccount.setNotifyContactsMailOnly(mAccountNotifyContactsMailOnly.isChecked());
         mAccount.setShowOngoing(mAccountNotifySync.isChecked());
@@ -820,7 +796,6 @@ public class AccountSettings extends K9PreferenceActivity {
         }
 
         boolean needsRefresh = mAccount.setAutomaticCheckIntervalMinutes(Integer.parseInt(mCheckFrequency.getValue()));
-        needsRefresh |= mAccount.setFolderSyncMode(FolderMode.valueOf(mSyncMode.getValue()));
 
         boolean displayModeChanged = mAccount.setFolderDisplayMode(FolderMode.valueOf(mDisplayMode.getValue()));
 

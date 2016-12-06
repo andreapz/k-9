@@ -293,6 +293,11 @@
             android:name=".activity.UpgradeDatabases"
             android:label="@string/upgrade_databases_title"/>
 
+        <activity
+            android:name=".activity.setup.TiscaliAccountSetupUserPassword"
+            android:label="@string/account_setup_user_password_title_tiscali"
+            android:configChanges="locale" />
+
         <receiver
             android:name=".service.BootReceiver"
             android:enabled="true">

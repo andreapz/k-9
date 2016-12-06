@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="margin_standard_16dp">16dp</dimen>
+    <dimen name="margin_standard_24dp">24dp</dimen>
+
+    <dimen name="text_size_medium">18sp</dimen>
+
     <dimen name="button_minWidth">100sp</dimen>
-    <dimen name="nav_drawer_child_margin">16dp</dimen>
 </resources>

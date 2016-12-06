@@ -84,7 +84,10 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
     private String prefId = null;
     private FolderClass mDisplayClass = FolderClass.NO_CLASS;
     private FolderClass mSyncClass = FolderClass.INHERITED;
-    private FolderClass mPushClass = FolderClass.SECOND_CLASS;
+    // value from K9
+//    private FolderClass mPushClass = FolderClass.SECOND_CLASS;
+    // value from Tiscali Mail
+    private FolderClass mPushClass = FolderClass.INHERITED;
     private FolderClass mNotifyClass = FolderClass.INHERITED;
     private boolean mInTopGroup = false;
     private String mPushState = null;

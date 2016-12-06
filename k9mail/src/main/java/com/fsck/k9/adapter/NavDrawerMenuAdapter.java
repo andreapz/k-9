@@ -84,7 +84,7 @@ public class NavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
             // add additionally left margin depending on depth
             if(itemViewHolder.mItemContainerRl.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
                 ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl.getLayoutParams();
-                int marginLeft = (int) (getItemDepth(position)*mContext.getResources().getDimension(R.dimen.nav_drawer_child_margin));
+                int marginLeft = (int) (getItemDepth(position)*mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
                 p.setMargins(marginLeft, 0, 0, 0);
                 itemViewHolder.mItemContainerRl.requestLayout();
             }

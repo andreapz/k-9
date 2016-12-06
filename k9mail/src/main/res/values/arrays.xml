@@ -754,4 +754,9 @@
         <item>NEVER</item>
         <item>WHEN_IN_LANDSCAPE</item>
     </string-array>
+
+    <string-array name="settings_titles">
+        <item>@string/account_settings_action</item>
+        <item>@string/global_settings_action</item>
+    </string-array>
 </resources>

@@ -54,6 +54,8 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
 
     private static final String EXTRA_CHECK_DIRECTION ="checkDirection";
 
+    public static final int RESULT_ERROR_INVALID_USER_PASSWORD = -3;
+
     public enum CheckDirection {
         INCOMING,
         OUTGOING

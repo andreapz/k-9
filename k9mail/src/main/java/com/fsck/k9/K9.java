@@ -463,11 +463,11 @@ public class K9 extends Application {
         editor.putBoolean("hideUserAgent", mHideUserAgent);
         editor.putBoolean("hideTimeZone", mHideTimeZone);
 
-        editor.putString("language", language);
-        editor.putInt("theme", theme.ordinal());
-        editor.putInt("messageViewTheme", messageViewTheme.ordinal());
-        editor.putInt("messageComposeTheme", composerTheme.ordinal());
-        editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
+//        editor.putString("language", language);
+//        editor.putInt("theme", theme.ordinal());
+//        editor.putInt("messageViewTheme", messageViewTheme.ordinal());
+//        editor.putInt("messageComposeTheme", composerTheme.ordinal());
+//        editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
 
         editor.putBoolean("confirmDelete", mConfirmDelete);
         editor.putBoolean("confirmDiscardMessage", mConfirmDiscardMessage);
@@ -748,22 +748,22 @@ public class K9 extends Application {
 
         sPgpInlineDialogCounter = storage.getInt("pgpInlineDialogCounter", 0);
 
-        K9.setK9Language(storage.getString("language", ""));
-
-        int themeValue = storage.getInt("theme", Theme.LIGHT.ordinal());
-        // We used to save the resource ID of the theme. So convert that to the new format if
-        // necessary.
-        if (themeValue == Theme.DARK.ordinal() || themeValue == android.R.style.Theme) {
-            K9.setK9Theme(Theme.DARK);
-        } else {
-            K9.setK9Theme(Theme.LIGHT);
-        }
-
-        themeValue = storage.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
-        K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
-        themeValue = storage.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
-        K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
-        K9.setUseFixedMessageViewTheme(storage.getBoolean("fixedMessageViewTheme", true));
+//        K9.setK9Language(storage.getString("language", ""));
+//
+//        int themeValue = storage.getInt("theme", Theme.LIGHT.ordinal());
+//        // We used to save the resource ID of the theme. So convert that to the new format if
+//        // necessary.
+//        if (themeValue == Theme.DARK.ordinal() || themeValue == android.R.style.Theme) {
+//            K9.setK9Theme(Theme.DARK);
+//        } else {
+//            K9.setK9Theme(Theme.LIGHT);
+//        }
+//
+//        themeValue = storage.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
+//        K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
+//        themeValue = storage.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
+//        K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
+//        K9.setUseFixedMessageViewTheme(storage.getBoolean("fixedMessageViewTheme", true));
     }
 
     /**
@@ -809,9 +809,9 @@ public class K9 extends Application {
         return language;
     }
 
-    public static void setK9Language(String nlanguage) {
-        language = nlanguage;
-    }
+//    public static void setK9Language(String nlanguage) {
+//        language = nlanguage;
+//    }
 
     /**
      * Possible values for the different theme settings.
@@ -860,24 +860,24 @@ public class K9 extends Application {
         }
     }
 
-    public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
-        messageViewTheme = nMessageViewTheme;
-    }
+//    public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
+//        messageViewTheme = nMessageViewTheme;
+//    }
 
     public static boolean useFixedMessageViewTheme() {
         return useFixedMessageTheme;
     }
 
-    public static void setK9ComposerThemeSetting(Theme compTheme) {
-        composerTheme = compTheme;
-    }
+//    public static void setK9ComposerThemeSetting(Theme compTheme) {
+//        composerTheme = compTheme;
+//    }
 
-    public static void setUseFixedMessageViewTheme(boolean useFixed) {
-        useFixedMessageTheme = useFixed;
-        if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
-            messageViewTheme = theme;
-        }
-    }
+//    public static void setUseFixedMessageViewTheme(boolean useFixed) {
+//        useFixedMessageTheme = useFixed;
+//        if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
+//            messageViewTheme = theme;
+//        }
+//    }
 
     public static BACKGROUND_OPS getBackgroundOps() {
         return backgroundOps;

@@ -998,4 +998,9 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="messageview_crypto_warning_error">Si è verificato un <b>errore nella firma di questo messaggio!</b></string>
   <string name="recipient_error_non_ascii">I caratteri speciali al momento non sono supportati!</string>
   <string name="recipient_error_parse_failed">Errore durante l\'analisi dell\'indirizzo!</string>
+
+  <!-- From Tiscali Mail -->
+  <string name="account_setup_user_password_title_label_tiscali">Imposta utente e password</string>
+  <string name="account_setup_user_password_summary_label_tiscali">Configura il tuo nome utente e la tua password</string>
+  <string name="account_setup_user_password_title_tiscali">Configura nome utente e password</string>
 </resources>
