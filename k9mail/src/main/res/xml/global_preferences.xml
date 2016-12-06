@@ -64,13 +64,6 @@
                 android:title="@string/count_search_title"
                 android:summary="@string/count_search_summary" />
 
-            <CheckBoxPreference
-                android:persistent="false"
-                android:key="hide_special_accounts"
-                android:title="@string/hide_special_accounts_title"
-                android:summary="@string/hide_special_accounts_summary"
-                android:disableDependentsState="true" />
-
         </PreferenceCategory>
 
         <PreferenceCategory
@@ -105,11 +98,11 @@
                 android:title="@string/global_settings_flag_label"
                 android:summary="@string/global_settings_flag_summary" />
 
-            <CheckBoxPreference
-                android:persistent="false"
-                android:key="messagelist_checkboxes"
-                android:title="@string/global_settings_checkbox_label"
-                android:summary="@string/global_settings_checkbox_summary" />
+            <!--<CheckBoxPreference-->
+                <!--android:persistent="false"-->
+                <!--android:key="messagelist_checkboxes"-->
+                <!--android:title="@string/global_settings_checkbox_label"-->
+                <!--android:summary="@string/global_settings_checkbox_summary" />-->
 
             <CheckBoxPreference
                 android:persistent="false"
@@ -139,20 +132,20 @@
                 android:dependency="messagelist_show_contact_name"
                 />
 
-            <CheckBoxPreference
-                android:persistent="false"
-                android:key="messagelist_show_contact_picture"
-                android:title="@string/global_settings_show_contact_picture_label"
-                android:summary="@string/global_settings_show_contact_picture_summary"
-                />
+            <!--<CheckBoxPreference-->
+                <!--android:persistent="false"-->
+                <!--android:key="messagelist_show_contact_picture"-->
+                <!--android:title="@string/global_settings_show_contact_picture_label"-->
+                <!--android:summary="@string/global_settings_show_contact_picture_summary"-->
+                <!--/>-->
 
-            <CheckBoxPreference
-                android:persistent="false"
-                android:key="messagelist_colorize_missing_contact_pictures"
-                android:title="@string/global_settings_colorize_missing_contact_pictures_label"
-                android:summary="@string/global_settings_colorize_missing_contact_pictures_summary"
-                android:dependency="messagelist_show_contact_picture"
-                />
+            <!--<CheckBoxPreference-->
+                <!--android:persistent="false"-->
+                <!--android:key="messagelist_colorize_missing_contact_pictures"-->
+                <!--android:title="@string/global_settings_colorize_missing_contact_pictures_label"-->
+                <!--android:summary="@string/global_settings_colorize_missing_contact_pictures_summary"-->
+                <!--android:dependency="messagelist_show_contact_picture"-->
+                <!--/>-->
 
             <CheckBoxPreference
                 android:persistent="false"
@@ -167,13 +160,13 @@
                 android:title="@string/global_settings_threaded_view_label"
                 android:summary="@string/global_settings_threaded_view_summary" />
 
-            <ListPreference
-                android:persistent="false"
-                android:key="splitview_mode"
-                android:title="@string/global_settings_splitview_mode_label"
-                android:entries="@array/global_settings_splitview_mode_entries"
-                android:entryValues="@array/global_settings_splitview_mode_values"
-                android:dialogTitle="@string/global_settings_splitview_mode_label" />
+            <!--<ListPreference-->
+                <!--android:persistent="false"-->
+                <!--android:key="splitview_mode"-->
+                <!--android:title="@string/global_settings_splitview_mode_label"-->
+                <!--android:entries="@array/global_settings_splitview_mode_entries"-->
+                <!--android:entryValues="@array/global_settings_splitview_mode_values"-->
+                <!--android:dialogTitle="@string/global_settings_splitview_mode_label" />-->
 
         </PreferenceCategory>
 
@@ -210,11 +203,11 @@
         android:title="@string/interaction_preferences"
         android:key="interaction_preferences">
 
-        <CheckBoxPreference
-            android:persistent="false"
-            android:key="start_integrated_inbox"
-            android:title="@string/start_integrated_inbox_title"
-            android:dependency="hide_special_accounts" />
+        <!--<CheckBoxPreference-->
+            <!--android:persistent="false"-->
+            <!--android:key="start_integrated_inbox"-->
+            <!--android:title="@string/start_integrated_inbox_title"-->
+            <!--android:dependency="hide_special_accounts" />-->
 
         <CheckBoxPreference
             android:persistent="false"
