@@ -45,7 +45,7 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_FONT_SIZE = "font_size";
     private static final String PREFERENCE_ANIMATIONS = "animations";
     private static final String PREFERENCE_GESTURES = "gestures";
-    private static final String PREFERENCE_VOLUME_NAVIGATION = "volumeNavigation";
+//    private static final String PREFERENCE_VOLUME_NAVIGATION = "volumeNavigation";
 //    private static final String PREFERENCE_START_INTEGRATED_INBOX = "start_integrated_inbox";
     private static final String PREFERENCE_CONFIRM_ACTIONS = "confirm_actions";
     private static final String PREFERENCE_NOTIFICATION_HIDE_SUBJECT = "notification_hide_subject";
@@ -72,8 +72,6 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_QUIET_TIME_ENDS = "quiet_time_ends";
     private static final String PREFERENCE_NOTIF_QUICK_DELETE = "notification_quick_delete";
     private static final String PREFERENCE_LOCK_SCREEN_NOTIFICATION_VISIBILITY = "lock_screen_notification_visibility";
-    private static final String PREFERENCE_HIDE_USERAGENT = "privacy_hide_useragent";
-    private static final String PREFERENCE_HIDE_TIMEZONE = "privacy_hide_timezone";
 
     private static final String PREFERENCE_AUTOFIT_WIDTH = "messageview_autofit_width";
     private static final String PREFERENCE_BACKGROUND_OPS = "background_ops";
@@ -98,7 +96,7 @@ public class Prefs extends K9PreferenceActivity {
 //    private ListPreference mLanguage;
     private CheckBoxPreference mAnimations;
     private CheckBoxPreference mGestures;
-    private CheckBoxListPreference mVolumeNavigation;
+//    private CheckBoxListPreference mVolumeNavigation;
 //    private CheckBoxPreference mStartIntegratedInbox;
     private CheckBoxListPreference mConfirmActions;
     private ListPreference mNotificationHideSubject;
@@ -120,8 +118,6 @@ public class Prefs extends K9PreferenceActivity {
     private ListPreference mBackgroundOps;
     private CheckBoxPreference mDebugLogging;
     private CheckBoxPreference mSensitiveLogging;
-    private CheckBoxPreference mHideUserAgent;
-    private CheckBoxPreference mHideTimeZone;
     private CheckBoxPreference mWrapFolderNames;
     private CheckBoxListPreference mVisibleRefileActions;
 
@@ -178,9 +174,9 @@ public class Prefs extends K9PreferenceActivity {
         mGestures = (CheckBoxPreference)findPreference(PREFERENCE_GESTURES);
         mGestures.setChecked(K9.gesturesEnabled());
 
-        mVolumeNavigation = (CheckBoxListPreference)findPreference(PREFERENCE_VOLUME_NAVIGATION);
-        mVolumeNavigation.setItems(new CharSequence[] {getString(R.string.volume_navigation_message), getString(R.string.volume_navigation_list)});
-        mVolumeNavigation.setCheckedItems(new boolean[] {K9.useVolumeKeysForNavigationEnabled(), K9.useVolumeKeysForListNavigationEnabled()});
+//        mVolumeNavigation = (CheckBoxListPreference)findPreference(PREFERENCE_VOLUME_NAVIGATION);
+//        mVolumeNavigation.setItems(new CharSequence[] {getString(R.string.volume_navigation_message), getString(R.string.volume_navigation_list)});
+//        mVolumeNavigation.setCheckedItems(new boolean[] {K9.useVolumeKeysForNavigationEnabled(), K9.useVolumeKeysForListNavigationEnabled()});
 
 //        mStartIntegratedInbox = (CheckBoxPreference)findPreference(PREFERENCE_START_INTEGRATED_INBOX);
 //        mStartIntegratedInbox.setChecked(K9.startIntegratedInbox());
@@ -329,13 +325,9 @@ public class Prefs extends K9PreferenceActivity {
 
         mDebugLogging = (CheckBoxPreference)findPreference(PREFERENCE_DEBUG_LOGGING);
         mSensitiveLogging = (CheckBoxPreference)findPreference(PREFERENCE_SENSITIVE_LOGGING);
-        mHideUserAgent = (CheckBoxPreference)findPreference(PREFERENCE_HIDE_USERAGENT);
-        mHideTimeZone = (CheckBoxPreference)findPreference(PREFERENCE_HIDE_TIMEZONE);
 
         mDebugLogging.setChecked(K9.DEBUG);
         mSensitiveLogging.setChecked(K9.DEBUG_SENSITIVE);
-        mHideUserAgent.setChecked(K9.hideUserAgent());
-        mHideTimeZone.setChecked(K9.hideTimeZone());
 
         mAttachmentPathPreference = findPreference(PREFERENCE_ATTACHMENT_DEF_PATH);
         mAttachmentPathPreference.setSummary(K9.getAttachmentDefaultPath());
@@ -401,8 +393,8 @@ public class Prefs extends K9PreferenceActivity {
 
         K9.setAnimations(mAnimations.isChecked());
         K9.setGesturesEnabled(mGestures.isChecked());
-        K9.setUseVolumeKeysForNavigation(mVolumeNavigation.getCheckedItems()[0]);
-        K9.setUseVolumeKeysForListNavigation(mVolumeNavigation.getCheckedItems()[1]);
+//        K9.setUseVolumeKeysForNavigation(mVolumeNavigation.getCheckedItems()[0]);
+//        K9.setUseVolumeKeysForListNavigation(mVolumeNavigation.getCheckedItems()[1]);
 //        K9.setStartIntegratedInbox(!mHideSpecialAccounts.isChecked() && mStartIntegratedInbox.isChecked());
         K9.setNotificationHideSubject(NotificationHideSubject.valueOf(mNotificationHideSubject.getValue()));
 
@@ -465,8 +457,6 @@ public class Prefs extends K9PreferenceActivity {
         }
         K9.DEBUG = mDebugLogging.isChecked();
         K9.DEBUG_SENSITIVE = mSensitiveLogging.isChecked();
-        K9.setHideUserAgent(mHideUserAgent.isChecked());
-        K9.setHideTimeZone(mHideTimeZone.isChecked());
 
         StorageEditor editor = storage.edit();
         K9.save(editor);

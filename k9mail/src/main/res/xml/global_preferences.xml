@@ -215,13 +215,13 @@
             android:title="@string/gestures_title"
             android:summary="@string/gestures_summary" />
 
-        <com.fsck.k9.preferences.CheckBoxListPreference
-            android:persistent="false"
-            android:key="volumeNavigation"
-            android:title="@string/volume_navigation_title"
-            android:dialogTitle="@string/volume_navigation_title"
-            android:positiveButtonText="@android:string/ok"
-            android:negativeButtonText="@android:string/cancel" />
+        <!--<com.fsck.k9.preferences.CheckBoxListPreference-->
+            <!--android:persistent="false"-->
+            <!--android:key="volumeNavigation"-->
+            <!--android:title="@string/volume_navigation_title"-->
+            <!--android:dialogTitle="@string/volume_navigation_title"-->
+            <!--android:positiveButtonText="@android:string/ok"-->
+            <!--android:negativeButtonText="@android:string/cancel" />-->
 
         <CheckBoxPreference
             android:persistent="false"
@@ -332,16 +332,6 @@
             android:entries="@array/global_settings_notification_hide_subject_entries"
             android:entryValues="@array/global_settings_notification_hide_subject_values"
             android:title="@string/global_settings_notification_hide_subject_title"/>
-
-        <CheckBoxPreference
-            android:persistent="false"
-            android:key="privacy_hide_useragent"
-            android:title="@string/global_settings_privacy_hide_useragent"/>
-
-        <CheckBoxPreference
-            android:persistent="false"
-            android:key="privacy_hide_timezone"
-            android:title="@string/global_settings_privacy_hide_timezone"/>
 
     </PreferenceScreen>
 
