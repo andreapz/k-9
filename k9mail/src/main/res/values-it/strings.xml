@@ -194,11 +194,6 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="special_mailbox_name_sent">Posta inviata</string>
   <string name="special_mailbox_name_archive">Archivio</string>
   <string name="special_mailbox_name_spam">Spam</string>
-  <string name="special_mailbox_name_drafts_fmt"><xliff:g id="folder">%s</xliff:g> (Bozze)</string>
-  <string name="special_mailbox_name_trash_fmt"><xliff:g id="folder">%s</xliff:g> (Cestino)</string>
-  <string name="special_mailbox_name_sent_fmt"><xliff:g id="folder">%s</xliff:g> (Posta inviata)</string>
-  <string name="special_mailbox_name_archive_fmt"><xliff:g id="folder">%s</xliff:g> (Archivio)</string>
-  <string name="special_mailbox_name_spam_fmt"><xliff:g id="folder">%s</xliff:g> (Spam)</string>
   <string name="send_failure_subject">Impossibile inviare alcuni messaggi</string>
   <string name="debug_version_fmt">Versione: <xliff:g id="version">%s</xliff:g></string>
   <string name="debug_enable_debug_logging_title">Attiva la registrazione di debug</string>
@@ -1003,4 +998,11 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="account_setup_user_password_title_label_tiscali">Imposta utente e password</string>
   <string name="account_setup_user_password_summary_label_tiscali">Configura il tuo nome utente e la tua password</string>
   <string name="account_setup_user_password_title_tiscali">Configura nome utente e password</string>
+  <string name="special_mailbox_name_inbox_fmt">Posta in arrivo</string>
+  <string name="special_mailbox_name_outbox_fmt">Posta in uscita</string>
+  <string name="special_mailbox_name_drafts_fmt">Bozze</string>
+  <string name="special_mailbox_name_trash_fmt">Cestino</string>
+  <string name="special_mailbox_name_sent_fmt">Inviata</string>
+  <string name="special_mailbox_name_archive_fmt">Archivio</string>
+  <string name="special_mailbox_name_spam_fmt">Spam</string>
 </resources>

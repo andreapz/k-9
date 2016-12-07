@@ -260,7 +260,7 @@ public class Account implements BaseAccount, StoreConfig {
     private NotificationSetting mNotificationSetting = new NotificationSetting();
 
     public enum FolderMode {
-        NONE, ALL, FIRST_CLASS, FIRST_AND_SECOND_CLASS, NOT_SECOND_CLASS
+        NONE, ALL
     }
 
     public enum ShowPictures {
@@ -412,7 +412,7 @@ public class Account implements BaseAccount, StoreConfig {
         mInboxFolderName = storage.getString(mUuid  + ".inboxFolderName", INBOX);
 
         // imported from Tiscali Mail
-        mDraftsFolderName = storage.getString(mUuid  + ".draftsFolderName", "Drafts");
+        mDraftsFolderName = storage.getString(mUuid  + ".draftsFolderName", "Draft");
         mSentFolderName = storage.getString(mUuid  + ".sentFolderName", "Sent");
         mTrashFolderName = storage.getString(mUuid  + ".trashFolderName", "Trashcan");
         mArchiveFolderName = storage.getString(mUuid  + ".archiveFolderName", "Archivio");
@@ -464,33 +464,11 @@ public class Account implements BaseAccount, StoreConfig {
         mNotificationSetting.setLed(storage.getBoolean(mUuid + ".led", true));
         mNotificationSetting.setLedColor(storage.getInt(mUuid + ".ledColor", mChipColor));
 
-        try {
-            mFolderDisplayMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderDisplayMode",
-                    FolderMode.ALL.name()));
-        } catch (Exception e) {
-            mFolderDisplayMode = FolderMode.ALL;
-        }
-
-        try {
-            mFolderSyncMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderSyncMode",
-                    FolderMode.ALL.name()));
-        } catch (Exception e) {
-            mFolderSyncMode = FolderMode.ALL;
-        }
-
-        try {
-            mFolderPushMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderPushMode",
-                    FolderMode.ALL.name()));
-        } catch (Exception e) {
-            mFolderPushMode = FolderMode.ALL;
-        }
-
-        try {
-            mFolderTargetMode = FolderMode.valueOf(storage.getString(mUuid  + ".folderTargetMode",
-                    FolderMode.ALL.name()));
-        } catch (Exception e) {
-            mFolderTargetMode = FolderMode.ALL;
-        }
+        // imported from Tiscali Mail
+        mFolderDisplayMode = getEnumStringPref(storage, mUuid  + ".folderDisplayMode", FolderMode.ALL);
+        mFolderSyncMode = getEnumStringPref(storage, mUuid  + ".folderSyncMode", FolderMode.ALL);
+        mFolderPushMode = getEnumStringPref(storage, mUuid  + ".folderPushMode", FolderMode.ALL);
+        mFolderTargetMode = getEnumStringPref(storage, mUuid  + ".folderTargetMode", FolderMode.ALL);
 
         searchableFolders = getEnumStringPref(storage, mUuid  + ".searchableFolders", Searchable.ALL);
 
@@ -837,14 +815,19 @@ public class Account implements BaseAccount, StoreConfig {
         String selection = query.toString();
         String[] selectionArgs = queryArgs.toArray(new String[0]);
 
-        Cursor cursor = cr.query(uri, projection, selection, selectionArgs, null);
+        // imported from Tiscali Mail
+        Cursor cursor = null;
         try {
-            if (cursor.moveToFirst()) {
+            cursor = cr.query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
                 stats.unreadMessageCount = cursor.getInt(0);
                 stats.flaggedMessageCount = cursor.getInt(1);
             }
+        } catch (IllegalArgumentException e) {
+            Log.e(K9.LOG_TAG, "Unknown account: " + (getName() != null ? getName() + " (" + getUuid() + ")" : getUuid()) + " previously deleted", e);
         } finally {
-            cursor.close();
+            if (cursor != null)
+                cursor.close();
         }
 
         LocalStore localStore = getLocalStore();
@@ -1081,7 +1064,6 @@ public class Account implements BaseAccount, StoreConfig {
         return (folderName != null && (folderName.equalsIgnoreCase(getInboxFolderName()) ||
                 folderName.equals(getTrashFolderName()) ||
                 folderName.equals(getDraftsFolderName()) ||
-                folderName.equals(getArchiveFolderName()) ||
                 folderName.equals(getSpamFolderName()) ||
                 folderName.equals(getOutboxFolderName()) ||
                 folderName.equals(getSentFolderName()) ||
@@ -1339,8 +1321,9 @@ public class Account implements BaseAccount, StoreConfig {
 
     public synchronized boolean useCompression(NetworkType networkType) {
         Boolean useCompression = compressionMap.get(networkType);
+        // imported from Tiscali Mail: compress deflate not supported by Tiscali imap
         if (useCompression == null) {
-            return true;
+            return false;
         }
 
         return useCompression;
@@ -1775,35 +1758,6 @@ public class Account implements BaseAccount, StoreConfig {
         final Account.FolderMode displayMode = getFolderDisplayMode();
 
         switch (displayMode) {
-            // imported from Tiscali Mail
-//            case FIRST_CLASS: {
-//                // Count messages in the INBOX and non-special first class folders
-//                search.and(SearchField.DISPLAY_CLASS, FolderClass.FIRST_CLASS.name(),
-//                        Attribute.EQUALS);
-//                break;
-//            }
-//            case FIRST_AND_SECOND_CLASS: {
-//                // Count messages in the INBOX and non-special first and second class folders
-//                search.and(SearchField.DISPLAY_CLASS, FolderClass.FIRST_CLASS.name(),
-//                        Attribute.EQUALS);
-//
-//                // TODO: Create a proper interface for creating arbitrary condition trees
-//                SearchCondition searchCondition = new SearchCondition(SearchField.DISPLAY_CLASS,
-//                        Attribute.EQUALS, FolderClass.SECOND_CLASS.name());
-//                ConditionsTreeNode root = search.getConditions();
-//                if (root.mRight != null) {
-//                    root.mRight.or(searchCondition);
-//                } else {
-//                    search.or(searchCondition);
-//                }
-//                break;
-//            }
-//            case NOT_SECOND_CLASS: {
-//                // Count messages in the INBOX and non-special non-second-class folders
-//                search.and(SearchField.DISPLAY_CLASS, FolderClass.SECOND_CLASS.name(),
-//                        Attribute.NOT_EQUALS);
-//                break;
-//            }
             default:
             case ALL: {
                 // Count messages in the INBOX and non-special folders

@@ -84,10 +84,9 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
     private String prefId = null;
     private FolderClass mDisplayClass = FolderClass.NO_CLASS;
     private FolderClass mSyncClass = FolderClass.INHERITED;
-    // value from K9
-//    private FolderClass mPushClass = FolderClass.SECOND_CLASS;
-    // value from Tiscali Mail
+    // imported from Tiscali Mail
     private FolderClass mPushClass = FolderClass.INHERITED;
+
     private FolderClass mNotifyClass = FolderClass.INHERITED;
     private boolean mInTopGroup = false;
     private String mPushState = null;
@@ -103,8 +102,10 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         this.mName = name;
 
         if (getAccount().getInboxFolderName().equals(getName())) {
-            mSyncClass =  FolderClass.FIRST_CLASS;
-            mPushClass =  FolderClass.FIRST_CLASS;
+            // imported From Tiscali Mail
+            mSyncClass =  FolderClass.INHERITED;
+            mPushClass =  FolderClass.INHERITED;
+
             mInTopGroup = true;
         }
     }
@@ -156,7 +157,9 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
                         String baseQuery = "SELECT " + LocalStore.GET_FOLDER_COLS + " FROM folders ";
 
                         if (mName != null) {
-                            cursor = db.rawQuery(baseQuery + "where folders.name = ?", new String[] { mName });
+                            // imported from Tiscali Mail
+                            cursor = db.rawQuery(baseQuery + "where LOWER(folders.name) = LOWER(?)", new String[] { mName });
+
                         } else {
                             cursor = db.rawQuery(baseQuery + "where folders.id = ?", new String[] { Long.toString(mFolderId) });
                         }
@@ -168,6 +171,11 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
                             }
                         } else {
                             Log.w(K9.LOG_TAG, "Creating folder " + getName() + " with existing id " + getId());
+
+                            // imported from Tiscali Mail
+                            if(!K9.ENABLE_ERROR_FOLDER && K9.ERROR_FOLDER_NAME.equals(getName())){
+                                return null;
+                            }
                             create(FolderType.HOLDS_MESSAGES);
                             open(mode);
                         }
@@ -231,9 +239,13 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             public Boolean doDbWork(final SQLiteDatabase db) throws WrappedException {
                 Cursor cursor = null;
                 try {
-                    cursor = db.rawQuery("SELECT id FROM folders where folders.name = ?",
-                            new String[] { LocalFolder.this.getName() });
-                    if (cursor.moveToFirst()) {
+                    // imported from Tiscali Mail
+                    if (LocalFolder.this.getName() != null) {
+                        cursor = db.rawQuery("SELECT id FROM folders "
+                                + "where LOWER(folders.name) = LOWER(?)", new String[] {LocalFolder.this.getName()});
+                    }
+                    if (cursor != null && cursor.moveToFirst()) {
+
                         int folderId = cursor.getInt(0);
                         return (folderId > 0);
                     }
@@ -593,7 +605,8 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             editor.putString(id + ".notifyMode", mNotifyClass.name());
         }
 
-        if (mPushClass == FolderClass.SECOND_CLASS && !getAccount().getInboxFolderName().equals(getName())) {
+        // imported from Tiscali Mail
+        if (mPushClass == FolderClass.INHERITED && !getAccount().getInboxFolderName().equals(getName())) {
             editor.remove(id + ".pushMode");
         } else {
             editor.putString(id + ".pushMode", mPushClass.name());
@@ -1268,8 +1281,10 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             cv.put("uid", uid);
             cv.put("subject", message.getSubject());
             cv.put("sender_list", Address.pack(message.getFrom()));
+            // imported from Tiscali Mail
             cv.put("date", message.getSentDate() == null
-                    ? System.currentTimeMillis() : message.getSentDate().getTime());
+                    ? (message.getInternalDate() == null ? System.currentTimeMillis() : message.getInternalDate().getTime()) : message.getSentDate().getTime());
+
             cv.put("flags", this.localStore.serializeFlags(message.getFlags()));
             cv.put("deleted", message.isSet(Flag.DELETED) ? 1 : 0);
             cv.put("read", message.isSet(Flag.SEEN) ? 1 : 0);

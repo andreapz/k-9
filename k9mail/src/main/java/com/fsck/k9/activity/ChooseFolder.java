@@ -196,18 +196,6 @@ public class ChooseFolder extends K9ListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.display_1st_class: {
-                setDisplayMode(FolderMode.FIRST_CLASS);
-                return true;
-            }
-            case R.id.display_1st_and_2nd_class: {
-                setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
-                return true;
-            }
-            case R.id.display_not_second_class: {
-                setDisplayMode(FolderMode.NOT_SECOND_CLASS);
-                return true;
-            }
             case R.id.display_all: {
                 setDisplayMode(FolderMode.ALL);
                 return true;
@@ -280,16 +268,6 @@ public class ChooseFolder extends K9ListActivity {
                     continue;
                 }
                 Folder.FolderClass fMode = folder.getDisplayClass();
-
-                if ((aMode == FolderMode.FIRST_CLASS &&
-                        fMode != Folder.FolderClass.FIRST_CLASS) || (
-                            aMode == FolderMode.FIRST_AND_SECOND_CLASS &&
-                            fMode != Folder.FolderClass.FIRST_CLASS &&
-                            fMode != Folder.FolderClass.SECOND_CLASS) || (
-                            aMode == FolderMode.NOT_SECOND_CLASS &&
-                            fMode == Folder.FolderClass.SECOND_CLASS)) {
-                    continue;
-                }
 
                 if (folder.isInTopGroup()) {
                     topFolders.add(name);

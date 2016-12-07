@@ -149,6 +149,9 @@ public class K9 extends Application {
      *
      * Feature is enabled when DEBUG == true
      */
+    // imported from Tiscali Mail
+    public static boolean ENABLE_ERROR_FOLDER = false;
+
     public static final String ERROR_FOLDER_NAME = "K9mail-errors";
 
     /**
