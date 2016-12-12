@@ -194,19 +194,19 @@ public class NavigationDrawerActivity extends K9Activity
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
 
-        Intent intent = getMailIntent(accounts.get(0));
-        if(mMailPresenter == null) {
-            buildDaggerComponent(intent);
-        }
-        //onNewIntent(intent);
-
         // see if we should show the welcome message
-        if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
+        if (ACTION_IMPORT_SETTINGS.equals(getIntent().getAction())) {
             onImport();
         } else if (accounts.size() < 1) {
             WelcomeMessage.showWelcomeMessage(this);
             finish();
             return;
+        }
+
+        Intent intent = getMailIntent(accounts.get(0));
+
+        if(mMailPresenter == null) {
+            buildDaggerComponent(intent);
         }
 
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
