@@ -419,18 +419,9 @@ public class FolderList extends K9ListActivity {
             return true;
         }
 
-        case KeyEvent.KEYCODE_1: {
-            setDisplayMode(FolderMode.FIRST_CLASS);
-            return true;
-        }
-        case KeyEvent.KEYCODE_2: {
-            setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
-            return true;
-        }
-        case KeyEvent.KEYCODE_3: {
-            setDisplayMode(FolderMode.NOT_SECOND_CLASS);
-            return true;
-        }
+        case KeyEvent.KEYCODE_1:
+        case KeyEvent.KEYCODE_2:
+        case KeyEvent.KEYCODE_3:
         case KeyEvent.KEYCODE_4: {
             setDisplayMode(FolderMode.ALL);
             return true;
@@ -558,18 +549,9 @@ public class FolderList extends K9ListActivity {
 
             return true;
 
-        case R.id.display_1st_class: {
-            setDisplayMode(FolderMode.FIRST_CLASS);
-            return true;
-        }
-        case R.id.display_1st_and_2nd_class: {
-            setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
-            return true;
-        }
-        case R.id.display_not_second_class: {
-            setDisplayMode(FolderMode.NOT_SECOND_CLASS);
-            return true;
-        }
+        case R.id.display_1st_class:
+        case R.id.display_1st_and_2nd_class:
+        case R.id.display_not_second_class:
         case R.id.display_all: {
             setDisplayMode(FolderMode.ALL);
             return true;
@@ -753,17 +735,7 @@ public class FolderList extends K9ListActivity {
                     List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
                     List<FolderInfoHolder> topFolders = new LinkedList<FolderInfoHolder>();
 
-                    Account.FolderMode aMode = account.getFolderDisplayMode();
                     for (LocalFolder folder : folders) {
-                        Folder.FolderClass fMode = folder.getDisplayClass();
-
-                        if ((aMode == FolderMode.FIRST_CLASS && fMode != Folder.FolderClass.FIRST_CLASS)
-                                || (aMode == FolderMode.FIRST_AND_SECOND_CLASS &&
-                                    fMode != Folder.FolderClass.FIRST_CLASS &&
-                                    fMode != Folder.FolderClass.SECOND_CLASS)
-                        || (aMode == FolderMode.NOT_SECOND_CLASS && fMode == Folder.FolderClass.SECOND_CLASS)) {
-                            continue;
-                        }
 
                         FolderInfoHolder holder = null;
 

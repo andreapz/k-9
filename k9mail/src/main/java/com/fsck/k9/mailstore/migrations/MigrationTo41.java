@@ -55,13 +55,13 @@ class MigrationTo41 {
 
         Folder.FolderClass displayClass = Folder.FolderClass.NO_CLASS;
         Folder.FolderClass syncClass = Folder.FolderClass.INHERITED;
-        Folder.FolderClass pushClass = Folder.FolderClass.SECOND_CLASS;
+        Folder.FolderClass pushClass = Folder.FolderClass.INHERITED;
         boolean inTopGroup = false;
         boolean integrate = false;
         if (account.getInboxFolderName().equals(name)) {
-            displayClass = Folder.FolderClass.FIRST_CLASS;
-            syncClass =  Folder.FolderClass.FIRST_CLASS;
-            pushClass =  Folder.FolderClass.FIRST_CLASS;
+            displayClass = Folder.FolderClass.INHERITED;
+            syncClass =  Folder.FolderClass.INHERITED;
+            pushClass =  Folder.FolderClass.INHERITED;
             inTopGroup = true;
             integrate = true;
         }

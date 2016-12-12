@@ -17,6 +17,7 @@
 package com.fsck.k9.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -26,6 +27,7 @@ import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,10 +39,14 @@ import com.fsck.k9.ApplicationComponent;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
+import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.FolderSettings;
+import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerManuAdapter;
+import com.fsck.k9.adapter.MailNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.adapter.SettingsListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.fragment.MailPresenter;
@@ -113,12 +119,12 @@ public class NavigationDrawerActivity extends K9Activity
     private NavDrawerMenuAdapter mOffersAdapter;
     private NavDrawerMenuAdapter mNewsAdapter;
     private NavDrawerMenuAdapter mVideoAdapter;
-    private MailNavDrawerManuAdapter mMailAdapter;
+    private MailNavDrawerMenuAdapter mMailAdapter;
 
     private int mSelectedTab;
     private BottomNavigationView mBottomNav;
 
-    List<LocalFolder> mMailTabMenuItems;
+    List<FolderInfoHolder> mMailTabMenuItems = new ArrayList<>();
     List<NavDrawerMenuItem> mOffersTabMenuItems;
     List<NavDrawerMenuItem> mNewsTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
@@ -159,19 +165,35 @@ public class NavigationDrawerActivity extends K9Activity
         @Override
         public void listFolders(Account account, List<LocalFolder> folders) {
 
+            mMailTabMenuItems.clear();
             //news tab drawer menu
-            mMailTabMenuItems = folders;
-            mMailAdapter = new MailNavDrawerManuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this);
-            super.listFoldersFinished(account);
+            for (LocalFolder folder : folders) {
+                mMailTabMenuItems.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
+            }
+            mMailAdapter = new MailNavDrawerMenuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this, new SettingsListener() {
+                @Override
+                public void showSettings() {
+                    showDialogSettings();
+                    super.showSettings();
+                }
+            });
+            super.listFolders(account, folders);
         }
 
         @Override
         public void listFoldersFailed(Account account, String message) {
-            mMailTabMenuItems = new ArrayList<>();
-            mMailAdapter = new MailNavDrawerManuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this);
+            mMailTabMenuItems.clear();
+            mMailAdapter = new MailNavDrawerMenuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this, new SettingsListener() {
+                @Override
+                public void showSettings() {
+                    showSettings();
+                    super.showSettings();
+                }
+            });
             super.listFoldersFailed(account, message);
         }
     };
+
     private FrameLayout mViewContainer;
 
     public static void importSettings(Context context) {
@@ -193,6 +215,18 @@ public class NavigationDrawerActivity extends K9Activity
         super.onCreate(savedInstanceState);
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+
+        Intent intent;
+        if(!accounts.isEmpty()) {
+            intent = getMailIntent(accounts.get(0));
+        } else {
+            intent = getIntent();
+        }
+
+        if(mMailPresenter == null) {
+            buildDaggerComponent(intent);
+        }
+        //onNewIntent(intent);
 
         // see if we should show the welcome message
         if (ACTION_IMPORT_SETTINGS.equals(getIntent().getAction())) {
@@ -536,5 +570,22 @@ public class NavigationDrawerActivity extends K9Activity
             forceBuildDaggerComponent();
         }
         return mMailPresenter;
+    }
+
+    private void showDialogSettings() {
+        mDrawerLayout.closeDrawer(mDrawerList);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        AccountSettings.actionSettings(NavigationDrawerActivity.this, mAccount);
+                        break;
+                    case 1:
+                        Prefs.actionPrefs(NavigationDrawerActivity.this);
+                }
+            }
+        });
+        builder.create().show();
     }
 }

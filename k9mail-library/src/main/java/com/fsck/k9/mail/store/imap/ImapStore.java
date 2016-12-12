@@ -370,7 +370,8 @@ public class ImapStore extends RemoteStore {
 
     @Override
     public boolean isPushCapable() {
-        return true;
+//    tiscali imap does not support push
+        return false;
     }
 
     @Override

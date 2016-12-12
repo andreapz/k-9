@@ -780,18 +780,18 @@ public class LocalStore extends Store implements Serializable {
                     // and the inbox and drafts folders should be syncced by default
                     if (mAccount.isSpecialFolder(name)) {
                         prefHolder.inTopGroup = true;
-                        prefHolder.displayClass = LocalFolder.FolderClass.FIRST_CLASS;
+                        prefHolder.displayClass = LocalFolder.FolderClass.INHERITED;
                         if (name.equalsIgnoreCase(mAccount.getInboxFolderName())) {
                             prefHolder.integrate = true;
-                            prefHolder.notifyClass = LocalFolder.FolderClass.FIRST_CLASS;
-                            prefHolder.pushClass = LocalFolder.FolderClass.FIRST_CLASS;
+                            prefHolder.notifyClass = LocalFolder.FolderClass.INHERITED;
+                            prefHolder.pushClass = LocalFolder.FolderClass.INHERITED;
                         } else {
                             prefHolder.pushClass = LocalFolder.FolderClass.INHERITED;
 
                         }
                         if (name.equalsIgnoreCase(mAccount.getInboxFolderName()) ||
                                 name.equalsIgnoreCase(mAccount.getDraftsFolderName())) {
-                            prefHolder.syncClass = LocalFolder.FolderClass.FIRST_CLASS;
+                            prefHolder.syncClass = LocalFolder.FolderClass.INHERITED;
                         } else {
                             prefHolder.syncClass = LocalFolder.FolderClass.NO_CLASS;
                         }

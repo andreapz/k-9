@@ -55,7 +55,7 @@ Please submit bug reports, contribute new features and ask questions at
 
 
     <!-- Default signature -->
-    <string name="default_signature">-- \nSent from my Android device with K-9 Mail. Please excuse my brevity.</string>
+    <string name="default_signature">-- \nSent from my Android device with Tiscali Mail. Please excuse my brevity.</string>
 
 
     <!-- General strings that include the app name -->
@@ -238,12 +238,6 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="special_mailbox_name_sent">Sent</string>
     <string name="special_mailbox_name_archive">Archive</string>
     <string name="special_mailbox_name_spam">Spam</string>
-
-    <string name="special_mailbox_name_drafts_fmt"><xliff:g id="folder">%s</xliff:g> (Drafts)</string>
-    <string name="special_mailbox_name_trash_fmt"><xliff:g id="folder">%s</xliff:g> (Trash)</string>
-    <string name="special_mailbox_name_sent_fmt"><xliff:g id="folder">%s</xliff:g> (Sent)</string>
-    <string name="special_mailbox_name_archive_fmt"><xliff:g id="folder">%s</xliff:g> (Archive)</string>
-    <string name="special_mailbox_name_spam_fmt"><xliff:g id="folder">%s</xliff:g> (Spam)</string>
 
     <string name="send_failure_subject">Failed to send some messages</string>
 
@@ -1222,4 +1216,17 @@ Please submit bug reports, contribute new features and ask questions at
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+
+    <!-- From Tiscali Mail -->
+    <string name="account_setup_user_password_title_label_tiscali">Change user and password</string>
+    <string name="account_setup_user_password_summary_label_tiscali">Configures your user and password</string>
+    <string name="account_setup_user_password_title_tiscali">Configures user and password</string>
+    <string name="account_setup_basics_domain_tiscali">\@tiscali.it</string>
+    <string name="special_mailbox_name_inbox_fmt">Inbox</string>
+    <string name="special_mailbox_name_outbox_fmt">Outbox</string>
+    <string name="special_mailbox_name_drafts_fmt">Drafts</string>
+    <string name="special_mailbox_name_trash_fmt">Trash</string>
+    <string name="special_mailbox_name_sent_fmt">Sent</string>
+    <string name="special_mailbox_name_archive_fmt">Archive</string>
+    <string name="special_mailbox_name_spam_fmt">Spam</string>
 </resources>

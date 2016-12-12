@@ -149,6 +149,9 @@ public class K9 extends Application {
      *
      * Feature is enabled when DEBUG == true
      */
+    // imported from Tiscali Mail
+    public static boolean ENABLE_ERROR_FOLDER = false;
+
     public static final String ERROR_FOLDER_NAME = "K9mail-errors";
 
     /**
@@ -219,7 +222,7 @@ public class K9 extends Application {
     private static boolean mShowContactName = false;
     private static boolean mChangeContactNameColor = false;
     private static int mContactNameColor = 0xff00008f;
-    private static boolean sShowContactPicture = true;
+    private static boolean sShowContactPicture = false;
     private static boolean mMessageViewFixedWidthFont = false;
     private static boolean mMessageViewReturnToList = false;
     private static boolean mMessageViewShowNext = false;
@@ -247,7 +250,7 @@ public class K9 extends Application {
     private static boolean sUseBackgroundAsUnreadIndicator = true;
     private static boolean sThreadedViewEnabled = true;
     private static SplitViewMode sSplitViewMode = SplitViewMode.NEVER;
-    private static boolean sColorizeMissingContactPictures = true;
+    private static boolean sColorizeMissingContactPictures = false;
 
     private static boolean sMessageViewArchiveActionVisible = false;
     private static boolean sMessageViewDeleteActionVisible = true;
@@ -450,10 +453,10 @@ public class K9 extends Application {
         editor.putBoolean("hideSpecialAccounts", mHideSpecialAccounts);
         editor.putBoolean("messageListStars", mMessageListStars);
         editor.putInt("messageListPreviewLines", mMessageListPreviewLines);
-        editor.putBoolean("messageListCheckboxes", mMessageListCheckboxes);
+//        editor.putBoolean("messageListCheckboxes", mMessageListCheckboxes);
         editor.putBoolean("showCorrespondentNames", mShowCorrespondentNames);
         editor.putBoolean("showContactName", mShowContactName);
-        editor.putBoolean("showContactPicture", sShowContactPicture);
+//        editor.putBoolean("showContactPicture", sShowContactPicture);
         editor.putBoolean("changeRegisteredNameColor", mChangeContactNameColor);
         editor.putInt("registeredNameColor", mContactNameColor);
         editor.putBoolean("messageViewFixedWidthFont", mMessageViewFixedWidthFont);
@@ -463,11 +466,11 @@ public class K9 extends Application {
         editor.putBoolean("hideUserAgent", mHideUserAgent);
         editor.putBoolean("hideTimeZone", mHideTimeZone);
 
-        editor.putString("language", language);
-        editor.putInt("theme", theme.ordinal());
-        editor.putInt("messageViewTheme", messageViewTheme.ordinal());
-        editor.putInt("messageComposeTheme", composerTheme.ordinal());
-        editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
+//        editor.putString("language", language);
+//        editor.putInt("theme", theme.ordinal());
+//        editor.putInt("messageViewTheme", messageViewTheme.ordinal());
+//        editor.putInt("messageComposeTheme", composerTheme.ordinal());
+//        editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
 
         editor.putBoolean("confirmDelete", mConfirmDelete);
         editor.putBoolean("confirmDiscardMessage", mConfirmDiscardMessage);
@@ -485,8 +488,8 @@ public class K9 extends Application {
         editor.putString("attachmentdefaultpath", mAttachmentDefaultPath);
         editor.putBoolean("useBackgroundAsUnreadIndicator", sUseBackgroundAsUnreadIndicator);
         editor.putBoolean("threadedView", sThreadedViewEnabled);
-        editor.putString("splitViewMode", sSplitViewMode.name());
-        editor.putBoolean("colorizeMissingContactPictures", sColorizeMissingContactPictures);
+//        editor.putString("splitViewMode", sSplitViewMode.name());
+//        editor.putBoolean("colorizeMissingContactPictures", sColorizeMissingContactPictures);
 
         editor.putBoolean("messageViewArchiveActionVisible", sMessageViewArchiveActionVisible);
         editor.putBoolean("messageViewDeleteActionVisible", sMessageViewDeleteActionVisible);
@@ -660,7 +663,7 @@ public class K9 extends Application {
         mCountSearchMessages = storage.getBoolean("countSearchMessages", true);
         mHideSpecialAccounts = storage.getBoolean("hideSpecialAccounts", false);
         mMessageListSenderAboveSubject = storage.getBoolean("messageListSenderAboveSubject", false);
-        mMessageListCheckboxes = storage.getBoolean("messageListCheckboxes", false);
+//        mMessageListCheckboxes = storage.getBoolean("messageListCheckboxes", false);
         mMessageListStars = storage.getBoolean("messageListStars", true);
         mMessageListPreviewLines = storage.getInt("messageListPreviewLines", 2);
 
@@ -673,7 +676,7 @@ public class K9 extends Application {
 
         mShowCorrespondentNames = storage.getBoolean("showCorrespondentNames", true);
         mShowContactName = storage.getBoolean("showContactName", false);
-        sShowContactPicture = storage.getBoolean("showContactPicture", true);
+//        sShowContactPicture = storage.getBoolean("showContactPicture", true);
         mChangeContactNameColor = storage.getBoolean("changeRegisteredNameColor", false);
         mContactNameColor = storage.getInt("registeredNameColor", 0xff00008f);
         mMessageViewFixedWidthFont = storage.getBoolean("messageViewFixedWidthFont", false);
@@ -719,10 +722,10 @@ public class K9 extends Application {
             sLockScreenNotificationVisibility = LockScreenNotificationVisibility.valueOf(lockScreenNotificationVisibility);
         }
 
-        String splitViewMode = storage.getString("splitViewMode", null);
-        if (splitViewMode != null) {
-            sSplitViewMode = SplitViewMode.valueOf(splitViewMode);
-        }
+//        String splitViewMode = storage.getString("splitViewMode", null);
+//        if (splitViewMode != null) {
+//            sSplitViewMode = SplitViewMode.valueOf(splitViewMode);
+//        }
 
         mAttachmentDefaultPath = storage.getString("attachmentdefaultpath",
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
@@ -738,7 +741,7 @@ public class K9 extends Application {
             setBackgroundOps(BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC);
         }
 
-        sColorizeMissingContactPictures = storage.getBoolean("colorizeMissingContactPictures", true);
+//        sColorizeMissingContactPictures = storage.getBoolean("colorizeMissingContactPictures", true);
 
         sMessageViewArchiveActionVisible = storage.getBoolean("messageViewArchiveActionVisible", false);
         sMessageViewDeleteActionVisible = storage.getBoolean("messageViewDeleteActionVisible", true);
@@ -748,22 +751,22 @@ public class K9 extends Application {
 
         sPgpInlineDialogCounter = storage.getInt("pgpInlineDialogCounter", 0);
 
-        K9.setK9Language(storage.getString("language", ""));
-
-        int themeValue = storage.getInt("theme", Theme.LIGHT.ordinal());
-        // We used to save the resource ID of the theme. So convert that to the new format if
-        // necessary.
-        if (themeValue == Theme.DARK.ordinal() || themeValue == android.R.style.Theme) {
-            K9.setK9Theme(Theme.DARK);
-        } else {
-            K9.setK9Theme(Theme.LIGHT);
-        }
-
-        themeValue = storage.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
-        K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
-        themeValue = storage.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
-        K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
-        K9.setUseFixedMessageViewTheme(storage.getBoolean("fixedMessageViewTheme", true));
+//        K9.setK9Language(storage.getString("language", ""));
+//
+//        int themeValue = storage.getInt("theme", Theme.LIGHT.ordinal());
+//        // We used to save the resource ID of the theme. So convert that to the new format if
+//        // necessary.
+//        if (themeValue == Theme.DARK.ordinal() || themeValue == android.R.style.Theme) {
+//            K9.setK9Theme(Theme.DARK);
+//        } else {
+//            K9.setK9Theme(Theme.LIGHT);
+//        }
+//
+//        themeValue = storage.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
+//        K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
+//        themeValue = storage.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
+//        K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
+//        K9.setUseFixedMessageViewTheme(storage.getBoolean("fixedMessageViewTheme", true));
     }
 
     /**
@@ -809,9 +812,9 @@ public class K9 extends Application {
         return language;
     }
 
-    public static void setK9Language(String nlanguage) {
-        language = nlanguage;
-    }
+//    public static void setK9Language(String nlanguage) {
+//        language = nlanguage;
+//    }
 
     /**
      * Possible values for the different theme settings.
@@ -860,24 +863,24 @@ public class K9 extends Application {
         }
     }
 
-    public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
-        messageViewTheme = nMessageViewTheme;
-    }
+//    public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
+//        messageViewTheme = nMessageViewTheme;
+//    }
 
     public static boolean useFixedMessageViewTheme() {
         return useFixedMessageTheme;
     }
 
-    public static void setK9ComposerThemeSetting(Theme compTheme) {
-        composerTheme = compTheme;
-    }
+//    public static void setK9ComposerThemeSetting(Theme compTheme) {
+//        composerTheme = compTheme;
+//    }
 
-    public static void setUseFixedMessageViewTheme(boolean useFixed) {
-        useFixedMessageTheme = useFixed;
-        if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
-            messageViewTheme = theme;
-        }
-    }
+//    public static void setUseFixedMessageViewTheme(boolean useFixed) {
+//        useFixedMessageTheme = useFixed;
+//        if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
+//            messageViewTheme = theme;
+//        }
+//    }
 
     public static BACKGROUND_OPS getBackgroundOps() {
         return backgroundOps;
@@ -1030,9 +1033,9 @@ public class K9 extends Application {
         return mMessageListCheckboxes;
     }
 
-    public static void setMessageListCheckboxes(boolean checkboxes) {
-        mMessageListCheckboxes = checkboxes;
-    }
+//    public static void setMessageListCheckboxes(boolean checkboxes) {
+//        mMessageListCheckboxes = checkboxes;
+//    }
 
     public static boolean messageListStars() {
         return mMessageListStars;
@@ -1265,25 +1268,25 @@ public class K9 extends Application {
         return sSplitViewMode;
     }
 
-    public static synchronized void setSplitViewMode(SplitViewMode mode) {
-        sSplitViewMode = mode;
-    }
+//    public static synchronized void setSplitViewMode(SplitViewMode mode) {
+//        sSplitViewMode = mode;
+//    }
 
     public static boolean showContactPicture() {
         return sShowContactPicture;
     }
 
-    public static void setShowContactPicture(boolean show) {
-        sShowContactPicture = show;
-    }
+//    public static void setShowContactPicture(boolean show) {
+//        sShowContactPicture = show;
+//    }
 
     public static boolean isColorizeMissingContactPictures() {
         return sColorizeMissingContactPictures;
     }
 
-    public static void setColorizeMissingContactPictures(boolean enabled) {
-        sColorizeMissingContactPictures = enabled;
-    }
+//    public static void setColorizeMissingContactPictures(boolean enabled) {
+//        sColorizeMissingContactPictures = enabled;
+//    }
 
     public static boolean isMessageViewArchiveActionVisible() {
         return sMessageViewArchiveActionVisible;

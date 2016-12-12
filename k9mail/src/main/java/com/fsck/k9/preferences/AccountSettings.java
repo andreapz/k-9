@@ -47,8 +47,10 @@ public class AccountSettings {
                 new V(1, new StringSetting("INBOX"))
             ));
         s.put("automaticCheckIntervalMinutes", Settings.versions(
-                new V(1, new IntegerResourceSetting(-1,
+                // imported from Tiscali Mail
+                new V(1, new IntegerResourceSetting(Account.DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES,
                         R.array.account_settings_check_frequency_values))
+
             ));
         s.put("chipColor", Settings.versions(
                 new V(1, new ColorSetting(0xFF0000FF))
@@ -68,24 +70,28 @@ public class AccountSettings {
                         R.array.account_settings_display_count_values))
             ));
         s.put("draftsFolderName", Settings.versions(
-                new V(1, new StringSetting("Drafts"))
+                // imported from Tiscali Mail
+                new V(1, new StringSetting("Draft"))
+
             ));
         s.put("expungePolicy", Settings.versions(
                 new V(1, new StringResourceSetting(Expunge.EXPUNGE_IMMEDIATELY.name(),
                         R.array.account_setup_expunge_policy_values))
             ));
+        // imported from Tiscali Mail
         s.put("folderDisplayMode", Settings.versions(
-                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.NOT_SECOND_CLASS))
+                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.ALL))
             ));
         s.put("folderPushMode", Settings.versions(
-                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.FIRST_CLASS))
+                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.ALL))
             ));
         s.put("folderSyncMode", Settings.versions(
-                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.FIRST_CLASS))
+                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.ALL))
             ));
         s.put("folderTargetMode", Settings.versions(
-                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.NOT_SECOND_CLASS))
+                new V(1, new EnumSetting<FolderMode>(FolderMode.class, FolderMode.ALL))
             ));
+
         s.put("goToUnreadMessageSearch", Settings.versions(
                 new V(1, new BooleanSetting(false))
             ));

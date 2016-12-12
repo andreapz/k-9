@@ -138,7 +138,9 @@ public class AccountSetupOptions extends K9Activity implements OnClickListener {
                                            .getSelectedItem()).value);
 
         if (mPushEnable.isChecked()) {
-            mAccount.setFolderPushMode(Account.FolderMode.FIRST_CLASS);
+            // imported from Tiscali Mail
+            mAccount.setFolderPushMode(Account.FolderMode.ALL);
+
         } else {
             mAccount.setFolderPushMode(Account.FolderMode.NONE);
         }

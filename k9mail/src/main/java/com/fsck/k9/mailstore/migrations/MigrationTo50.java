@@ -21,7 +21,7 @@ class MigrationTo50 {
         }
 
         ContentValues cv = new ContentValues();
-        cv.put("notify_class", Folder.FolderClass.FIRST_CLASS.name());
+        cv.put("notify_class", Folder.FolderClass.INHERITED.name());
 
         Account account = migrationsHelper.getAccount();
         db.update("folders", cv, "name = ?", new String[] { account.getInboxFolderName() });
