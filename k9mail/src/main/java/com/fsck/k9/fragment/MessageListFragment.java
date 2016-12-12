@@ -2983,6 +2983,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         void remoteSearchStarted();
         void goBack();
         void updateMenu();
+        void setActionBarToggle();
     }
 
     public interface MessageListFragmentGetListener {

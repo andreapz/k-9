@@ -5,4 +5,5 @@ package com.fsck.k9.activity;
  */
 
 public interface IDrawerActivityListener {
+    void setDrawerEnable(boolean isEnabled);
 }

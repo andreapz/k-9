@@ -37,6 +37,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.activity.FolderList;
+import com.fsck.k9.activity.IDrawerActivityListener;
 import com.fsck.k9.activity.MessageList;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.Search;
@@ -1280,6 +1281,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void onSwitchComplete(int displayedChild) {
         if (displayedChild == 0) {
             removeMessageViewFragment();
+            setActionBarToggle();
+        }
+        else {
+            setActionBarUp();
         }
     }
 
@@ -1287,6 +1292,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void updateMenu() {
         Toast.makeText(mContext, "invalidateOptionsMenu", Toast.LENGTH_LONG);
 //        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void setActionBarUp() {
+        if(mContext instanceof IDrawerActivityListener) {
+            ((IDrawerActivityListener) mContext).setDrawerEnable(false);
+        }
+    }
+
+    @Override
+    public void setActionBarToggle() {
+        if(mContext instanceof IDrawerActivityListener) {
+            ((IDrawerActivityListener) mContext).setDrawerEnable(true);
+        }
     }
 
     @Override

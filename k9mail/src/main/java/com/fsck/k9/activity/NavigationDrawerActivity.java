@@ -23,10 +23,12 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.ActionBarDrawerToggle;
+
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -55,6 +57,7 @@ import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
+import com.fsck.k9.view.MessageHeader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,7 +96,8 @@ import javax.inject.Inject;
  */
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
-        MessageViewFragment.MessageViewFragmentGetListener
+        MessageViewFragment.MessageViewFragmentGetListener,
+        IDrawerActivityListener
 {
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
@@ -107,7 +111,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final int VIDEO_TAB_SELECTED = 2;
     public static final int OFFERS_TAB_SELECTED = 3;
 
-    public static final int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
+    public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -216,18 +220,6 @@ public class NavigationDrawerActivity extends K9Activity
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
 
-        Intent intent;
-        if(!accounts.isEmpty()) {
-            intent = getMailIntent(accounts.get(0));
-        } else {
-            intent = getIntent();
-        }
-
-        if(mMailPresenter == null) {
-            buildDaggerComponent(intent);
-        }
-        //onNewIntent(intent);
-
         // see if we should show the welcome message
         if (ACTION_IMPORT_SETTINGS.equals(getIntent().getAction())) {
             onImport();
@@ -269,10 +261,9 @@ public class NavigationDrawerActivity extends K9Activity
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle(
+        mDrawerToggle = new ActionBarDrawerToggle( //R.drawable.ic_menu_black_24dp,  /* nav drawer image to replace 'Up' caret */
                 this,                  /* host Activity */
                 mDrawerLayout,         /* DrawerLayout object */
-                R.drawable.ic_menu_black_24dp,  /* nav drawer image to replace 'Up' caret */
                 R.string.drawer_open,  /* "open drawer" description for accessibility */
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         ) {
@@ -287,7 +278,7 @@ public class NavigationDrawerActivity extends K9Activity
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         // init values
         if (savedInstanceState == null) {
@@ -319,6 +310,23 @@ public class NavigationDrawerActivity extends K9Activity
 
         mBottomNav.bringToFront();
 
+    }
+
+    public void setDrawerEnable(boolean isEnabled) {
+        if ( isEnabled ) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_UNLOCKED);
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
+            mDrawerToggle.syncState();
+
+        }
+        else {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mDrawerToggle.setDrawerIndicatorEnabled(false);
+            mDrawerToggle.syncState();
+        }
     }
 
     private void buildDaggerComponent(Intent intent) {

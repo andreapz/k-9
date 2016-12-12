@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -571,6 +572,19 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         return String.format(Locale.US, "dialog-%d", dialogId);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case android.R.id.home: {
+                mFragmentListener.goBack();
+            }
+            default: {
+                return super.onOptionsItemSelected(item);
+            }
+        }
+    }
+
     public void zoom(KeyEvent event) {
         // mMessageView.zoom(event);
     }
@@ -718,6 +732,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         void showNextMessageOrReturn();
         void messageHeaderViewAvailable(MessageHeader messageHeaderView);
         void updateMenu();
+        void setActionBarUp();
+        void goBack();
     }
 
     public interface MessageViewFragmentGetListener {
