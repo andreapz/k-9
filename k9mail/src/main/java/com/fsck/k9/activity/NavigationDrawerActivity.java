@@ -220,8 +220,9 @@ public class NavigationDrawerActivity extends K9Activity
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
 
+        Intent intent = getIntent();
         // see if we should show the welcome message
-        if (ACTION_IMPORT_SETTINGS.equals(getIntent().getAction())) {
+        if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
             onImport();
         } else if (accounts.size() < 1) {
             WelcomeMessage.showWelcomeMessage(this);
@@ -229,10 +230,10 @@ public class NavigationDrawerActivity extends K9Activity
             return;
         }
 
-        Intent intent = getMailIntent(accounts.get(0));
+        Intent mailIntent = getMailIntent(accounts.get(0));
 
         if(mMailPresenter == null) {
-            buildDaggerComponent(intent);
+            buildDaggerComponent(mailIntent);
         }
 
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
