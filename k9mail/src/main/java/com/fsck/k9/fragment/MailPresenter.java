@@ -211,6 +211,21 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         //setupGestureDetector(this);
     }
 
+    public void showFolder(LocalSearch search) {
+
+        removeMessageListFragment();
+        removeMessageViewFragment();
+
+        mSearch = search;
+        mMessageReference = null;
+
+        if(updateDataWithNewSearch()) {
+            initializeDisplayMode(null);
+            initializeFragments();
+            displayViews();
+        }
+    }
+
     private void resetView() {
 //        if (mFirstBackStackId >= 0) {
 //            getFragmentManager().popBackStackImmediate(mFirstBackStackId,
@@ -478,6 +493,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 mSearch.addAllowedFolder(folderName);
             }
         }
+
+        return updateDataWithNewSearch();
+    }
+
+    private boolean updateDataWithNewSearch() {
 
         Preferences prefs = Preferences.getPreferences(mContext.getApplicationContext());
 

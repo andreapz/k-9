@@ -184,14 +184,12 @@ public class NavigationDrawerActivity extends K9Activity
                     super.onFolderClick(account, folder);
 
                     if(mMailPresenter != null) {
-                        mDrawerLayout.closeDrawer(mDrawerList);
-
-                        LocalSearch search = new LocalSearch(folder.name);
+                        LocalSearch search = new LocalSearch(folder.displayName);
                         search.addAllowedFolder(folder.name);
                         search.addAccountUuid(account.getUuid());
-                        Intent intent = MessageList.intentDisplaySearch(NavigationDrawerActivity.this, search, false, true, true);
-                        mMailPresenter.setIntent(intent);
-                        mMailPresenter.onCreateView(getLayoutInflater(), null);
+                        mMailPresenter.showFolder(search);
+
+                        mDrawerLayout.closeDrawer(mDrawerList);
                     }
                 }
             });
