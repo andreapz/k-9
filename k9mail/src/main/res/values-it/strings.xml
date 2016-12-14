@@ -1005,4 +1005,5 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="special_mailbox_name_sent_fmt">Inviata</string>
   <string name="special_mailbox_name_archive_fmt">Archivio</string>
   <string name="special_mailbox_name_spam_fmt">Spam</string>
+  <string name="status_last_poll">Ultima verifica <xliff:g id="lasttime">%s</xliff:g></string>
 </resources>

@@ -1229,4 +1229,5 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="special_mailbox_name_sent_fmt">Sent</string>
     <string name="special_mailbox_name_archive_fmt">Archive</string>
     <string name="special_mailbox_name_spam_fmt">Spam</string>
+    <string name="status_last_poll">Last poll <xliff:g id="lasttime">%s</xliff:g></string>
 </resources>
