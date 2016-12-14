@@ -23,7 +23,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
 
@@ -42,13 +41,12 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.setup.AccountSettings;
-import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.MailNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
-import com.fsck.k9.adapter.SettingsListener;
+import com.fsck.k9.adapter.MailNavDrawerClickListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.fragment.MailPresenter;
@@ -57,7 +55,6 @@ import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
-import com.fsck.k9.view.MessageHeader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,6 +129,7 @@ public class NavigationDrawerActivity extends K9Activity
     List<NavDrawerMenuItem> mOffersTabMenuItems;
     List<NavDrawerMenuItem> mNewsTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
+    Account mSelectedAccount;
 
     Account mAccount;
 
@@ -174,11 +172,27 @@ public class NavigationDrawerActivity extends K9Activity
             for (LocalFolder folder : folders) {
                 mMailTabMenuItems.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
             }
-            mMailAdapter = new MailNavDrawerMenuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this, new SettingsListener() {
+            mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
                 @Override
-                public void showSettings() {
+                public void onSettingsClick() {
+                    super.onSettingsClick();
                     showDialogSettings();
-                    super.showSettings();
+                }
+
+                @Override
+                public void onFolderClick(Account account, FolderInfoHolder folder) {
+                    super.onFolderClick(account, folder);
+
+                    if(mMailPresenter != null) {
+                        mDrawerLayout.closeDrawer(mDrawerList);
+
+                        LocalSearch search = new LocalSearch(folder.name);
+                        search.addAllowedFolder(folder.name);
+                        search.addAccountUuid(account.getUuid());
+                        Intent intent = MessageList.intentDisplaySearch(NavigationDrawerActivity.this, search, false, true, true);
+                        mMailPresenter.setIntent(intent);
+                        mMailPresenter.onCreateView(getLayoutInflater(), null);
+                    }
                 }
             });
             super.listFolders(account, folders);
@@ -187,13 +201,14 @@ public class NavigationDrawerActivity extends K9Activity
         @Override
         public void listFoldersFailed(Account account, String message) {
             mMailTabMenuItems.clear();
-            mMailAdapter = new MailNavDrawerMenuAdapter(mMailTabMenuItems, NavigationDrawerActivity.this, new SettingsListener() {
+            mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
                 @Override
-                public void showSettings() {
-                    showSettings();
-                    super.showSettings();
+                public void onSettingsClick() {
+                    super.onSettingsClick();
+                    showDialogSettings();
                 }
             });
+
             super.listFoldersFailed(account, message);
         }
     };

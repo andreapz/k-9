@@ -1,23 +1,11 @@
 package com.fsck.k9.adapter;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 
-import com.bumptech.glide.Glide;
 import com.fsck.k9.Account;
-import com.fsck.k9.R;
 import com.fsck.k9.activity.FolderInfoHolder;
-import com.fsck.k9.activity.setup.AccountSettings;
-import com.fsck.k9.activity.setup.Prefs;
-import com.fsck.k9.mailstore.LocalFolder;
-import com.fsck.k9.model.NavDrawerMenuItem;
 
 import java.util.List;
 
@@ -28,12 +16,14 @@ import java.util.List;
 public class MailNavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
 
     List<FolderInfoHolder> mItems;
-    SettingsListener mSettingsListener;
+    MailNavDrawerClickListener mMailNavDrawerClickListener;
+    Account mAccount;
 
-    public MailNavDrawerMenuAdapter(List<FolderInfoHolder> data, Context context, SettingsListener settingsListener) {
+    public MailNavDrawerMenuAdapter(Account account, List<FolderInfoHolder> data, Context context, MailNavDrawerClickListener settingsListener) {
         this.mContext = context;
-        this.mSettingsListener = settingsListener;
-        mItems = data;
+        this.mMailNavDrawerClickListener = settingsListener;
+        this.mAccount = account;
+        this.mItems = data;
     }
 
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
@@ -50,8 +40,8 @@ public class MailNavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
             headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if(mSettingsListener != null) {
-                        mSettingsListener.showSettings();
+                    if(mMailNavDrawerClickListener != null) {
+                        mMailNavDrawerClickListener.onSettingsClick();
                     }
                 }
             });
@@ -71,7 +61,7 @@ public class MailNavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
             itemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //TODO
+                    mMailNavDrawerClickListener.onFolderClick(mAccount, item);
                 }
             });
         }
