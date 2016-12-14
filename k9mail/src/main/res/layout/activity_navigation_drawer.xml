@@ -40,7 +40,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:background="@android:color/holo_blue_light"
-            design:menu="@menu/bottom_nav_items" />
+            design:menu="@menu/bottom_nav_items"
+            android:visibility="gone"/>
 
     </FrameLayout>
 

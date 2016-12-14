@@ -610,4 +610,16 @@ public class NavigationDrawerActivity extends K9Activity
         });
         builder.create().show();
     }
+
+    @Override
+    public void onBackPressed() {
+        if(mMailPresenter != null
+                && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
+                    && mMailPresenter.getMessageListWasDisplayed())) {
+                mMailPresenter.showMessageList();
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
 }
