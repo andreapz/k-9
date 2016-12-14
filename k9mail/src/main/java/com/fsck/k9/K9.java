@@ -215,11 +215,11 @@ public class K9 extends Application {
 
     private static boolean mMessageListCheckboxes = true;
     private static boolean mMessageListStars = true;
-    private static int mMessageListPreviewLines = 2;
+    private static int mMessageListPreviewLines = 3;
 
     private static boolean mShowCorrespondentNames = true;
-    private static boolean mMessageListSenderAboveSubject = false;
-    private static boolean mShowContactName = false;
+    private static boolean mMessageListSenderAboveSubject = true;
+    private static boolean mShowContactName = true;
     private static boolean mChangeContactNameColor = false;
     private static int mContactNameColor = 0xff00008f;
     private static boolean sShowContactPicture = false;

@@ -91,7 +91,7 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_IDLE_REFRESH_PERIOD = "idle_refresh_period";
     private static final String PREFERENCE_DELETE_POLICY = "delete_policy";
     private static final String PREFERENCE_EXPUNGE_POLICY = "expunge_policy";
-    private static final String PREFERENCE_CHIP_COLOR = "chip_color";
+//    private static final String PREFERENCE_CHIP_COLOR = "chip_color";
     private static final String PREFERENCE_LED_COLOR = "led_color";
     private static final String PREFERENCE_NOTIFICATION_OPENS_UNREAD = "notification_opens_unread";
     private static final String PREFERENCE_MESSAGE_AGE = "account_message_age";
