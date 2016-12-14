@@ -1715,9 +1715,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 holder.preview = (TextView) view.findViewById(R.id.sender_compact);
                 holder.flagged = (CheckBox) view.findViewById(R.id.flagged_center_right);
                 view.findViewById(R.id.flagged_bottom_right).setVisibility(View.GONE);
-
-
-
             } else {
                 view.findViewById(R.id.sender_compact).setVisibility(View.GONE);
                 holder.preview = (TextView) view.findViewById(R.id.preview);

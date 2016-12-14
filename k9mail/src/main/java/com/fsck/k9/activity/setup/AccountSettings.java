@@ -553,13 +553,13 @@ public class AccountSettings extends K9PreferenceActivity {
 
         new PopulateFolderPrefsTask().execute();
 
-        mChipColor = findPreference(PREFERENCE_CHIP_COLOR);
-        mChipColor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                onChooseChipColor();
-                return false;
-            }
-        });
+//        mChipColor = findPreference(PREFERENCE_CHIP_COLOR);
+//        mChipColor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            public boolean onPreferenceClick(Preference preference) {
+//                onChooseChipColor();
+//                return false;
+//            }
+//        });
 
         mLedColor = findPreference(PREFERENCE_LED_COLOR);
         mLedColor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
