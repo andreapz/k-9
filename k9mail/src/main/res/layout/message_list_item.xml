@@ -12,12 +12,12 @@
             android:layout_height="match_parent"
             android:layout_width="8dip"
             android:layout_marginRight="4dp"
+            android:visibility="gone"
             />
 
     <LinearLayout
             android:id="@+id/selected_checkbox_wrapper"
             android:layout_width="wrap_content"
-
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:layout_gravity="center"
