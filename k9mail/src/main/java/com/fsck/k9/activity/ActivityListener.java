@@ -41,9 +41,19 @@ public class ActivityListener extends MessagingListener {
         } else {
             long nextPollTime = MailService.getNextPollTime();
             if (nextPollTime != -1) {
-                return context.getString(R.string.status_next_poll,
-                        DateUtils.getRelativeTimeSpanString(nextPollTime, System.currentTimeMillis(),
-                                DateUtils.MINUTE_IN_MILLIS, 0));
+
+                // imported from Tiscali Mail
+                nextPollTime+=60000; // add a minute
+
+                long now = System.currentTimeMillis();
+                if (now >= nextPollTime)
+                    return context.getString(R.string.status_last_poll,
+                            DateUtils.getRelativeTimeSpanString(nextPollTime, now,
+                                    DateUtils.MINUTE_IN_MILLIS, 0));
+                else
+                    return context.getString(R.string.status_next_poll,
+                            DateUtils.getRelativeTimeSpanString(nextPollTime, now,
+                                    DateUtils.MINUTE_IN_MILLIS, 0));
             } else if (MailService.isSyncDisabled()) {
                 return context.getString(R.string.status_syncing_off);
             } else {
@@ -63,17 +73,12 @@ public class ActivityListener extends MessagingListener {
             } else if (mLoadingFolderName != null) {
                 displayName = mLoadingFolderName;
             }
-            if ((mAccount != null) && (mAccount.getInboxFolderName() != null)
-                    && mAccount.getInboxFolderName().equalsIgnoreCase(displayName)) {
-                displayName = context.getString(R.string.special_mailbox_name_inbox);
-            } else if ((mAccount != null) && (mAccount.getOutboxFolderName() != null)
-                    && mAccount.getOutboxFolderName().equals(displayName)) {
-                displayName = context.getString(R.string.special_mailbox_name_outbox);
-            }
+
+            // imported from Tiscali Mail
+            displayName = TiscaliUtility.getDisplayFolderName(context, mAccount, displayName);
 
             if (mLoadingHeaderFolderName != null) {
-                return context.getString(R.string.status_loading_account_folder_headers,
-                        mLoadingAccountDescription, displayName, progress);
+                return  context.getString(R.string.status_loading_account_folder_headers, mLoadingAccountDescription != null ? mLoadingAccountDescription : "", displayName != null ? displayName : "", progress);
             } else {
                 return context.getString(R.string.status_loading_account_folder,
                         mLoadingAccountDescription, displayName, progress);
@@ -83,9 +88,7 @@ public class ActivityListener extends MessagingListener {
         else if (mSendingAccountDescription != null) {
             return context.getString(R.string.status_sending_account, mSendingAccountDescription, progress);
         } else if (mProcessingAccountDescription != null) {
-            return context.getString(R.string.status_processing_account, mProcessingAccountDescription,
-                    mProcessingCommandTitle != null ? mProcessingCommandTitle : "",
-                    progress);
+            return "";
         } else {
             return "";
         }

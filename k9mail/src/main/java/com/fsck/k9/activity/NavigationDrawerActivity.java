@@ -59,6 +59,8 @@ import com.fsck.k9.ui.messageview.MessageViewFragment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -129,7 +131,6 @@ public class NavigationDrawerActivity extends K9Activity
     List<NavDrawerMenuItem> mOffersTabMenuItems;
     List<NavDrawerMenuItem> mNewsTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
-    Account mSelectedAccount;
 
     Account mAccount;
 
@@ -168,31 +169,41 @@ public class NavigationDrawerActivity extends K9Activity
         public void listFolders(Account account, List<LocalFolder> folders) {
 
             mMailTabMenuItems.clear();
-            //news tab drawer menu
-            for (LocalFolder folder : folders) {
-                mMailTabMenuItems.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
-            }
-            mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
-                @Override
-                public void onSettingsClick() {
-                    super.onSettingsClick();
-                    showDialogSettings();
-                }
+            //mail tab drawer menu
+            if (account.equals(mAccount)) {
 
-                @Override
-                public void onFolderClick(Account account, FolderInfoHolder folder) {
-                    super.onFolderClick(account, folder);
-
-                    if(mMailPresenter != null) {
-                        LocalSearch search = new LocalSearch(folder.displayName);
-                        search.addAllowedFolder(folder.name);
-                        search.addAccountUuid(account.getUuid());
-                        mMailPresenter.showFolder(search);
-
-                        mDrawerLayout.closeDrawer(mDrawerList);
+                for (LocalFolder folder : folders) {
+                    if (TiscaliUtility.isFolderInTopGroup(getApplication().getApplicationContext(), folder.getName())) {
+                        mMailTabMenuItems.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
                     }
                 }
-            });
+                TiscaliUtility.sortFoldersInTopGroup(NavigationDrawerActivity.this, mMailTabMenuItems);
+
+                mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
+                    @Override
+                    public void onSettingsClick() {
+                        super.onSettingsClick();
+                        showDialogSettings();
+                    }
+
+                    @Override
+                    public void onFolderClick(Account account, FolderInfoHolder folder) {
+                        super.onFolderClick(account, folder);
+
+                        if(mMailPresenter != null) {
+                            LocalSearch search = new LocalSearch(folder.name);
+                            search.addAllowedFolder(folder.name);
+                            search.addAccountUuid(account.getUuid());
+                            mMailPresenter.showFolder(search);
+
+                            mDrawerLayout.closeDrawer(mDrawerList);
+                        }
+                    }
+                });
+
+                setAdapterBasedOnSelectedTab(mSelectedTab);
+            }
+
             super.listFolders(account, folders);
         }
 
@@ -306,7 +317,6 @@ public class NavigationDrawerActivity extends K9Activity
         }
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
-
 
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
                 
