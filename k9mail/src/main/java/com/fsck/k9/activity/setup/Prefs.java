@@ -57,7 +57,7 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_MESSAGELIST_STARS = "messagelist_stars";
     private static final String PREFERENCE_MESSAGELIST_SHOW_CORRESPONDENT_NAMES = "messagelist_show_correspondent_names";
     private static final String PREFERENCE_MESSAGELIST_SHOW_CONTACT_NAME = "messagelist_show_contact_name";
-    private static final String PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR = "messagelist_contact_name_color";
+//    private static final String PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR = "messagelist_contact_name_color";
 //    private static final String PREFERENCE_MESSAGELIST_SHOW_CONTACT_PICTURE = "messagelist_show_contact_picture";
 //    private static final String PREFERENCE_MESSAGELIST_COLORIZE_MISSING_CONTACT_PICTURES = "messagelist_colorize_missing_contact_pictures";
     private static final String PREFERENCE_MESSAGEVIEW_FIXEDWIDTH = "messageview_fixedwidth_font";
@@ -108,7 +108,7 @@ public class Prefs extends K9PreferenceActivity {
     private CheckBoxPreference mStars;
     private CheckBoxPreference mShowCorrespondentNames;
     private CheckBoxPreference mShowContactName;
-    private CheckBoxPreference mChangeContactNameColor;
+//    private CheckBoxPreference mChangeContactNameColor;
 //    private CheckBoxPreference mShowContactPicture;
 //    private CheckBoxPreference mColorizeMissingContactPictures;
     private CheckBoxPreference mFixedWidth;
@@ -240,30 +240,30 @@ public class Prefs extends K9PreferenceActivity {
         mBackgroundAsUnreadIndicator = (CheckBoxPreference)findPreference(PREFERENCE_BACKGROUND_AS_UNREAD_INDICATOR);
         mBackgroundAsUnreadIndicator.setChecked(K9.useBackgroundAsUnreadIndicator());
 
-        mChangeContactNameColor = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
-        mChangeContactNameColor.setChecked(K9.changeContactNameColor());
+//        mChangeContactNameColor = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
+//        mChangeContactNameColor.setChecked(K9.changeContactNameColor());
 
         mThreadedView = (CheckBoxPreference) findPreference(PREFERENCE_THREADED_VIEW);
         mThreadedView.setChecked(K9.isThreadedViewEnabled());
 
-        if (K9.changeContactNameColor()) {
-            mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_changed);
-        } else {
-            mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_default);
-        }
-        mChangeContactNameColor.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final Boolean checked = (Boolean) newValue;
-                if (checked) {
-                    onChooseContactNameColor();
-                    mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_changed);
-                } else {
-                    mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_default);
-                }
-                mChangeContactNameColor.setChecked(checked);
-                return false;
-            }
-        });
+//        if (K9.changeContactNameColor()) {
+//            mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_changed);
+//        } else {
+//            mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_default);
+//        }
+//        mChangeContactNameColor.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+//            public boolean onPreferenceChange(Preference preference, Object newValue) {
+//                final Boolean checked = (Boolean) newValue;
+//                if (checked) {
+//                    onChooseContactNameColor();
+//                    mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_changed);
+//                } else {
+//                    mChangeContactNameColor.setSummary(R.string.global_settings_registered_name_color_default);
+//                }
+//                mChangeContactNameColor.setChecked(checked);
+//                return false;
+//            }
+//        });
 
         mFixedWidth = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
         mFixedWidth.setChecked(K9.messageViewFixedWidthFont());
@@ -419,7 +419,7 @@ public class Prefs extends K9PreferenceActivity {
 //        K9.setColorizeMissingContactPictures(mColorizeMissingContactPictures.isChecked());
         K9.setUseBackgroundAsUnreadIndicator(mBackgroundAsUnreadIndicator.isChecked());
         K9.setThreadedViewEnabled(mThreadedView.isChecked());
-        K9.setChangeContactNameColor(mChangeContactNameColor.isChecked());
+//        K9.setChangeContactNameColor(mChangeContactNameColor.isChecked());
         K9.setMessageViewFixedWidthFont(mFixedWidth.isChecked());
         K9.setMessageViewReturnToList(mReturnToList.isChecked());
         K9.setMessageViewShowNext(mShowNext.isChecked());
