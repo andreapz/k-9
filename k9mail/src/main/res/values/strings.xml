@@ -234,6 +234,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="special_mailbox_name_inbox">Inbox</string>
     <string name="special_mailbox_name_outbox">Outbox</string>
     <string name="special_mailbox_name_drafts">Drafts</string>
+    <!--not used anymore -->
     <string name="special_mailbox_name_trash">Trash</string>
     <string name="special_mailbox_name_sent">Sent</string>
     <string name="special_mailbox_name_archive">Archive</string>
@@ -1230,4 +1231,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="special_mailbox_name_archive_fmt">Archive</string>
     <string name="special_mailbox_name_spam_fmt">Spam</string>
     <string name="status_last_poll">Last poll <xliff:g id="lasttime">%s</xliff:g></string>
+
+    <!-- not transatable string used fir trash -->
+    <string name="special_mailbox_name_tiscali_trash"  translatable="false">Trashcan</string>
 </resources>
