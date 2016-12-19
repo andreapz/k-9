@@ -168,6 +168,8 @@ public class NavigationDrawerActivity extends K9Activity
         @Override
         public void listFolders(Account account, List<LocalFolder> folders) {
 
+            List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
+
             mMailTabMenuItems.clear();
             //mail tab drawer menu
             if (account.equals(mAccount)) {
@@ -175,9 +177,12 @@ public class NavigationDrawerActivity extends K9Activity
                 for (LocalFolder folder : folders) {
                     if (TiscaliUtility.isFolderInTopGroup(getApplication().getApplicationContext(), folder.getName())) {
                         mMailTabMenuItems.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
+                    } else {
+                        newFolders.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
                     }
                 }
                 TiscaliUtility.sortFoldersInTopGroup(NavigationDrawerActivity.this, mMailTabMenuItems);
+                mMailTabMenuItems.addAll(newFolders);
 
                 mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
                     @Override
