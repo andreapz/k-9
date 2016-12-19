@@ -516,6 +516,10 @@ public class NavigationDrawerActivity extends K9Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
 //        getMenuInflater().inflate(R.menu.navigation_drawer, menu);
+        if(mMailPresenter != null) {
+            mMailPresenter.onCreateOptionsMenu(menu, getMenuInflater());
+        }
+
         return true;
     }
 
@@ -524,6 +528,11 @@ public class NavigationDrawerActivity extends K9Activity
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+
+        if(mMailPresenter != null) {
+            return mMailPresenter.onPrepareOptionsMenu(menu);
+        }
+
 //        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -534,6 +543,10 @@ public class NavigationDrawerActivity extends K9Activity
         // ActionBarDrawerToggle will take care of this.
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
+        }
+
+        if(mMailPresenter != null) {
+            return mMailPresenter.onOptionsItemSelected(item);
         }
 
         return super.onOptionsItemSelected(item);
