@@ -6,6 +6,8 @@ import android.view.View;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.activity.FolderInfoHolder;
+import com.fsck.k9.view.holder.HeaderViewHolder;
+import com.fsck.k9.view.holder.ItemViewHolder;
 
 import java.util.List;
 

@@ -16,6 +16,7 @@
 
 package com.fsck.k9.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,7 +26,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
-
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -44,23 +44,15 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerClickListener;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -96,7 +88,7 @@ import javax.inject.Inject;
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
         MessageViewFragment.MessageViewFragmentGetListener,
-        IDrawerActivityListener
+        INavigationDrawerActivityListener
 {
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
@@ -122,17 +114,13 @@ public class NavigationDrawerActivity extends K9Activity
     private NavDrawerMenuAdapter mOffersAdapter;
     private NavDrawerMenuAdapter mNewsAdapter;
     private NavDrawerMenuAdapter mVideoAdapter;
-    private MailNavDrawerMenuAdapter mMailAdapter;
 
     private int mSelectedTab;
     private BottomNavigationView mBottomNav;
 
-    List<FolderInfoHolder> mMailTabMenuItems = new ArrayList<>();
     List<NavDrawerMenuItem> mOffersTabMenuItems;
     List<NavDrawerMenuItem> mNewsTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
-
-    Account mAccount;
 
     @Inject MailPresenter mMailPresenter;
 
@@ -160,70 +148,6 @@ public class NavigationDrawerActivity extends K9Activity
             }
             setSelectedTab(mSelectedTab);
             return true;
-        }
-    };
-
-    private MessagingListener mListener = new MessagingListener() {
-
-        @Override
-        public void listFolders(Account account, List<LocalFolder> folders) {
-
-            List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
-
-            mMailTabMenuItems.clear();
-            //mail tab drawer menu
-            if (account.equals(mAccount)) {
-
-                for (LocalFolder folder : folders) {
-                    if (TiscaliUtility.isFolderInTopGroup(getApplication().getApplicationContext(), folder.getName())) {
-                        mMailTabMenuItems.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
-                    } else {
-                        newFolders.add(new FolderInfoHolder(NavigationDrawerActivity.this, folder, mAccount, -1));
-                    }
-                }
-                TiscaliUtility.sortFoldersInTopGroup(NavigationDrawerActivity.this, mMailTabMenuItems);
-                mMailTabMenuItems.addAll(newFolders);
-
-                mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
-                    @Override
-                    public void onSettingsClick() {
-                        super.onSettingsClick();
-                        showDialogSettings();
-                    }
-
-                    @Override
-                    public void onFolderClick(Account account, FolderInfoHolder folder) {
-                        super.onFolderClick(account, folder);
-
-                        if(mMailPresenter != null) {
-                            LocalSearch search = new LocalSearch(folder.name);
-                            search.addAllowedFolder(folder.name);
-                            search.addAccountUuid(account.getUuid());
-                            mMailPresenter.showFolder(search);
-
-                            mDrawerLayout.closeDrawer(mDrawerList);
-                        }
-                    }
-                });
-
-                setAdapterBasedOnSelectedTab(mSelectedTab);
-            }
-
-            super.listFolders(account, folders);
-        }
-
-        @Override
-        public void listFoldersFailed(Account account, String message) {
-            mMailTabMenuItems.clear();
-            mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, NavigationDrawerActivity.this, new MailNavDrawerClickListener() {
-                @Override
-                public void onSettingsClick() {
-                    super.onSettingsClick();
-                    showDialogSettings();
-                }
-            });
-
-            super.listFoldersFailed(account, message);
         }
     };
 
@@ -276,6 +200,7 @@ public class NavigationDrawerActivity extends K9Activity
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (RecyclerView) findViewById(R.id.left_drawer);
         mBottomNav = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
 
         initNavigationDrawerMenuData();
@@ -323,17 +248,11 @@ public class NavigationDrawerActivity extends K9Activity
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
-        mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
+
                 
 //        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
 
 //        mMailPresenter.setIntent(intent);
-
-        if (useSplitView()) {
-            getLayoutInflater().inflate(R.layout.split_message_list, mViewContainer, true);
-        } else {
-            getLayoutInflater().inflate(R.layout.message_list, mViewContainer, true);
-        }
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
@@ -341,10 +260,11 @@ public class NavigationDrawerActivity extends K9Activity
 
     }
 
+
     public void setDrawerEnable(boolean isEnabled) {
         if ( isEnabled ) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_UNLOCKED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.syncState();
@@ -352,7 +272,7 @@ public class NavigationDrawerActivity extends K9Activity
         }
         else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(false);
             mDrawerToggle.syncState();
         }
@@ -451,9 +371,7 @@ public class NavigationDrawerActivity extends K9Activity
     private void setAdapterBasedOnSelectedTab(int selectedTab) {
         BaseNavDrawerMenuAdapter selectedAdapter = null;
         switch (selectedTab) {
-            case MAIL_TAB_SELECTED:
-                selectedAdapter = mMailAdapter;
-                break;
+//            mMailTabMenuItems
             case NEWS_TAB_SELECTED:
                 selectedAdapter = mNewsAdapter;
                 break;
@@ -487,13 +405,6 @@ public class NavigationDrawerActivity extends K9Activity
 
     // populate the drawer navigation
     private void initNavigationDrawerMenuData() {
-
-        // mail tab
-        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
-        if(accounts != null && !accounts.isEmpty()) {
-            mAccount = accounts.get(0);
-            MessagingController.getInstance(getApplication()).listFolders(mAccount, false, mListener);
-        }
 
         // news, video and offers
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
@@ -622,23 +533,6 @@ public class NavigationDrawerActivity extends K9Activity
         return mMailPresenter;
     }
 
-    private void showDialogSettings() {
-        mDrawerLayout.closeDrawer(mDrawerList);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        AccountSettings.actionSettings(NavigationDrawerActivity.this, mAccount);
-                        break;
-                    case 1:
-                        Prefs.actionPrefs(NavigationDrawerActivity.this);
-                }
-            }
-        });
-        builder.create().show();
-    }
-
     @Override
     public void onBackPressed() {
         if(mMailPresenter != null
@@ -649,5 +543,45 @@ public class NavigationDrawerActivity extends K9Activity
         else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
+    }
+
+    @Override
+    public FrameLayout getContainer() {
+        return mViewContainer;
+    }
+
+    @Override
+    public void setDrawerListAdapter(BaseNavDrawerMenuAdapter adapter) {
+        if(mDrawerList != null && adapter != null) {
+            mDrawerList.setAdapter(adapter);
+        }
+    }
+
+    @Override
+    public void closeDrawer() {
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    @Override
+    public void showDialogSettings(final Account account) {
+        closeDrawer();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        AccountSettings.actionSettings(NavigationDrawerActivity.this, account);
+                        break;
+                    case 1:
+                        Prefs.actionPrefs(NavigationDrawerActivity.this);
+                }
+            }
+        });
+        builder.create().show();
     }
 }

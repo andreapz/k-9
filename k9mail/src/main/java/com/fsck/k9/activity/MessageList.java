@@ -118,7 +118,7 @@ public class MessageList extends K9Activity
             return;
         }
 
-        mMailPresenter = new MailPresenter(this, getIntent());
+        mMailPresenter = null; //new MailPresenter(this, getIntent());
 
         if (useSplitView()) {
             setContentView(R.layout.split_message_list);

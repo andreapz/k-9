@@ -17,6 +17,7 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,17 +38,26 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.Accounts;
+import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
-import com.fsck.k9.activity.IDrawerActivityListener;
-import com.fsck.k9.activity.MessageList;
+import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
+import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
 import com.fsck.k9.activity.compose.MessageActions;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+
+import com.fsck.k9.adapter.MailNavDrawerClickListener;
+import com.fsck.k9.adapter.MailNavDrawerMenuAdapter;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.StorageManager;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
@@ -57,8 +68,12 @@ import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.MessageTitleView;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
+import com.fsck.k9.view.holder.HeaderViewHolder;
+import com.fsck.k9.view.holder.ItemViewHolder;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -95,23 +110,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final int PREVIOUS = 1;
     private static final int NEXT = 2;
     private final Context mContext;
+    private final INavigationDrawerActivityListener mListener;
     private Intent mIntent;
 
-//    private View mView;
-
-//    public static MailPresenter newInstance(String action, Bundle extras) {
-//        MailPresenter fragment = new MailPresenter();
-//        Bundle mArgs = new Bundle();
-//        if(action == null) {
-//            action = ACTION_NULL;
-//        }
-//        mArgs.putString(ARG_ACTION, action);
-//        mArgs.putBundle(ARG_EXTRAS, extras);
-//        fragment.setArguments(mArgs);
-//        return fragment;
-//    }
-
-    private String mAction;
     private LayoutInflater mInflater;
     private Menu mMenu;
     private ActionBar mActionBar;
@@ -155,6 +156,47 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final String STATE_MESSAGE_LIST_WAS_DISPLAYED = "messageListWasDisplayed";
     private static final String STATE_FIRST_BACK_STACK_ID = "firstBackstackId";
 
+    private MailAdapter mMailAdapter;
+    List<FolderInfoHolder> mMailTabMenuItems = new ArrayList<>();
+
+    private MessagingListener mMessagingListener = new MessagingListener() {
+
+        @Override
+        public void listFolders(Account account, List<LocalFolder> folders) {
+
+            List<FolderInfoHolder> newFolders = new LinkedList<>();
+
+            mMailTabMenuItems.clear();
+            //mail tab drawer menu
+            if (account.equals(mAccount)) {
+
+                for (LocalFolder folder : folders) {
+                    if (TiscaliUtility.isFolderInTopGroup(mContext, folder.getName())) {
+                        mMailTabMenuItems.add(new FolderInfoHolder(mContext, folder, mAccount, -1));
+                    } else {
+                        newFolders.add(new FolderInfoHolder(mContext, folder, mAccount, -1));
+                    }
+                }
+                TiscaliUtility.sortFoldersInTopGroup(mContext, mMailTabMenuItems);
+                mMailTabMenuItems.addAll(newFolders);
+
+                mMailAdapter = new MailAdapter();
+
+                mListener.setDrawerListAdapter(mMailAdapter);
+            }
+
+            super.listFolders(account, folders);
+        }
+
+        @Override
+        public void listFoldersFailed(Account account, String message) {
+            mMailTabMenuItems.clear();
+            mMailAdapter = new MailAdapter();
+
+            super.listFoldersFailed(account, message);
+        }
+    };
+
     public DisplayMode getDisplayMode() {
         return mDisplayMode;
     }
@@ -174,8 +216,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     @Inject
-    public MailPresenter(Context context, Intent intent) {
-        mContext = context;
+    public MailPresenter(INavigationDrawerActivityListener listener, Intent intent) {
+        mListener = listener;
+        mContext = listener.getActivity();
         mIntent = intent;
     }
 
@@ -187,8 +230,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
         mInflater = inflater;
 
-        if (!useSplitView()) {
-            mViewSwitcher = (ViewSwitcher) ((Activity)mContext).findViewById(R.id.container);
+        FrameLayout container = mListener.getContainer();
+
+        if (useSplitView()) {
+            mInflater.inflate(R.layout.split_message_list, container, true);
+        } else {
+            mInflater.inflate(R.layout.message_list, container, true);
+            mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
             mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
             mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
             mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
@@ -200,7 +248,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (!decodeExtras()) {
             Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
-         //   return;
         }
 
         findFragments();
@@ -209,6 +256,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         initializeFragments();
         displayViews();
         //setupGestureDetector(this);
+
+        // mail tab
+        List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
+        if(accounts != null && !accounts.isEmpty()) {
+            mAccount = accounts.get(0);
+            MessagingController.getInstance(mContext).listFolders(mAccount, false, mMessagingListener);
+        }
     }
 
     public void showFolder(LocalSearch search) {
@@ -1316,15 +1370,15 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setActionBarUp() {
-        if(mContext instanceof IDrawerActivityListener) {
-            ((IDrawerActivityListener) mContext).setDrawerEnable(false);
+        if(mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(false);
         }
     }
 
     @Override
     public void setActionBarToggle() {
-        if(mContext instanceof IDrawerActivityListener) {
-            ((IDrawerActivityListener) mContext).setDrawerEnable(true);
+        if(mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(true);
         }
     }
 
@@ -1586,5 +1640,104 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else {
             onShowFolderList();
         }
+    }
+
+    public class MailAdapter extends BaseNavDrawerMenuAdapter {
+
+        MailNavDrawerClickListener mClickListener = new MailNavDrawerClickListener() {
+            @Override
+            public void onSettingsClick() {
+                super.onSettingsClick();
+                mListener.showDialogSettings(mAccount);
+            }
+
+            @Override
+            public void onFolderClick(Account account, FolderInfoHolder folder) {
+                super.onFolderClick(account, folder);
+                LocalSearch search = new LocalSearch(folder.name);
+                search.addAllowedFolder(folder.name);
+                search.addAccountUuid(account.getUuid());
+                showFolder(search);
+                mListener.closeDrawer();
+            }
+        };
+
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+            if(holder instanceof HeaderViewHolder) {
+                // TODO
+                final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
+                headerViewHolder.mAccountTv.setText("Name Surname");
+                headerViewHolder.mAccountTv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                });
+
+                headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mClickListener.onSettingsClick();
+                    }
+                });
+            } else if (holder instanceof ItemViewHolder) {
+                final FolderInfoHolder item = getItem(position);
+                ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
+
+                //Icon
+                // TODO
+
+                // Title
+                if(item.displayName != null) {
+                    itemViewHolder.mItemTitleTv.setText(item.displayName);
+                }
+
+                //click listener
+                itemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mClickListener.onFolderClick(mAccount, item);
+                    }
+                });
+            }
+        }
+
+        @Override
+        public int getChildrenCount(int position) {
+            return 0;
+        }
+
+        @Override
+        public int getItemDepth(int position) {
+            return 0;
+        }
+
+        @Override
+        public boolean isItemExpanded(int position) {
+            return false;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            // without header
+//        return ITEM;
+            // with header
+            return position == 0 ? HEADER : ITEM;
+        }
+
+        private FolderInfoHolder getItem(int position) {
+            // without header
+//        return mVisibleItems.get(position);
+            // with header
+            return mMailTabMenuItems.get(position - 1);
+        }
+
+        @Override
+        public int getItemCount() {
+            // without header
+//        return mVisibleItems.size();
+            // with header
+            return mMailTabMenuItems.size() + 1;
+        }
+
     }
 }

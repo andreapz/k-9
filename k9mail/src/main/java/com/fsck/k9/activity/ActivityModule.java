@@ -37,7 +37,7 @@ public class ActivityModule {
 
     @Provides @ActivityScope
     MailPresenter provideMailPresenter() {
-        return new MailPresenter(mActivity, mIntent);
+        return new MailPresenter((INavigationDrawerActivityListener) mActivity, mIntent);
     }
 
     @Provides @ActivityScope
