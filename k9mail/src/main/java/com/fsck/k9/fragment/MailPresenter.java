@@ -42,7 +42,6 @@ import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
@@ -53,7 +52,6 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 
 import com.fsck.k9.adapter.MailNavDrawerClickListener;
-import com.fsck.k9.adapter.MailNavDrawerMenuAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
@@ -69,7 +67,7 @@ import com.fsck.k9.view.MessageTitleView;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
 import com.fsck.k9.view.holder.HeaderViewHolder;
-import com.fsck.k9.view.holder.ItemViewHolder;
+import com.fsck.k9.view.holder.FolderViewHolder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1642,6 +1640,35 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
     }
 
+    private void createFlaggedSearch(Account account, FolderInfoHolder folder) {
+        String searchTitle = mContext.getString(R.string.search_title,
+                mContext.getString(R.string.message_list_title, account.getDescription(),
+                        folder.displayName),
+                mContext.getString(R.string.flagged_modifier));
+
+        LocalSearch search = new LocalSearch(searchTitle);
+        search.and(SearchSpecification.SearchField.FLAGGED, "1", SearchSpecification.Attribute.EQUALS);
+        search.addAllowedFolder(folder.name);
+        search.addAccountUuid(account.getUuid());
+        showFolder(search);
+        mListener.closeDrawer();
+    }
+
+    private void createUnreadSearch(Account account, FolderInfoHolder folder) {
+        String searchTitle = mContext.getString(R.string.search_title,
+                mContext.getString(R.string.message_list_title, account.getDescription(),
+                        folder.displayName),
+                mContext.getString(R.string.unread_modifier));
+
+        LocalSearch search = new LocalSearch(searchTitle);
+        search.and(SearchSpecification.SearchField.READ, "1", SearchSpecification.Attribute.NOT_EQUALS);
+
+        search.addAllowedFolder(folder.name);
+        search.addAccountUuid(account.getUuid());
+        showFolder(search);
+        mListener.closeDrawer();
+    }
+
     public class MailAdapter extends BaseNavDrawerMenuAdapter {
 
         MailNavDrawerClickListener mClickListener = new MailNavDrawerClickListener() {
@@ -1662,6 +1689,22 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         };
 
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
+
+            View view;
+            LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            switch (type) {
+                case HEADER:
+                    view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
+                    return new HeaderViewHolder(view);
+                case ITEM:
+                    view = inflater.inflate(R.layout.folder_holder, parent, false);
+                    return new FolderViewHolder(view);
+            }
+            return null;
+        }
+
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             if(holder instanceof HeaderViewHolder) {
                 // TODO
@@ -1679,23 +1722,71 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                         mClickListener.onSettingsClick();
                     }
                 });
-            } else if (holder instanceof ItemViewHolder) {
-                final FolderInfoHolder item = getItem(position);
-                ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-
-                //Icon
-                // TODO
+            } else if (holder instanceof FolderViewHolder) {
+                final FolderInfoHolder folder = getItem(position);
+                FolderViewHolder mailViewHolder = (FolderViewHolder) holder;
 
                 // Title
-                if(item.displayName != null) {
-                    itemViewHolder.mItemTitleTv.setText(item.displayName);
+                if(folder.displayName != null) {
+                    mailViewHolder.mFolderNameTv.setText(folder.displayName);
+                }
+
+                // unread messages
+                if(folder.unreadMessageCount == -1) {
+                    folder.unreadMessageCount = 0;
+                    try {
+                        folder.unreadMessageCount  = folder.folder.getUnreadMessageCount();
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for " + mAccount.getDescription() + ":"
+                                + folder.name);
+                    }
+                }
+                if(folder.unreadMessageCount > 0) {
+                    mailViewHolder.mNewMessageCountWrapperV.setVisibility(View.VISIBLE);
+                    mailViewHolder.mNewMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            createUnreadSearch(mAccount, folder);
+                        }
+                    });
+                    mailViewHolder.mNewMessageCountTv.setText(String.format("%d", folder.unreadMessageCount));
+                    mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
+                            mAccount.generateColorChip(false, false, false, false, false).drawable());
+                } else {
+                    mailViewHolder.mNewMessageCountWrapperV.setVisibility(View.GONE);
+                }
+
+                // flagged messages
+                if (folder.flaggedMessageCount == -1) {
+                    folder.flaggedMessageCount = 0;
+                    try {
+                        folder.flaggedMessageCount = folder.folder.getFlaggedMessageCount();
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for " + mAccount.getDescription() + ":"
+                                + folder.name);
+                    }
+
+                }
+                if (K9.messageListStars() && folder.flaggedMessageCount > 0) {
+                    mailViewHolder.mFlaggedMessageCountWrapperV.setVisibility(View.VISIBLE);
+                    mailViewHolder.mFlaggedMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            createFlaggedSearch(mAccount, folder);
+                        }
+                    });
+                    mailViewHolder.mFlaggedMessageCountTv.setText(String.format("%d", folder.flaggedMessageCount));
+                    mailViewHolder.mFlaggedMessageCountIconIv.setBackgroundDrawable(
+                            mAccount.generateColorChip(false, false, false, false,true).drawable());
+                } else {
+                    mailViewHolder.mFlaggedMessageCountWrapperV.setVisibility(View.GONE);
                 }
 
                 //click listener
-                itemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                mailViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mClickListener.onFolderClick(mAccount, item);
+                        mClickListener.onFolderClick(mAccount, folder);
                     }
                 });
             }

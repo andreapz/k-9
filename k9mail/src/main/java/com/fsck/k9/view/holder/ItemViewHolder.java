@@ -21,7 +21,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
     public ItemViewHolder(View itemView) {
         super(itemView);
         mItemContainerRl = (RelativeLayout) itemView.findViewById(R.id.item_container);
-        mItemTitleTv = (TextView) itemView.findViewById(R.id.item_title);
+        mItemTitleTv = (TextView) itemView.findViewById(R.id.folder_name);
         mItemIconIv = (ImageView) itemView.findViewById(R.id.item_icon);
         mItemToggleIv = (ImageView) itemView.findViewById(R.id.item_toggle);
     }
