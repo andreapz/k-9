@@ -10,6 +10,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fsck.k9.R;
+import com.fsck.k9.view.holder.HeaderViewHolder;
+import com.fsck.k9.view.holder.ItemViewHolder;
 
 /**
  * Created by Annalisa Sini on 22/11/2016.
@@ -68,30 +70,5 @@ public abstract class BaseNavDrawerMenuAdapter extends RecyclerView.Adapter<Recy
     public abstract boolean isItemExpanded(int position);
 }
 
-class ItemViewHolder extends RecyclerView.ViewHolder {
-    public RelativeLayout mItemContainerRl;
-    public TextView mItemTitleTv;
-    public ImageView mItemIconIv;
-    public ImageView mItemToggleIv;
 
-    public ItemViewHolder(View itemView) {
-        super(itemView);
-        mItemContainerRl = (RelativeLayout) itemView.findViewById(R.id.item_container);
-        mItemTitleTv = (TextView) itemView.findViewById(R.id.item_title);
-        mItemIconIv = (ImageView) itemView.findViewById(R.id.item_icon);
-        mItemToggleIv = (ImageView) itemView.findViewById(R.id.item_toggle);
-    }
-}
 
-class HeaderViewHolder extends RecyclerView.ViewHolder {
-
-    public ImageView mSettingsIv;
-    public TextView mAccountTv;
-
-    public HeaderViewHolder(View itemView) {
-
-        super(itemView);
-        mSettingsIv = (ImageView) itemView.findViewById(R.id.settings);
-        mAccountTv = (TextView) itemView.findViewById(R.id.account);
-    }
-}

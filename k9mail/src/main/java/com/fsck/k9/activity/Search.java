@@ -9,8 +9,8 @@ import com.fsck.k9.fragment.MailPresenter;
 public class Search extends MailPresenter {
     protected static boolean isActive = false;
 
-    public Search(Context context, Intent intent) {
-        super(context, intent);
+    public Search(INavigationDrawerActivityListener listner, Intent intent) {
+        super(listner, intent);
     }
 
     public static boolean isActive() {

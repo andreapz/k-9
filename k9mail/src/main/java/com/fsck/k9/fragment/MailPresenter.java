@@ -8,7 +8,6 @@ import android.app.FragmentManager.OnBackStackChangedListener;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -16,10 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -32,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,10 +40,8 @@ import com.fsck.k9.R;
 import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
-import com.fsck.k9.activity.IDrawerActivityListener;
-import com.fsck.k9.activity.MessageList;
+import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
@@ -55,15 +50,13 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+
 import com.fsck.k9.adapter.MailNavDrawerClickListener;
-import com.fsck.k9.adapter.MailNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.StorageManager;
-import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
@@ -73,9 +66,9 @@ import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.MessageTitleView;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
+import com.fsck.k9.view.holder.HeaderViewHolder;
+import com.fsck.k9.view.holder.FolderViewHolder;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -115,23 +108,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final int PREVIOUS = 1;
     private static final int NEXT = 2;
     private final Context mContext;
+    private final INavigationDrawerActivityListener mListener;
     private Intent mIntent;
 
-//    private View mView;
-
-//    public static MailPresenter newInstance(String action, Bundle extras) {
-//        MailPresenter fragment = new MailPresenter();
-//        Bundle mArgs = new Bundle();
-//        if(action == null) {
-//            action = ACTION_NULL;
-//        }
-//        mArgs.putString(ARG_ACTION, action);
-//        mArgs.putBundle(ARG_EXTRAS, extras);
-//        fragment.setArguments(mArgs);
-//        return fragment;
-//    }
-
-    private String mAction;
     private LayoutInflater mInflater;
     private Menu mMenu;
     private ActionBar mActionBar;
@@ -175,43 +154,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final String STATE_MESSAGE_LIST_WAS_DISPLAYED = "messageListWasDisplayed";
     private static final String STATE_FIRST_BACK_STACK_ID = "firstBackstackId";
 
-    private DrawerLayout mDrawerLayout;
-    private RecyclerView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
+    private MailAdapter mMailAdapter;
+    List<FolderInfoHolder> mMailTabMenuItems = new ArrayList<>();
 
-    private NavDrawerMenuAdapter mOffersAdapter;
-    private NavDrawerMenuAdapter mNewsAdapter;
-    private NavDrawerMenuAdapter mVideoAdapter;
-    private MailNavDrawerMenuAdapter mMailAdapter;
-
-    private List<FolderInfoHolder> mMailTabMenuItems = new ArrayList<>();
-    private List<NavDrawerMenuItem> mOffersTabMenuItems;
-    private List<NavDrawerMenuItem> mNewsTabMenuItems;
-    private List<NavDrawerMenuItem> mVideoTabMenuItems;
-
-    private CharSequence mDrawerTitle;
-    private CharSequence mTitle;
-    private int mSelectedTab;
-
-    public DisplayMode getDisplayMode() {
-        return mDisplayMode;
-    }
-
-    public boolean getMessageListWasDisplayed() {
-        return mMessageListWasDisplayed;
-    }
-
-    public MessageListFragment getMessageListFragment() {
-        return mMessageListFragment;
-    }
-
-    public enum DisplayMode {
-        MESSAGE_LIST,
-        MESSAGE_VIEW,
-        SPLIT_VIEW
-    }
-
-    private MessagingListener mListener = new MessagingListener() {
+    private MessagingListener mMessagingListener = new MessagingListener() {
 
         @Override
         public void listFolders(Account account, List<LocalFolder> folders) {
@@ -232,27 +178,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 TiscaliUtility.sortFoldersInTopGroup(mContext, mMailTabMenuItems);
                 mMailTabMenuItems.addAll(newFolders);
 
-                mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, mContext, new MailNavDrawerClickListener() {
-                    @Override
-                    public void onSettingsClick() {
-                        super.onSettingsClick();
-                        showDialogSettings();
-                    }
+                mMailAdapter = new MailAdapter();
 
-                    @Override
-                    public void onFolderClick(Account account, FolderInfoHolder folder) {
-                        super.onFolderClick(account, folder);
-
-                        LocalSearch search = new LocalSearch(folder.name);
-                        search.addAllowedFolder(folder.name);
-                        search.addAccountUuid(account.getUuid());
-                        showFolder(search);
-
-                        mDrawerLayout.closeDrawer(mDrawerList);
-                    }
-                });
-
-                setAdapterBasedOnSelectedTab(mSelectedTab);
+                mListener.setDrawerListAdapter(mMailAdapter);
             }
 
             super.listFolders(account, folders);
@@ -261,21 +189,34 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void listFoldersFailed(Account account, String message) {
             mMailTabMenuItems.clear();
-            mMailAdapter = new MailNavDrawerMenuAdapter(account, mMailTabMenuItems, mContext, new MailNavDrawerClickListener() {
-                @Override
-                public void onSettingsClick() {
-                    super.onSettingsClick();
-                    showDialogSettings();
-                }
-            });
+            mMailAdapter = new MailAdapter();
 
             super.listFoldersFailed(account, message);
         }
     };
 
+    public DisplayMode getDisplayMode() {
+        return mDisplayMode;
+    }
+
+    public boolean getMessageListWasDisplayed() {
+        return mMessageListWasDisplayed;
+    }
+
+    public MessageListFragment getMessageListFragment() {
+        return mMessageListFragment;
+    }
+
+    public enum DisplayMode {
+        MESSAGE_LIST,
+        MESSAGE_VIEW,
+        SPLIT_VIEW
+    }
+
     @Inject
-    public MailPresenter(Context context, Intent intent) {
-        mContext = context;
+    public MailPresenter(INavigationDrawerActivityListener listener, Intent intent) {
+        mListener = listener;
+        mContext = listener.getActivity();
         mIntent = intent;
     }
 
@@ -287,8 +228,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
         mInflater = inflater;
 
-        if (!useSplitView()) {
-            mViewSwitcher = (ViewSwitcher) ((Activity)mContext).findViewById(R.id.container);
+        FrameLayout container = mListener.getContainer();
+
+        if (useSplitView()) {
+            mInflater.inflate(R.layout.split_message_list, container, true);
+        } else {
+            mInflater.inflate(R.layout.message_list, container, true);
+            mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
             mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
             mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
             mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
@@ -297,11 +243,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         initializeActionBar();
-        initializeNavigationDrawer();
 
         if (!decodeExtras()) {
             Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
-         //   return;
         }
 
         findFragments();
@@ -310,6 +254,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         initializeFragments();
         displayViews();
         //setupGestureDetector(this);
+
+        // mail tab
+        List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
+        if(accounts != null && !accounts.isEmpty()) {
+            mAccount = accounts.get(0);
+            MessagingController.getInstance(mContext).listFolders(mAccount, false, mMessagingListener);
+        }
     }
 
     public void showFolder(LocalSearch search) {
@@ -324,87 +275,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             initializeDisplayMode(null);
             initializeFragments();
             displayViews();
-        }
-    }
-
-    public void setAdapterBasedOnSelectedTab(int selectedTab) {
-        BaseNavDrawerMenuAdapter selectedAdapter = null;
-        switch (selectedTab) {
-            case NavigationDrawerActivity.MAIL_TAB_SELECTED:
-                selectedAdapter = mMailAdapter;
-                break;
-            case NavigationDrawerActivity.NEWS_TAB_SELECTED:
-                selectedAdapter = mNewsAdapter;
-                break;
-            case NavigationDrawerActivity.VIDEO_TAB_SELECTED:
-                selectedAdapter = mVideoAdapter;
-                break;
-            case NavigationDrawerActivity.OFFERS_TAB_SELECTED:
-                selectedAdapter = mOffersAdapter;
-                break;
-        }
-
-        if(mDrawerList != null && selectedAdapter != null) {
-            mDrawerList.setAdapter(selectedAdapter);
-        }
-    }
-
-    private void showDialogSettings() {
-        mDrawerLayout.closeDrawer(mDrawerList);
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        AccountSettings.actionSettings(mContext, mAccount);
-                        break;
-                    case 1:
-                        Prefs.actionPrefs(mContext);
-                }
-            }
-        });
-        builder.create().show();
-    }
-
-    // populate the drawer navigation
-    private void initNavigationDrawerMenuData() {
-
-        // mail tab
-        List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
-        if(accounts != null && !accounts.isEmpty()) {
-            mAccount = accounts.get(0);
-            MessagingController.getInstance(mContext).listFolders(mAccount, false, mListener);
-        }
-
-        // news, video and offers
-        // FIXME use me object from api
-        String meObjectJsonString = getJsonString(mContext.getResources().openRawResource(R.raw.me_object));
-
-        //news tab drawer menu
-        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, mContext);
-
-        //video tab drawer menu
-        mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
-        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, mContext);
-
-        //offers tab drawer menu
-        mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
-        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, mContext);
-    }
-
-    private String getJsonString(InputStream inputStream) {
-        try {
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            String jsonString = new String(buffer, "UTF-8");
-            return jsonString;
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
         }
     }
 
@@ -522,13 +392,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void initializeActionBar() {
-        if(mContext instanceof IDrawerActivityListener) {
-            mActionBar = ((IDrawerActivityListener) mContext).getDrawerActivityActionBar();
-        }
-
-        if(mActionBar == null)  {
-            return;
-        }
+        mActionBar = ((AppCompatActivity)mContext).getSupportActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actionbar_custom);
@@ -544,70 +408,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mActionButtonIndeterminateProgress = getActionButtonIndeterminateProgress();
 
         mActionBar.setDisplayHomeAsUpEnabled(true);
-    }
-
-    private void initializeNavigationDrawer() {
-
-        if (mContext instanceof IDrawerActivityListener) {
-            mDrawerLayout = ((IDrawerActivityListener) mContext).getDrawerLayout();
-            mDrawerList = ((IDrawerActivityListener) mContext).getDrawerList();
-            mSelectedTab = ((IDrawerActivityListener) mContext).getSelectedTab();
-            mTitle = mDrawerTitle = ((IDrawerActivityListener) mContext).getActionBarTitle();
-        }
-        // ActionBarDrawerToggle ties together the the proper interactions
-        // between the sliding drawer and the action bar app icon
-        if(mContext instanceof Activity) {
-            mDrawerToggle = new ActionBarDrawerToggle( //R.drawable.ic_menu_black_24dp,  /* nav drawer image to replace 'Up' caret */
-                    (Activity) mContext,                  /* host Activity */
-                    mDrawerLayout,         /* DrawerLayout object */
-                    R.string.drawer_open,  /* "open drawer" description for accessibility */
-                    R.string.drawer_close  /* "close drawer" description for accessibility */
-            ) {
-                public void onDrawerClosed(View view) {
-                    if(mActionBar != null) {
-                        mActionBar.setTitle(mTitle);
-                    }
-                    if(mContext instanceof IDrawerActivityListener) {
-                        ((IDrawerActivityListener) mContext).onInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                    }
-                    setAdapterBasedOnSelectedTab(mSelectedTab);
-                }
-
-                public void onDrawerOpened(View drawerView) {
-                    if(mActionBar != null) {
-                        mActionBar.setTitle(mDrawerTitle);
-                    }
-                    if(mContext instanceof IDrawerActivityListener) {
-                        ((IDrawerActivityListener) mContext).onInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                    }
-                }
-            };
-            mDrawerLayout.addDrawerListener(mDrawerToggle);
-        }
-
-        // set a custom shadow that overlays the main content when the drawer opens
-//        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        // improve performance by indicating the list if fixed size.
-        mDrawerList.setHasFixedSize(true);
-        initNavigationDrawerMenuData();
-        setAdapterBasedOnSelectedTab(mSelectedTab);
-    }
-
-    public void setDrawerEnable(boolean isEnabled) {
-        if ( isEnabled ) {
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_UNLOCKED);
-            mDrawerToggle.setDrawerIndicatorEnabled(true);
-            mDrawerToggle.setDrawerIndicatorEnabled(true);
-            mDrawerToggle.syncState();
-
-        }
-        else {
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            mDrawerToggle.setDrawerIndicatorEnabled(false);
-            mDrawerToggle.syncState();
-        }
     }
 
     private void displayViews() {
@@ -1355,13 +1155,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
 //    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        // The action bar home/up action should open or close the drawer.
-        // ActionBarDrawerToggle will take care of this.
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
         int itemId = item.getItemId();
         switch (itemId) {
             case android.R.id.home: {
@@ -1529,16 +1322,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
     }
 
-    public void onPostCreate() {
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
-    }
-
-    public void onConfigurationChanged(Configuration newConfig) {
-        // Pass any configuration change to the drawer toggle
-        mDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
     private void onToggleTheme() {
         Toast.makeText(mContext, "TOGGLE THEME NOT WORKING", Toast.LENGTH_LONG);
 //        if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
@@ -1585,12 +1368,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setActionBarUp() {
-        setDrawerEnable(false);
+        if(mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(false);
+        }
     }
 
     @Override
     public void setActionBarToggle() {
-        setDrawerEnable(true);
+        if(mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(true);
+        }
     }
 
     @Override
@@ -1851,5 +1638,197 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else {
             onShowFolderList();
         }
+    }
+
+    private void createFlaggedSearch(Account account, FolderInfoHolder folder) {
+        String searchTitle = mContext.getString(R.string.search_title,
+                mContext.getString(R.string.message_list_title, account.getDescription(),
+                        folder.displayName),
+                mContext.getString(R.string.flagged_modifier));
+
+        LocalSearch search = new LocalSearch(searchTitle);
+        search.and(SearchSpecification.SearchField.FLAGGED, "1", SearchSpecification.Attribute.EQUALS);
+        search.addAllowedFolder(folder.name);
+        search.addAccountUuid(account.getUuid());
+        showFolder(search);
+        mListener.closeDrawer();
+    }
+
+    private void createUnreadSearch(Account account, FolderInfoHolder folder) {
+        String searchTitle = mContext.getString(R.string.search_title,
+                mContext.getString(R.string.message_list_title, account.getDescription(),
+                        folder.displayName),
+                mContext.getString(R.string.unread_modifier));
+
+        LocalSearch search = new LocalSearch(searchTitle);
+        search.and(SearchSpecification.SearchField.READ, "1", SearchSpecification.Attribute.NOT_EQUALS);
+
+        search.addAllowedFolder(folder.name);
+        search.addAccountUuid(account.getUuid());
+        showFolder(search);
+        mListener.closeDrawer();
+    }
+
+    public class MailAdapter extends BaseNavDrawerMenuAdapter {
+
+        MailNavDrawerClickListener mClickListener = new MailNavDrawerClickListener() {
+            @Override
+            public void onSettingsClick() {
+                super.onSettingsClick();
+                mListener.showDialogSettings(mAccount);
+            }
+
+            @Override
+            public void onFolderClick(Account account, FolderInfoHolder folder) {
+                super.onFolderClick(account, folder);
+                LocalSearch search = new LocalSearch(folder.name);
+                search.addAllowedFolder(folder.name);
+                search.addAccountUuid(account.getUuid());
+                showFolder(search);
+                mListener.closeDrawer();
+            }
+        };
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
+
+            View view;
+            LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            switch (type) {
+                case HEADER:
+                    view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
+                    return new HeaderViewHolder(view);
+                case ITEM:
+                    view = inflater.inflate(R.layout.folder_holder, parent, false);
+                    return new FolderViewHolder(view);
+            }
+            return null;
+        }
+
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+            if(holder instanceof HeaderViewHolder) {
+                // TODO
+                final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
+                headerViewHolder.mAccountTv.setText("Name Surname");
+                headerViewHolder.mAccountTv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                });
+
+                headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mClickListener.onSettingsClick();
+                    }
+                });
+            } else if (holder instanceof FolderViewHolder) {
+                final FolderInfoHolder folder = getItem(position);
+                FolderViewHolder mailViewHolder = (FolderViewHolder) holder;
+
+                // Title
+                if(folder.displayName != null) {
+                    mailViewHolder.mFolderNameTv.setText(folder.displayName);
+                }
+
+                // unread messages
+                if(folder.unreadMessageCount == -1) {
+                    folder.unreadMessageCount = 0;
+                    try {
+                        folder.unreadMessageCount  = folder.folder.getUnreadMessageCount();
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for " + mAccount.getDescription() + ":"
+                                + folder.name);
+                    }
+                }
+                if(folder.unreadMessageCount > 0) {
+                    mailViewHolder.mNewMessageCountWrapperV.setVisibility(View.VISIBLE);
+                    mailViewHolder.mNewMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            createUnreadSearch(mAccount, folder);
+                        }
+                    });
+                    mailViewHolder.mNewMessageCountTv.setText(String.format("%d", folder.unreadMessageCount));
+                    mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
+                            mAccount.generateColorChip(false, false, false, false, false).drawable());
+                } else {
+                    mailViewHolder.mNewMessageCountWrapperV.setVisibility(View.GONE);
+                }
+
+                // flagged messages
+                if (folder.flaggedMessageCount == -1) {
+                    folder.flaggedMessageCount = 0;
+                    try {
+                        folder.flaggedMessageCount = folder.folder.getFlaggedMessageCount();
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for " + mAccount.getDescription() + ":"
+                                + folder.name);
+                    }
+
+                }
+                if (K9.messageListStars() && folder.flaggedMessageCount > 0) {
+                    mailViewHolder.mFlaggedMessageCountWrapperV.setVisibility(View.VISIBLE);
+                    mailViewHolder.mFlaggedMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            createFlaggedSearch(mAccount, folder);
+                        }
+                    });
+                    mailViewHolder.mFlaggedMessageCountTv.setText(String.format("%d", folder.flaggedMessageCount));
+                    mailViewHolder.mFlaggedMessageCountIconIv.setBackgroundDrawable(
+                            mAccount.generateColorChip(false, false, false, false,true).drawable());
+                } else {
+                    mailViewHolder.mFlaggedMessageCountWrapperV.setVisibility(View.GONE);
+                }
+
+                //click listener
+                mailViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mClickListener.onFolderClick(mAccount, folder);
+                    }
+                });
+            }
+        }
+
+        @Override
+        public int getChildrenCount(int position) {
+            return 0;
+        }
+
+        @Override
+        public int getItemDepth(int position) {
+            return 0;
+        }
+
+        @Override
+        public boolean isItemExpanded(int position) {
+            return false;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            // without header
+//        return ITEM;
+            // with header
+            return position == 0 ? HEADER : ITEM;
+        }
+
+        private FolderInfoHolder getItem(int position) {
+            // without header
+//        return mVisibleItems.get(position);
+            // with header
+            return mMailTabMenuItems.get(position - 1);
+        }
+
+        @Override
+        public int getItemCount() {
+            // without header
+//        return mVisibleItems.size();
+            // with header
+            return mMailTabMenuItems.size() + 1;
+        }
+
     }
 }

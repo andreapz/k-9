@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.fsck.k9.R;
 import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.view.holder.HeaderViewHolder;
+import com.fsck.k9.view.holder.ItemViewHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;

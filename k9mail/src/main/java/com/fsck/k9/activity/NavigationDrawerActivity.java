@@ -16,7 +16,9 @@
 
 package com.fsck.k9.activity;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -24,9 +26,9 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
-
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,12 +40,19 @@ import com.fsck.k9.ApplicationComponent;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
+import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
+import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -79,7 +88,7 @@ import javax.inject.Inject;
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
         MessageViewFragment.MessageViewFragmentGetListener,
-        IDrawerActivityListener
+        INavigationDrawerActivityListener
 {
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
@@ -95,11 +104,23 @@ public class NavigationDrawerActivity extends K9Activity
 
     public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
 
+    private DrawerLayout mDrawerLayout;
+    private RecyclerView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
+
+    private CharSequence mDrawerTitle;
+    private CharSequence mTitle;
+
+    private NavDrawerMenuAdapter mOffersAdapter;
+    private NavDrawerMenuAdapter mNewsAdapter;
+    private NavDrawerMenuAdapter mVideoAdapter;
+
     private int mSelectedTab;
     private BottomNavigationView mBottomNav;
 
-    private DrawerLayout mDrawerLayout;
-    private RecyclerView mDrawerList;
+    List<NavDrawerMenuItem> mOffersTabMenuItems;
+    List<NavDrawerMenuItem> mNewsTabMenuItems;
+    List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     @Inject MailPresenter mMailPresenter;
 
@@ -109,22 +130,23 @@ public class NavigationDrawerActivity extends K9Activity
 
             switch (item.getItemId()) {
                 case R.id.menu_mail:
-                    mSelectedTab = MAIL_TAB_SELECTED;
+                    mSelectedTab = NavigationDrawerActivity.MAIL_TAB_SELECTED;
+                    onMailTabClicked();
                     break;
                 case R.id.menu_news:
-                    mSelectedTab = NEWS_TAB_SELECTED;
+                    mSelectedTab = NavigationDrawerActivity.NEWS_TAB_SELECTED;
+                    onNewsTabClicked();
                     break;
                 case R.id.menu_video:
-                    mSelectedTab = VIDEO_TAB_SELECTED;
+                    mSelectedTab = NavigationDrawerActivity.VIDEO_TAB_SELECTED;
+                    onVideoTabClicked();
                     break;
                 case R.id.menu_offers:
-                    mSelectedTab = OFFERS_TAB_SELECTED;
+                    mSelectedTab = NavigationDrawerActivity.OFFERS_TAB_SELECTED;
+                    onOffersTabClicked();
                     break;
             }
-            if(mMailPresenter != null) {
-                mMailPresenter.setAdapterBasedOnSelectedTab(mSelectedTab);
-            }
-            setCheckedTab(mSelectedTab);
+            setSelectedTab(mSelectedTab);
             return true;
         }
     };
@@ -174,14 +196,44 @@ public class NavigationDrawerActivity extends K9Activity
 
         setContentView(R.layout.activity_navigation_drawer);
 
+        mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (RecyclerView) findViewById(R.id.left_drawer);
         mBottomNav = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
+
+        initNavigationDrawerMenuData();
+
+        // set a custom shadow that overlays the main content when the drawer opens
+//        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        // improve performance by indicating the list if fixed size.
+        mDrawerList.setHasFixedSize(true);
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+        // ActionBarDrawerToggle ties together the the proper interactions
+        // between the sliding drawer and the action bar app icon
+        mDrawerToggle = new ActionBarDrawerToggle( //R.drawable.ic_menu_black_24dp,  /* nav drawer image to replace 'Up' caret */
+                this,                  /* host Activity */
+                mDrawerLayout,         /* DrawerLayout object */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+        ) {
+            public void onDrawerClosed(View view) {
+                getSupportActionBar().setTitle(mTitle);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                setAdapterBasedOnSelectedTab(mSelectedTab);
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                getSupportActionBar().setTitle(mDrawerTitle);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         // init values
         if (savedInstanceState == null) {
@@ -191,25 +243,39 @@ public class NavigationDrawerActivity extends K9Activity
         } else {
             mSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
             // selected item not automatically saved after rotation
-            setCheckedTab(mSelectedTab);
+            setSelectedTab(mSelectedTab);
         }
 
-        mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
+        setAdapterBasedOnSelectedTab(mSelectedTab);
+
+
                 
 //        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
 
 //        mMailPresenter.setIntent(intent);
 
-        if (useSplitView()) {
-            getLayoutInflater().inflate(R.layout.split_message_list, mViewContainer, true);
-        } else {
-            getLayoutInflater().inflate(R.layout.message_list, mViewContainer, true);
-        }
-
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
         mBottomNav.bringToFront();
 
+    }
+
+
+    public void setDrawerEnable(boolean isEnabled) {
+        if ( isEnabled ) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
+            mDrawerToggle.syncState();
+
+        }
+        else {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
+            mDrawerToggle.setDrawerIndicatorEnabled(false);
+            mDrawerToggle.syncState();
+        }
     }
 
     private void buildDaggerComponent(Intent intent) {
@@ -292,7 +358,7 @@ public class NavigationDrawerActivity extends K9Activity
         }
     }
 
-    private void setCheckedTab(int position) {
+    private void setSelectedTab(int position) {
         for(int i=0; i<mBottomNav.getMenu().size(); i++) {
             if(i == position) {
                 mBottomNav.getMenu().getItem(i).setChecked(true);
@@ -301,6 +367,61 @@ public class NavigationDrawerActivity extends K9Activity
             }
         }
     }
+
+    private void setAdapterBasedOnSelectedTab(int selectedTab) {
+        BaseNavDrawerMenuAdapter selectedAdapter = null;
+        switch (selectedTab) {
+//            mMailTabMenuItems
+            case NEWS_TAB_SELECTED:
+                selectedAdapter = mNewsAdapter;
+                break;
+            case VIDEO_TAB_SELECTED:
+                selectedAdapter = mVideoAdapter;
+                break;
+            case OFFERS_TAB_SELECTED:
+                selectedAdapter = mOffersAdapter;
+                break;
+        }
+
+        if(mDrawerList != null && selectedAdapter != null) {
+            mDrawerList.setAdapter(selectedAdapter);
+        }
+    }
+
+    private String getJsonString(InputStream inputStream) {
+        try {
+            int size = inputStream.available();
+            byte[] buffer = new byte[size];
+            inputStream.read(buffer);
+            inputStream.close();
+            String jsonString = new String(buffer, "UTF-8");
+            return jsonString;
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    // populate the drawer navigation
+    private void initNavigationDrawerMenuData() {
+
+        // news, video and offers
+        String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
+
+        //news tab drawer menu
+        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
+        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this);
+
+        //video tab drawer menu
+        mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
+        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this);
+
+        //offers tab drawer menu
+        mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
+        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -329,6 +450,11 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // The action bar home/up action should open or close the drawer.
+        // ActionBarDrawerToggle will take care of this.
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
 
         if(mMailPresenter != null) {
             return mMailPresenter.onOptionsItemSelected(item);
@@ -339,7 +465,8 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void setTitle(CharSequence title) {
-        getSupportActionBar().setTitle(title);
+        mTitle = title;
+        getSupportActionBar().setTitle(mTitle);
     }
 
     /**
@@ -350,17 +477,38 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        if(mMailPresenter != null) {
-            mMailPresenter.onPostCreate();
-        }
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if(mMailPresenter != null) {
-            mMailPresenter.onConfigurationChanged(newConfig);
-        }
+        // Pass any configuration change to the drawer toggls
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    private void onMailTabClicked() {
+        mSelectedTab = MAIL_TAB_SELECTED;
+        setAdapterBasedOnSelectedTab(mSelectedTab);
+        // TODO show content
+    }
+
+    private void onNewsTabClicked() {
+        mSelectedTab = NEWS_TAB_SELECTED;
+        setAdapterBasedOnSelectedTab(mSelectedTab);
+        // TODO show content
+    }
+
+    private void onVideoTabClicked() {
+        mSelectedTab = VIDEO_TAB_SELECTED;
+        setAdapterBasedOnSelectedTab(mSelectedTab);
+        // TODO show content
+    }
+
+    private void onOffersTabClicked() {
+        mSelectedTab = OFFERS_TAB_SELECTED;
+        // TODO show content
     }
 
     private void forceBuildDaggerComponent() {
@@ -397,34 +545,43 @@ public class NavigationDrawerActivity extends K9Activity
         }
     }
 
-
     @Override
-    public int getSelectedTab() {
-        return mSelectedTab;
+    public Activity getActivity() {
+        return this;
     }
 
     @Override
-    public void onInvalidateOptionsMenu() {
-        invalidateOptionsMenu();
+    public FrameLayout getContainer() {
+        return mViewContainer;
     }
 
     @Override
-    public DrawerLayout getDrawerLayout() {
-        return mDrawerLayout;
+    public void setDrawerListAdapter(BaseNavDrawerMenuAdapter adapter) {
+        if(mDrawerList != null && adapter != null) {
+            mDrawerList.setAdapter(adapter);
+        }
     }
 
     @Override
-    public RecyclerView getDrawerList() {
-        return mDrawerList;
+    public void closeDrawer() {
+        mDrawerLayout.closeDrawer(mDrawerList);
     }
 
     @Override
-    public ActionBar getDrawerActivityActionBar() {
-        return getSupportActionBar();
-    }
-
-    @Override
-    public CharSequence getActionBarTitle() {
-        return getTitle();
+    public void showDialogSettings(final Account account) {
+        closeDrawer();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        AccountSettings.actionSettings(NavigationDrawerActivity.this, account);
+                        break;
+                    case 1:
+                        Prefs.actionPrefs(NavigationDrawerActivity.this);
+                }
+            }
+        });
+        builder.create().show();
     }
 }

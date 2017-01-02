@@ -14,7 +14,7 @@
         android:layout_height="24dp" />
 
     <TextView
-        android:id="@+id/item_title"
+        android:id="@+id/folder_name"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         android:layout_toRightOf="@id/item_icon"
