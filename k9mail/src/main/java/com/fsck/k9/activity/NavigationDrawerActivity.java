@@ -30,6 +30,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,17 +46,27 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.api.MainConfigurationApiAdapter;
+import com.fsck.k9.api.model.Config;
+import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 
+import junit.framework.Assert;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 
 /**
@@ -255,6 +266,29 @@ public class NavigationDrawerActivity extends K9Activity
 //        mMailPresenter.setIntent(intent);
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+
+
+        Observable<MainConfig> mainconfig = MainConfigurationApiAdapter.getConfig();
+
+        mainconfig
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<MainConfig>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i("TEST","ERROR: " + e);
+                    }
+
+                    @Override
+                    public void onNext(MainConfig mainConfig) {
+                        Log.i("TEST", ""+mainConfig.getConfig().getAge());
+                    }
+                });
 
         mBottomNav.bringToFront();
 

@@ -1,6 +1,6 @@
 package com.fsck.k9.api;
 
-import com.fsck.k9.api.model.Config;
+import com.fsck.k9.api.model.MainConfig;
 
 import retrofit2.http.GET;
 import rx.Observable;
@@ -11,6 +11,6 @@ import rx.Observable;
 
 public interface MainConfigurationApiClient {
 
-    @GET("/1/config")
-    Observable<Config> getConfig();
+    @GET("1/config")
+    Observable<MainConfig> getConfig();
 }
