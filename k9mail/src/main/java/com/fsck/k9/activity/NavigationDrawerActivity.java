@@ -46,16 +46,15 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
-import com.fsck.k9.api.MainConfigurationApiAdapter;
-import com.fsck.k9.api.model.Config;
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.Authorize;
 import com.fsck.k9.api.model.MainConfig;
+import com.fsck.k9.api.model.UserLogin;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
-
-import junit.framework.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -268,30 +267,64 @@ public class NavigationDrawerActivity extends K9Activity
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
 
-        Observable<MainConfig> mainconfig = MainConfigurationApiAdapter.getConfig();
+        ApiController.getConfig(new Subscriber<MainConfig>() {
+            @Override
+            public void onCompleted() {
 
-        mainconfig
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<MainConfig>() {
-                    @Override
-                    public void onCompleted() {
+            }
 
-                    }
+            @Override
+            public void onError(Throwable e) {
+                Log.i("TEST","ERROR: " + e);
+            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.i("TEST","ERROR: " + e);
-                    }
+            @Override
+            public void onNext(MainConfig mainConfig) {
+                Log.i("APITEST", "CONFIG AGE: "+mainConfig.getConfig().getAge());
+            }
+        });
 
-                    @Override
-                    public void onNext(MainConfig mainConfig) {
-                        Log.i("TEST", ""+mainConfig.getConfig().getAge());
-                    }
-                });
+
+        ApiController.getAuthorize(new Subscriber<Authorize>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(Authorize authorize) {
+                Log.i("APITEST","Result: "+ authorize.getResult());
+
+                userLogin();
+            }
+        });
+
 
         mBottomNav.bringToFront();
 
+    }
+
+    private void userLogin() {
+        ApiController.postUserLogin(new Subscriber<UserLogin>() {
+            @Override
+            public void onCompleted() {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.i("APITEST","ERROR: "+e.toString());
+            }
+
+            @Override
+            public void onNext(UserLogin userLogin) {
+                Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
+            }
+        });
     }
 
 
@@ -302,7 +335,6 @@ public class NavigationDrawerActivity extends K9Activity
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.syncState();
-
         }
         else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
