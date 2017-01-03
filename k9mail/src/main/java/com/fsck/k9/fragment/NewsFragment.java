@@ -1,8 +1,9 @@
 package com.fsck.k9.fragment;
 
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.fsck.k9.R;
+
 
 /**
  * Created by thomascastangia on 02/01/17.
@@ -21,7 +23,10 @@ import com.fsck.k9.R;
 public class NewsFragment extends Fragment {
 
     public WebView mWebView;
-
+    public static NewsFragment newInstance() {
+        NewsFragment fragment = new NewsFragment();
+        return fragment;
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

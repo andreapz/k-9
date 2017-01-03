@@ -44,9 +44,12 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.MailNavDrawerClickListener;
+import com.fsck.k9.adapter.NavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
@@ -123,6 +126,7 @@ public class NavigationDrawerActivity extends K9Activity
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     @Inject MailPresenter mMailPresenter;
+    @Inject NewsPresenter mNewsPresenter;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -188,7 +192,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
-
+        if(mNewsPresenter == null) {
+            buildDaggerComponent(mailIntent);
+        }
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
@@ -249,13 +255,10 @@ public class NavigationDrawerActivity extends K9Activity
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
 
-                
-//        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
-
-//        mMailPresenter.setIntent(intent);
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
+        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
         mBottomNav.bringToFront();
 
     }
@@ -310,6 +313,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onSaveInstanceState(outState);
+        }
     }
 
     @Override
@@ -323,6 +329,9 @@ public class NavigationDrawerActivity extends K9Activity
         outState.putInt(SELECTED_TAB, mSelectedTab);
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
+        }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onSaveInstanceState(outState);
         }
     }
 
@@ -408,18 +417,32 @@ public class NavigationDrawerActivity extends K9Activity
 
         // news, video and offers
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
+        NavDrawerClickListener mClickListener = new NavDrawerClickListener() {
+            @Override
+            public void onMenuClick(NavDrawerMenuItem item) {
+                super.onMenuClick(item);
 
+                if(mNewsPresenter != null){
+                    closeDrawer();
+                    mNewsPresenter.openSection(item.getUrl());
+                }
+
+
+            }
+
+
+        };
         //news tab drawer menu
         mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this);
+        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
 
         //video tab drawer menu
         mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
-        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this);
+        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this,mClickListener);
 
         //offers tab drawer menu
         mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
-        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this);
+        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this,mClickListener);
     }
 
 

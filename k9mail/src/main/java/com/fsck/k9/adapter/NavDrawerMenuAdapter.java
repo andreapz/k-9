@@ -24,15 +24,15 @@ public class NavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
 
     // data set
     private List<NavDrawerMenuItem> mItems;
-
+    NavDrawerClickListener mNavDrawerClickListener;
     private List<NavDrawerMenuItem> mVisibleItems = new ArrayList<>();
     private HashMap<String, Boolean> mItemsOpenStatus = new HashMap<>();
     private HashMap<String, Integer> mItemsDepth = new HashMap<>();
 
 
-    public NavDrawerMenuAdapter(List<NavDrawerMenuItem> data, Context context) {
+    public NavDrawerMenuAdapter(List<NavDrawerMenuItem> data, Context context, NavDrawerClickListener settingsListener) {
         this.mContext = context;
-
+        this.mNavDrawerClickListener = settingsListener;
         mItems = data;
         mVisibleItems.addAll(data);
         // init item status hash map. Elements all collapsed
@@ -131,7 +131,7 @@ public class NavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
                         }
                         notifyDataSetChanged();
                     } else {
-                        // TODO
+                        mNavDrawerClickListener.onMenuClick(item);
                     }
                 }
             });

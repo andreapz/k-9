@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 
 import com.fsck.k9.fragment.MailPresenter;
+import com.fsck.k9.fragment.NewsPresenter;
 
 import dagger.Module;
 import dagger.Provides;
@@ -38,6 +39,11 @@ public class ActivityModule {
     @Provides @ActivityScope
     MailPresenter provideMailPresenter() {
         return new MailPresenter((INavigationDrawerActivityListener) mActivity, mIntent);
+    }
+
+    @Provides @ActivityScope
+    NewsPresenter provideNewsPresenter() {
+        return new NewsPresenter((INavigationDrawerActivityListener) mActivity, mIntent);
     }
 
     @Provides @ActivityScope
