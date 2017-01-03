@@ -1,8 +1,6 @@
 package com.fsck.k9.fragment;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -10,13 +8,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.animation.AnimationUtils;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
 
-import com.fsck.k9.activity.misc.SwipeGestureDetector;
+
+import com.fsck.k9.K9;
+
+import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.view.ViewSwitcher;
 
 
@@ -30,13 +26,15 @@ import javax.inject.Singleton;
  * Created by thomascastangia on 02/01/17.
  */
 @Singleton
-public class NewsPresenter implements SwipeGestureDetector.OnSwipeGestureListener, ViewSwitcher.OnSwitchCompleteListener {
+public class NewsPresenter  {
 
     private final Context mContext;
     private Intent mIntent;
     private LayoutInflater mInflater;
+    private final INavigationDrawerActivityListener mListener;
     private ViewSwitcher mViewSwitcher;
     private ActionBar mActionBar;
+    private NewsFragment mNewsFragment;
 
     private DisplayMode mDisplayMode;
 
@@ -45,14 +43,19 @@ public class NewsPresenter implements SwipeGestureDetector.OnSwipeGestureListene
     public DisplayMode getDisplayMode() {
         return mDisplayMode;
     }
+
+
+
+
     public enum DisplayMode {
         NEWS_VIEW,
         SPLIT_VIEW
     }
 
     @Inject
-    public NewsPresenter(Context context, Intent intent) {
-        mContext = context;
+    public NewsPresenter(INavigationDrawerActivityListener listener, Intent intent) {
+        mListener = listener;
+        mContext = listener.getActivity();
         mIntent = intent;
     }
 
@@ -63,14 +66,7 @@ public class NewsPresenter implements SwipeGestureDetector.OnSwipeGestureListene
     public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
         mInflater = inflater;
 
-        if (!useSplitView()) {
-            mViewSwitcher = (ViewSwitcher) ((Activity)mContext).findViewById(R.id.container);
-            mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
-            mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
-            mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
-            mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
-            mViewSwitcher.setOnSwitchCompleteListener(this);
-        }
+
 
 //        initializeActionBar();
 //        initializeNavigationDrawer();
@@ -110,18 +106,5 @@ public class NewsPresenter implements SwipeGestureDetector.OnSwipeGestureListene
             }
         }
     }
-    @Override
-    public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
 
-    }
-
-    @Override
-    public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
-
-    }
-
-    @Override
-    public void onSwitchComplete(int displayedChild) {
-
-    }
 }
