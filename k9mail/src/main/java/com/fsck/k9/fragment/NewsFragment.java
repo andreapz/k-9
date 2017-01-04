@@ -23,10 +23,13 @@ import com.fsck.k9.R;
 public class NewsFragment extends Fragment {
 
     public WebView mWebView;
-    public static String home_url;
-    public static NewsFragment newInstance(String home) {
-        home_url =home;
+    public String home_url;
+    public  static NewsFragment newInstance(String home) {
+
         NewsFragment fragment = new NewsFragment();
+        Bundle args = new Bundle();
+        args.putString("home", home);
+        fragment.setArguments(args);
         return fragment;
     }
     @Override
@@ -39,6 +42,7 @@ public class NewsFragment extends Fragment {
         // Enable Javascript
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        home_url = getArguments().getString("home");
         mWebView.loadUrl(home_url);
         // Force links and redirects to open in the WebView instead of in a browser
         mWebView.setWebViewClient(new WebViewClient());
