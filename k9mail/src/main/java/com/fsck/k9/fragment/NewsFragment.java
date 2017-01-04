@@ -31,17 +31,18 @@ public class NewsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mWebView = (WebView) mWebView.findViewById(R.id.webview);
-
+        View v=inflater.inflate(R.layout.fragment_news, container, false);
+        mWebView = (WebView) v.findViewById(R.id.webview);
+        mWebView.loadUrl("https://google.com");
 
         // Enable Javascript
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
 
         // Force links and redirects to open in the WebView instead of in a browser
-        updateUrl("google.com");
+        mWebView.setWebViewClient(new WebViewClient());
 
-        return inflater.inflate(R.layout.fragment_news, container, false);
+        return v;
     }
 
     public void updateUrl(String newUrl) {
