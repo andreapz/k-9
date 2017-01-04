@@ -2,6 +2,7 @@ package com.fsck.k9.fragment;
 
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 
 import android.view.LayoutInflater;
@@ -45,7 +46,14 @@ public class NewsFragment extends Fragment {
         home_url = getArguments().getString("home");
         mWebView.loadUrl(home_url);
         // Force links and redirects to open in the WebView instead of in a browser
-        mWebView.setWebViewClient(new WebViewClient());
+
+        mWebView.setWebViewClient(new WebViewClient(){
+            public void onProgressChanged(WebView view, int progress) {
+                //nop
+            }
+        });
+
+
 
         return v;
     }
