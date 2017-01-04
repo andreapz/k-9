@@ -22,6 +22,7 @@ import com.fsck.k9.R;
 
 public class NewsFragment extends Fragment {
 
+    private static final String ARG_HOME = "HOME";
     public WebView mWebView;
     public String home_url;
     private NewsFragmentListener mFragmentListener;
@@ -29,7 +30,7 @@ public class NewsFragment extends Fragment {
 
         NewsFragment fragment = new NewsFragment();
         Bundle args = new Bundle();
-        args.putString("home", home);
+        args.putString(ARG_HOME, home);
         fragment.setArguments(args);
         return fragment;
     }
@@ -37,13 +38,13 @@ public class NewsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v=inflater.inflate(R.layout.fragment_news, container, false);
+        View v=inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
 
         // Enable Javascript
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        home_url = getArguments().getString("home");
+        home_url = getArguments().getString(ARG_HOME);
         mWebView.loadUrl(home_url);
         mFragmentListener = getFragmentListner();
         mFragmentListener.enableActionBarProgress(true);
@@ -85,8 +86,11 @@ public class NewsFragment extends Fragment {
         mWebView.loadUrl(newUrl);
         mFragmentListener.enableActionBarProgress(true);
         mWebView.setWebViewClient(new WebViewClient(){
-            public void onPageFinisced(WebView view, int progress) {
-                //nop
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url){
+
+                // ...
+                return false;
             }
             public void onPageFinished(WebView view, String url) {
                 mFragmentListener.enableActionBarProgress(false);
