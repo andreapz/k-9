@@ -2,7 +2,6 @@ package com.fsck.k9.fragment;
 
 
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 
 import android.view.LayoutInflater;
@@ -25,6 +24,7 @@ public class NewsFragment extends Fragment {
 
     public WebView mWebView;
     public String home_url;
+    private NewsFragmentListener mFragmentListener;
     public  static NewsFragment newInstance(String home) {
 
         NewsFragment fragment = new NewsFragment();
@@ -45,11 +45,17 @@ public class NewsFragment extends Fragment {
         webSettings.setJavaScriptEnabled(true);
         home_url = getArguments().getString("home");
         mWebView.loadUrl(home_url);
+        mFragmentListener = getFragmentListner();
+        mFragmentListener.enableActionBarProgress(true);
+
         // Force links and redirects to open in the WebView instead of in a browser
 
         mWebView.setWebViewClient(new WebViewClient(){
-            public void onProgressChanged(WebView view, int progress) {
+            public void onPageFinisced(WebView view, int progress) {
                 //nop
+            }
+            public void onPageFinished(WebView view, String url) {
+                mFragmentListener.enableActionBarProgress(false);
             }
         });
 
@@ -58,11 +64,42 @@ public class NewsFragment extends Fragment {
         return v;
     }
 
+    private NewsFragmentListener getFragmentListner() {
+
+        NewsFragmentListener listener = null;
+
+        if(getActivity() instanceof NewsFragmentGetListener) {
+            try {
+                listener = ((NewsFragmentGetListener) getActivity()).getNewsFragmentListner();
+            } catch (ClassCastException e) {
+                throw new ClassCastException(getActivity().getClass() +
+                        " must implement MessageListFragmentListener");
+            }
+        }
+
+        return listener;
+    }
+
     public void updateUrl(String newUrl) {
 
         mWebView.loadUrl(newUrl);
-        mWebView.setWebViewClient(new WebViewClient());
+        mFragmentListener.enableActionBarProgress(true);
+        mWebView.setWebViewClient(new WebViewClient(){
+            public void onPageFinisced(WebView view, int progress) {
+                //nop
+            }
+            public void onPageFinished(WebView view, String url) {
+                mFragmentListener.enableActionBarProgress(false);
+            }
+        });
     }
 
 
+    public interface NewsFragmentListener {
+        void enableActionBarProgress(boolean enable);
+    }
+    public interface NewsFragmentGetListener {
+
+        NewsFragmentListener getNewsFragmentListner();
+    }
 }

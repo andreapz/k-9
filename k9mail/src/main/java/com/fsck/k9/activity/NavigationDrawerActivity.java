@@ -49,6 +49,7 @@ import com.fsck.k9.adapter.NavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.fragment.NewsFragment;
 import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
@@ -91,6 +92,7 @@ import javax.inject.Inject;
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
         MessageViewFragment.MessageViewFragmentGetListener,
+        NewsFragment.NewsFragmentGetListener,
         INavigationDrawerActivityListener
 {
 
@@ -543,6 +545,13 @@ public class NavigationDrawerActivity extends K9Activity
         buildDaggerComponent(intent);
     }
 
+    @Override
+    public NewsFragment.NewsFragmentListener getNewsFragmentListner() {
+        if(mNewsPresenter == null) {
+            forceBuildDaggerComponent();
+        }
+        return mNewsPresenter;
+    }
     @Override
     public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
         if(mMailPresenter == null) {

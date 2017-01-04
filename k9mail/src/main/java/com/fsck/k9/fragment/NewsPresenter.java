@@ -1,5 +1,6 @@
 package com.fsck.k9.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 
 import android.app.FragmentManager;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 
 import com.fsck.k9.K9;
@@ -30,7 +32,7 @@ import javax.inject.Singleton;
  * Created by thomascastangia on 02/01/17.
  */
 @Singleton
-public class NewsPresenter   {
+public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
 
     private final Context mContext;
     private Intent mIntent;
@@ -48,12 +50,21 @@ public class NewsPresenter   {
     private String mDefaultHomePage;
 
     private int mSelectedTab;
+    private ProgressBar mActionBarProgress;
 
     public DisplayMode getDisplayMode() {
         return mDisplayMode;
     }
 
+    @Override
+    public void enableActionBarProgress(boolean enable) {
+        if(enable){
+            mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+        }else{
+            mActionBarProgress.setVisibility(ProgressBar.GONE);
+        }
 
+    }
 
 
     public enum DisplayMode {
@@ -133,10 +144,14 @@ public class NewsPresenter   {
         mActionBar.setCustomView(R.layout.actionbar_custom);
 
         View customView = mActionBar.getCustomView();
+        mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
+
 
 
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
+
+
     /**
      * Create fragment instances if necessary.
      *
