@@ -258,7 +258,7 @@ public class NavigationDrawerActivity extends K9Activity
 
 //        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
-        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState,mNewsTabMenuItems.get(0).getUrl());
         mBottomNav.bringToFront();
 
     }
@@ -432,9 +432,12 @@ public class NavigationDrawerActivity extends K9Activity
 
 
         };
+
+
         //news tab drawer menu
         mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
         mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
+
 
         //video tab drawer menu
         mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");

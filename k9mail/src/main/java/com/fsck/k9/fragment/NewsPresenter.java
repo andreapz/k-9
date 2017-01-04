@@ -2,7 +2,6 @@ package com.fsck.k9.fragment;
 
 import android.app.Activity;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -22,7 +21,6 @@ import com.fsck.k9.K9;
 
 import com.fsck.k9.R;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
-import com.fsck.k9.view.ViewSwitcher;
 
 
 import javax.inject.Inject;
@@ -47,6 +45,7 @@ public class NewsPresenter   {
     private View mNewsViewPlaceHolder;
 
     private DisplayMode mDisplayMode;
+    private String mDefaultHomePage;
 
     private int mSelectedTab;
 
@@ -73,10 +72,11 @@ public class NewsPresenter   {
         mIntent = intent;
     }
     @Nullable
-    public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
+    public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState, String home) {
         mInflater = inflater;
         FrameLayout container = mListener.getContainer();
         mInflater.inflate(R.layout.fragment_news, container, true);
+        mDefaultHomePage = home;
 
 
         initializeActionBar();
@@ -84,7 +84,9 @@ public class NewsPresenter   {
         findFragments();
         initializeDisplayMode(savedInstanceState);
         initializeLayout();
-        initializeFragments();
+        initializeFragments(mDefaultHomePage);
+
+
     }
 
     public void onSaveInstanceState(Bundle outState) {
@@ -140,7 +142,7 @@ public class NewsPresenter   {
      *
      * @see #findFragments()
      */
-    private void initializeFragments() {
+    private void initializeFragments(String home) {
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
 //        fragmentManager.addOnBackStackChangedListener(this);
 
@@ -148,9 +150,10 @@ public class NewsPresenter   {
 
         if (!hasNewsFragment) {
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            mNewsViewFragment = NewsFragment.newInstance();
+            mNewsViewFragment = NewsFragment.newInstance(home);
             ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
+
         }
 
 
