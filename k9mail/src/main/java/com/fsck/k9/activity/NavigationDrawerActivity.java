@@ -189,9 +189,9 @@ public class NavigationDrawerActivity extends K9Activity
 
         Intent mailIntent = getMailIntent(accounts.get(0));
 
-        if(mMailPresenter == null) {
-            buildDaggerComponent(mailIntent);
-        }
+//        if(mMailPresenter == null) {
+//            buildDaggerComponent(mailIntent);
+//        }
         if(mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
@@ -256,7 +256,7 @@ public class NavigationDrawerActivity extends K9Activity
 
 
 
-        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+//        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
         mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
         mBottomNav.bringToFront();

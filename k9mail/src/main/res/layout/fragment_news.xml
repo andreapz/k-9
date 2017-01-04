@@ -4,9 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
+    <FrameLayout
+        android:id="@+id/news_view_container"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+        <WebView
+            android:id="@+id/webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 
-    <WebView
-        android:id="@+id/webview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 </RelativeLayout>

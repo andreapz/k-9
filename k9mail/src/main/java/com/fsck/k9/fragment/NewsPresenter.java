@@ -76,7 +76,7 @@ public class NewsPresenter   {
     public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
         mInflater = inflater;
         FrameLayout container = mListener.getContainer();
-        mInflater.inflate(R.layout.news, container, true);
+        mInflater.inflate(R.layout.fragment_news, container, true);
 
 
         initializeActionBar();
@@ -95,11 +95,11 @@ public class NewsPresenter   {
     private void findFragments() {
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
 
-        mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.message_view_container);
+        mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
     }
 
     private void initializeLayout() {
-        mNewsViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.message_view_container);
+        mNewsViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.news_view_container);
 
         mNewsViewPlaceHolder = mInflater.inflate(R.layout.empty_message_view, mNewsViewContainer, false);
     }
@@ -149,7 +149,7 @@ public class NewsPresenter   {
         if (!hasNewsFragment) {
             FragmentTransaction ft = fragmentManager.beginTransaction();
             mNewsViewFragment = NewsFragment.newInstance();
-            ft.add(R.id.message_view_container, mNewsViewFragment);
+            ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
         }
 
