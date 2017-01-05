@@ -9,5 +9,6 @@ import com.fsck.k9.model.NavDrawerMenuItem;
 
 
 public class NavDrawerClickListener {
+    public void onSettingsClick(){};
     public void onMenuClick(NavDrawerMenuItem item){};
 }

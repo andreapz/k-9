@@ -66,6 +66,7 @@ public class NavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
             headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    mNavDrawerClickListener.onSettingsClick();
                 }
             });
         } else if (holder instanceof ItemViewHolder) {

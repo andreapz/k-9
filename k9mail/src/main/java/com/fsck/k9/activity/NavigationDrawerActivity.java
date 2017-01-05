@@ -421,6 +421,13 @@ public class NavigationDrawerActivity extends K9Activity
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
         NavDrawerClickListener mClickListener = new NavDrawerClickListener() {
             @Override
+            public void onSettingsClick() {
+                super.onSettingsClick();
+                Preferences prefs = Preferences.getPreferences(getApplicationContext());
+                List<Account> accounts = prefs.getAccounts();
+                showDialogSettings(accounts.get(0));
+            }
+            @Override
             public void onMenuClick(NavDrawerMenuItem item) {
                 super.onMenuClick(item);
 
