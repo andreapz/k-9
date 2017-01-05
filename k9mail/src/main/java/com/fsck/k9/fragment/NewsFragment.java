@@ -116,7 +116,6 @@ public class NewsFragment extends Fragment {
         void goBack();
      }
     public interface NewsFragmentGetListener {
-
         NewsFragmentListener getNewsFragmentListner();
     }
 }

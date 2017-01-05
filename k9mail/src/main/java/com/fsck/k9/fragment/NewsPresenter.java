@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 /**
  * Created by thomascastangia on 02/01/17.
  */
+
 @Singleton
 public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener {
 
@@ -41,81 +42,13 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     private ViewSwitcher mViewSwitcher;
     private LayoutInflater mInflater;
     private static final String STATE_DISPLAY_MODE = "displayMode";
-
     private final INavigationDrawerActivityListener mListener;
-//    private ViewSwitcher mViewSwitcher;
     private ActionBar mActionBar;
     private NewsFragment mNewsViewFragment;
     private NewsFragment mNewsDetailFragment;
-
-    private ViewGroup mNewsViewContainer;
-    private ViewGroup mNewsDetailContainer;
-
     private DisplayMode mDisplayMode;
     private String mDefaultHomePage;
-
-    private int mSelectedTab;
     private ProgressBar mActionBarProgress;
-
-
-
-    @Override
-    public void enableActionBarProgress(boolean enable) {
-        if(enable){
-            mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
-        }else{
-            mActionBarProgress.setVisibility(ProgressBar.GONE);
-        }
-
-    }
-
-    @Override
-    public boolean isDetailStatus() {
-        return mDisplayMode == DisplayMode.NEWS_DETAIL;
-    }
-
-
-
-    @Override
-    public void detailPageLoad(String url) {
-
-        NewsFragment fragment = NewsFragment.newInstance(url);
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
-        ft.replace(R.id.news_detail_container, fragment);
-        mNewsDetailFragment = fragment;
-        ft.commit();
-        mDisplayMode = DisplayMode.NEWS_DETAIL;
-        mViewSwitcher.showSecondView();
-
-
-    }
-
-    public DisplayMode getDisplayMode() {
-        return mDisplayMode;
-    }
-
-    @Override
-    public void onSwitchComplete(int displayedChild) {
-        if (displayedChild == 0) {
-            removeDetailFragment();
-            setActionBarToggle();
-        }else{
-            setActionBarUp();
-        }
-
-    }
-
-
-
-    @Override
-    public void goBack() {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
-        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
-            showNews();
-        } else {
-           //nop
-        }
-    }
 
 
     public enum DisplayMode {
@@ -123,6 +56,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         NEWS_DETAIL,
         SPLIT_VIEW
     }
+
+
+
 
     @Inject
     public NewsPresenter(INavigationDrawerActivityListener listener, Intent intent) {
@@ -146,27 +82,19 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
         mViewSwitcher.setOnSwitchCompleteListener(this);
         mDefaultHomePage = home;
-
-
         initializeActionBar();
-
         findFragments();
         initializeDisplayMode(savedInstanceState);
-        initializeLayout();
         initializeFragments(mDefaultHomePage);
-
-
 
     }
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
-
     }
 
     private void findFragments() {
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
-
         mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
         mNewsDetailFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
     }
@@ -175,7 +103,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     /**
      * Create fragment instances if necessary.
      *
-     * @see #findFragments()
      */
     private void initializeFragments(String home) {
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
@@ -189,16 +116,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
             ft.commit();
 
         }
-
-
     }
 
-    private void initializeLayout() {
-        mNewsViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.news_view_container);
-        mNewsDetailContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.news_detail_container);
-
-
-    }
 
     private void initializeDisplayMode(Bundle savedInstanceState) {
         if (useSplitView()) {
@@ -216,8 +135,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         }
 
         mDisplayMode = DisplayMode.NEWS_VIEW;
-
-
 
     }
 
@@ -276,7 +193,61 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
 
 
     }
-    //    @Override
+
+    @Override
+    public void enableActionBarProgress(boolean enable) {
+        if(enable){
+            mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+        }else{
+            mActionBarProgress.setVisibility(ProgressBar.GONE);
+        }
+
+    }
+
+    @Override
+    public boolean isDetailStatus() {
+        return mDisplayMode == DisplayMode.NEWS_DETAIL;
+    }
+
+
+
+    @Override
+    public void detailPageLoad(String url) {
+
+        NewsFragment fragment = NewsFragment.newInstance(url);
+        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        ft.replace(R.id.news_detail_container, fragment);
+        mNewsDetailFragment = fragment;
+        ft.commit();
+        mDisplayMode = DisplayMode.NEWS_DETAIL;
+        mViewSwitcher.showSecondView();
+
+
+    }
+
+    public DisplayMode getDisplayMode() {
+        return mDisplayMode;
+    }
+
+    @Override
+    public void onSwitchComplete(int displayedChild) {
+        if (displayedChild == 0) {
+            removeDetailFragment();
+            setActionBarToggle();
+        }else{
+            setActionBarUp();
+        }
+
+    }
+
+    @Override
+    public void goBack() {
+        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
+            showNews();
+        }
+    }
+
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         switch (itemId) {
