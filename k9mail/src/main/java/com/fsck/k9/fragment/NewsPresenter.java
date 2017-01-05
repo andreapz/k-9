@@ -13,16 +13,17 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-
-
 import com.fsck.k9.K9;
 
 import com.fsck.k9.R;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
+import com.fsck.k9.view.ViewSwitcher;
 
 
 import javax.inject.Inject;
@@ -32,10 +33,12 @@ import javax.inject.Singleton;
  * Created by thomascastangia on 02/01/17.
  */
 @Singleton
-public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
+public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener {
 
     private final Context mContext;
+    private static final String ARG_HOME = "HOME";
     private Intent mIntent;
+    private ViewSwitcher mViewSwitcher;
     private LayoutInflater mInflater;
     private static final String STATE_DISPLAY_MODE = "displayMode";
 
@@ -43,8 +46,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
 //    private ViewSwitcher mViewSwitcher;
     private ActionBar mActionBar;
     private NewsFragment mNewsViewFragment;
+    private NewsFragment mNewsDetailFragment;
+
     private ViewGroup mNewsViewContainer;
-    private View mNewsViewPlaceHolder;
+    private ViewGroup mNewsDetailContainer;
 
     private DisplayMode mDisplayMode;
     private String mDefaultHomePage;
@@ -52,9 +57,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
     private int mSelectedTab;
     private ProgressBar mActionBarProgress;
 
-    public DisplayMode getDisplayMode() {
-        return mDisplayMode;
-    }
+
 
     @Override
     public void enableActionBarProgress(boolean enable) {
@@ -66,9 +69,58 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
 
     }
 
+    @Override
+    public boolean isDetailStatus() {
+        return mDisplayMode == DisplayMode.NEWS_DETAIL;
+    }
+
+
+
+    @Override
+    public void detailPageLoad(String url) {
+
+        NewsFragment fragment = NewsFragment.newInstance(url);
+        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        ft.replace(R.id.news_detail_container, fragment);
+        mNewsDetailFragment = fragment;
+        ft.commit();
+        mDisplayMode = DisplayMode.NEWS_DETAIL;
+        mViewSwitcher.showSecondView();
+
+
+    }
+
+    public DisplayMode getDisplayMode() {
+        return mDisplayMode;
+    }
+
+    @Override
+    public void onSwitchComplete(int displayedChild) {
+        if (displayedChild == 0) {
+            removeDetailFragment();
+            setActionBarToggle();
+        }else{
+            setActionBarUp();
+        }
+
+    }
+
+
+
+    @Override
+    public void goBack() {
+        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
+            showNews();
+        } else {
+           //nop
+        }
+    }
+
 
     public enum DisplayMode {
         NEWS_VIEW,
+        NEWS_DETAIL,
         SPLIT_VIEW
     }
 
@@ -87,6 +139,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
         mInflater = inflater;
         FrameLayout container = mListener.getContainer();
         mInflater.inflate(R.layout.fragment_news, container, true);
+        mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
+        mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
+        mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
+        mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
+        mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
+        mViewSwitcher.setOnSwitchCompleteListener(this);
         mDefaultHomePage = home;
 
 
@@ -96,6 +154,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
         initializeDisplayMode(savedInstanceState);
         initializeLayout();
         initializeFragments(mDefaultHomePage);
+
 
 
     }
@@ -109,12 +168,36 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
 
         mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
+        mNewsDetailFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
+    }
+
+
+    /**
+     * Create fragment instances if necessary.
+     *
+     * @see #findFragments()
+     */
+    private void initializeFragments(String home) {
+        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+
+        boolean hasNewsFragment = (mNewsViewFragment != null);
+
+        if (!hasNewsFragment) {
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            mNewsViewFragment = NewsFragment.newInstance(home);
+            ft.add(R.id.news_view_container, mNewsViewFragment);
+            ft.commit();
+
+        }
+
+
     }
 
     private void initializeLayout() {
         mNewsViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.news_view_container);
+        mNewsDetailContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.news_detail_container);
 
-        mNewsViewPlaceHolder = mInflater.inflate(R.layout.empty_message_view, mNewsViewContainer, false);
+
     }
 
     private void initializeDisplayMode(Bundle savedInstanceState) {
@@ -132,9 +215,31 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
             }
         }
 
-
         mDisplayMode = DisplayMode.NEWS_VIEW;
 
+
+
+    }
+
+
+    public void showNews() {
+        mDisplayMode = DisplayMode.NEWS_VIEW;
+        mViewSwitcher.showFirstView();
+
+    }
+
+    private void removeNewsFragment() {
+        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        ft.remove(mNewsViewFragment);
+        mNewsViewFragment = null;
+        ft.commit();
+    }
+
+    private void removeDetailFragment() {
+        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        ft.remove(mNewsDetailFragment);
+        mNewsDetailFragment = null;
+        ft.commit();
     }
 
     private void initializeActionBar() {
@@ -152,27 +257,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
     }
 
 
-    /**
-     * Create fragment instances if necessary.
-     *
-     * @see #findFragments()
-     */
-    private void initializeFragments(String home) {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
-//        fragmentManager.addOnBackStackChangedListener(this);
-
-        boolean hasNewsFragment = (mNewsViewFragment != null);
-
-        if (!hasNewsFragment) {
-            FragmentTransaction ft = fragmentManager.beginTransaction();
-            mNewsViewFragment = NewsFragment.newInstance(home);
-            ft.add(R.id.news_view_container, mNewsViewFragment);
-            ft.commit();
-
-        }
-
-
-    }
     private boolean useSplitView() {
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
         int orientation = mContext.getResources().getConfiguration().orientation;
@@ -188,7 +272,38 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener {
         if(mNewsViewFragment != null){
             mNewsViewFragment.updateUrl(url);
         }
+        showNews();
+
 
     }
+    //    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        switch (itemId) {
+            case android.R.id.home: {
+                goBack();
+                return true;
+            }
+            default: {
+                return true;
+            }
+         }
+
+
+    }
+    @Override
+    public void setActionBarUp() {
+        if(mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(false);
+        }
+    }
+
+    @Override
+    public void setActionBarToggle() {
+        if(mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(true);
+        }
+    }
+
 
 }

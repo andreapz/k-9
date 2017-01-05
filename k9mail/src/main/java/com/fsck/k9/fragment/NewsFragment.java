@@ -52,8 +52,14 @@ public class NewsFragment extends Fragment {
         // Force links and redirects to open in the WebView instead of in a browser
 
         mWebView.setWebViewClient(new WebViewClient(){
-            public void onPageFinisced(WebView view, int progress) {
-                //nop
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url){
+
+                if(!mFragmentListener.isDetailStatus()){
+                    mFragmentListener.detailPageLoad(url);
+                    return true;
+                }
+                return false;
             }
             public void onPageFinished(WebView view, String url) {
                 mFragmentListener.enableActionBarProgress(false);
@@ -88,8 +94,10 @@ public class NewsFragment extends Fragment {
         mWebView.setWebViewClient(new WebViewClient(){
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url){
-
-                // ...
+                if(!mFragmentListener.isDetailStatus()){
+                    mFragmentListener.detailPageLoad(url);
+                    return true;
+                }
                 return false;
             }
             public void onPageFinished(WebView view, String url) {
@@ -101,7 +109,12 @@ public class NewsFragment extends Fragment {
 
     public interface NewsFragmentListener {
         void enableActionBarProgress(boolean enable);
-    }
+        void detailPageLoad(String url);
+        boolean isDetailStatus();
+        void setActionBarToggle();
+        void setActionBarUp();
+        void goBack();
+     }
     public interface NewsFragmentGetListener {
 
         NewsFragmentListener getNewsFragmentListner();

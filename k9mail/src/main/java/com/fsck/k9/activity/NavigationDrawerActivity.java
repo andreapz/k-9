@@ -483,7 +483,9 @@ public class NavigationDrawerActivity extends K9Activity
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
+        if(mNewsPresenter != null) {
+            return mNewsPresenter.onOptionsItemSelected(item);
+        }
         if(mMailPresenter != null) {
             return mMailPresenter.onOptionsItemSelected(item);
         }
@@ -570,7 +572,10 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void onBackPressed() {
-        if(mMailPresenter != null
+        if(mNewsPresenter!= null && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL){
+            mNewsPresenter.showNews();
+        }
+        else if(mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
                     && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
