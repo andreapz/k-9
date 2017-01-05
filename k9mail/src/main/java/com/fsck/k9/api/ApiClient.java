@@ -24,6 +24,9 @@ public interface ApiClient {
     @GET("1/account/authorize")
     Observable<Authorize> getAuthorize(@Query("udid") String udid, @Query("app_id") String appid);
 
+    @GET("/1/users/me")
+    Observable<UserLogin> getMe();
+
     @FormUrlEncoded
     @POST("1/account/user/login")
     Observable<UserLogin> postUserLogin(@Field("username") String username, @Field("password") String password);

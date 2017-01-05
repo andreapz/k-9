@@ -1,9 +1,11 @@
 package com.fsck.k9.api;
 
+import android.util.Log;
+
 import com.fsck.k9.api.model.Authorize;
 import com.fsck.k9.api.model.MainConfig;
-import com.fsck.k9.api.model.UserAccount;
 import com.fsck.k9.api.model.UserLogin;
+import com.fsck.k9.error.RxErrorHandlingCallAdapterFactory;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -30,6 +32,7 @@ public class ApiController {
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String HEADER_AUTHORIZED = "Authorized";
+    public static final int RETRY_COUNT = 1;
 
     private static String mAuthorizedHeaderValue = "";
 
@@ -43,7 +46,7 @@ public class ApiController {
         }
     };
 
-    private static HttpLoggingInterceptor mLoginInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
+    private static HttpLoggingInterceptor mLoggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
     public static final String HEADER_APP_ID = "app_id";
     private static Interceptor mInterceptor = new Interceptor() {
         @Override
@@ -53,12 +56,23 @@ public class ApiController {
                     .header(HEADER_AUTHORIZATION, mAuthorizedHeaderValue+","+HEADER_APP_ID+"=\"123456\"");
 
             Request request = requestBuilder.build();
-            return chain.proceed(request);
+//            return chain.proceed(request);
+            Response response = chain.proceed(request);
+
+//            response.code();
+//
+//            int tryCount = 0;
+//            if(!response.isSuccessful() && tryCount++ < 3) {
+//                Log.d("intercept", "Request is not successful - " + request.method()+"@"+request.url()+" "+tryCount);
+//                response = chain.proceed(request);
+//            }
+
+            return response;
         }
     };
 
     private static OkHttpClient mAuthorizeClient = new OkHttpClient.Builder()
-            .addInterceptor(mLoginInterceptor)
+            .addInterceptor(mLoggingInterceptor)
             .addInterceptor(mInterceptor)
             .addInterceptor(new ResponseHeaderInterceptor(headerListener))
             .build();
@@ -77,14 +91,14 @@ public class ApiController {
             .build();
 
     private static OkHttpClient mClient = new OkHttpClient.Builder()
-            .addInterceptor(mLoginInterceptor)
+            .addInterceptor(mLoggingInterceptor)
             .addInterceptor(mInterceptor)
             .build();
 
     private static Retrofit mApiRetrofit = new Retrofit.Builder()
             .baseUrl("https://tiscaliapp-api.tiscali.it/")
             .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+            .addCallAdapterFactory(RxErrorHandlingCallAdapterFactory.create())
             .client(mClient)
             .callbackExecutor(new Executor() {
                 @Override
@@ -130,27 +144,33 @@ public class ApiController {
                 .getConfig()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
+                .retry(RETRY_COUNT)
                 .subscribe(subscriber);
     }
 
-    public static void getAuthorize(Subscriber<Authorize> subscriber) {
-        mAuthorizeRetrofit
+    public static Observable<Authorize> getAuthorize() {
+        return mAuthorizeRetrofit
                 .create(ApiClient.class)
                 .getAuthorize("udid","123456")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
-                .subscribe(subscriber);
+                .retry(RETRY_COUNT);
     }
 
-    public static void postUserLogin(Subscriber<UserLogin> subscriber) {
-        createClient()
+    public static Observable<UserLogin> postUserLogin() {
+        return createClient()
                 .postUserLogin("gigya_dev1@tiscali.it", "Gigya21")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
-                .subscribe(subscriber);
+                .retry(RETRY_COUNT);
+    }
+
+    public static Observable<UserLogin> getMe() {
+        return createClient()
+                .getMe()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .retry(RETRY_COUNT);
     }
 }
 

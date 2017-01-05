@@ -50,6 +50,7 @@ import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.Authorize;
 import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.UserLogin;
+import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.model.NavDrawerMenuItem;
@@ -65,6 +66,7 @@ import javax.inject.Inject;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 
@@ -113,6 +115,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final int OFFERS_TAB_SELECTED = 3;
 
     public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
+    public static final int HTTP_ERROR_401 = 401;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -285,7 +288,40 @@ public class NavigationDrawerActivity extends K9Activity
         });
 
 
-        ApiController.getAuthorize(new Subscriber<Authorize>() {
+
+//        ApiController.getAuthorize(new Subscriber<Authorize>() {
+//            @Override
+//            public void onCompleted() {
+//
+//            }
+//
+//            @Override
+//            public void onError(Throwable e) {
+//
+//            }
+//
+//            @Override
+//            public void onNext(Authorize authorize) {
+//                Log.i("APITEST","Result: "+ authorize.getResult());
+//
+//                userLogin();
+//            }
+//        });
+
+
+        ApiController.getAuthorize().concatMap(new Func1<Authorize, Observable<UserLogin>>() {
+            @Override
+            public Observable<UserLogin> call(Authorize authorize) {
+                return ApiController.postUserLogin();
+            }
+        }).subscribe(new SubscriberUserLogin());
+
+        mBottomNav.bringToFront();
+
+    }
+
+    private void getAuthorize() {
+        ApiController.getAuthorize().subscribe(new Subscriber<Authorize>() {
             @Override
             public void onCompleted() {
 
@@ -299,24 +335,54 @@ public class NavigationDrawerActivity extends K9Activity
             @Override
             public void onNext(Authorize authorize) {
                 Log.i("APITEST","Result: "+ authorize.getResult());
-
-                userLogin();
             }
         });
+    }
+
+    class SubscriberUserLogin extends Subscriber<UserLogin> {
+
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if(e instanceof RetrofitException) {
+                RetrofitException re = (RetrofitException) e;
+                Log.i("APITEST","ERROR: "+re.getMessage());
+
+                if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_401) {
 
 
-        mBottomNav.bringToFront();
+                }
 
+            }
+            Log.i("APITEST","ERROR: "+e.toString());
+        }
+
+        @Override
+        public void onNext(UserLogin userLogin) {
+            Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
+        }
+    }
+
+    private void getMe() {
+        ApiController.getMe().subscribe(new SubscriberUserLogin());
     }
 
     private void userLogin() {
-        ApiController.postUserLogin(new Subscriber<UserLogin>() {
+        ApiController.postUserLogin().subscribe(new Subscriber<UserLogin>() {
             @Override
             public void onCompleted() {
             }
 
             @Override
             public void onError(Throwable e) {
+                if(e instanceof RetrofitException) {
+                    RetrofitException re = (RetrofitException) e;
+                    Log.i("APITEST","ERROR: "+re.getMessage());
+                }
                 Log.i("APITEST","ERROR: "+e.toString());
             }
 
