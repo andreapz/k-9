@@ -99,25 +99,25 @@ public class TiscaliUtility {
         final String folderName;
         //INBOX
         if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_inbox_fmt)))
-            folderName = context.getString(R.string.special_mailbox_name_inbox);
+            folderName = Account.INBOX;
             //Outbox
         else if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_outbox_fmt)))
-            folderName = context.getString(R.string.special_mailbox_name_outbox);
+            folderName = Account.OUTBOX;
             //Draft
         else if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_drafts_fmt)))
-            folderName = context.getString(R.string.special_mailbox_name_drafts);
+            folderName = Account.DRAFT;
             //Trashcan
         else if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_trash_fmt)))
-            folderName = context.getString(R.string.special_mailbox_name_tiscali_trash);
+            folderName = Account.TRASH;
             //Sent
         else if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_sent_fmt)))
-            folderName = context.getString(R.string.special_mailbox_name_sent);
+            folderName = Account.SENT;
             //Archivio
         else if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_archive_fmt)))
             folderName = displayFolderName;
             //Spam
         else if (displayFolderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_spam_fmt)))
-            folderName = context.getString(R.string.special_mailbox_name_spam);
+            folderName = Account.SPAM;
         else
             folderName = displayFolderName;
 
@@ -140,15 +140,13 @@ public class TiscaliUtility {
                 //Outbox
                 || folderName.equalsIgnoreCase(Account.OUTBOX)//context.getString(R.string.special_mailbox_name_outbox)
                 //Draft
-                || folderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_drafts))
+                || folderName.equalsIgnoreCase(Account.DRAFT)
                 //Trashcan
-                || folderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_tiscali_trash))
+                || folderName.equalsIgnoreCase(Account.TRASH)
                 //Sent
-                || folderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_sent))
-                //Archivio
-                //|| folderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_archive))
+                || folderName.equalsIgnoreCase(Account.SENT)
                 //Spam
-                || folderName.equalsIgnoreCase(context.getString(R.string.special_mailbox_name_spam))) {
+                || folderName.equalsIgnoreCase(Account.SPAM)) {
             return true;
         }
 
@@ -190,24 +188,24 @@ public class TiscaliUtility {
                 ((List<FolderInfoHolder>) list).add(i++, folders.get(Account.INBOX));
             }
             //Draft
-            if (folders.containsKey(context.getString(R.string.special_mailbox_name_drafts))) {
-                ((List<FolderInfoHolder>) list).add(i++, folders.get(context.getString(R.string.special_mailbox_name_drafts)));
+            if (folders.containsKey(Account.DRAFT)) {
+                ((List<FolderInfoHolder>) list).add(i++, folders.get(Account.DRAFT));
             }
             //Outbox
             if (folders.containsKey(Account.OUTBOX)) {
                 ((List<FolderInfoHolder>) list).add(i++, folders.get(Account.OUTBOX));
             }
             //Sent
-            if (folders.containsKey(context.getString(R.string.special_mailbox_name_sent))) {
-                ((List<FolderInfoHolder>) list).add(i++, folders.get(context.getString(R.string.special_mailbox_name_sent)));
+            if (folders.containsKey(Account.SENT)) {
+                ((List<FolderInfoHolder>) list).add(i++, folders.get(Account.SENT));
             }
             //Spam
-            if (folders.containsKey(context.getString(R.string.special_mailbox_name_spam))) {
-                ((List<FolderInfoHolder>) list).add(i++, folders.get(context.getString(R.string.special_mailbox_name_spam)));
+            if (folders.containsKey(Account.SPAM)) {
+                ((List<FolderInfoHolder>) list).add(i++, folders.get(Account.SPAM));
             }
             //Trashcan
-            if (folders.containsKey(context.getString(R.string.special_mailbox_name_tiscali_trash))) {
-                ((List<FolderInfoHolder>) list).add(i++, folders.get(context.getString(R.string.special_mailbox_name_tiscali_trash)));
+            if (folders.containsKey(Account.TRASH)) {
+                ((List<FolderInfoHolder>) list).add(i++, folders.get(Account.TRASH));
             }
         } else if (!list.isEmpty() && list.get(0) instanceof String) {
             List<String> folders = new ArrayList<String>();
@@ -225,24 +223,24 @@ public class TiscaliUtility {
                 ((List<String>) list).add(i++, Account.INBOX);
             }
             //Draft
-            if (folders.contains(context.getString(R.string.special_mailbox_name_drafts))) {
-                ((List<String>) list).add(i++, context.getString(R.string.special_mailbox_name_drafts));
+            if (folders.contains(Account.DRAFT)) {
+                ((List<String>) list).add(i++, Account.DRAFT);
             }
             //Outbox
             if (folders.contains(Account.OUTBOX)) {
                 ((List<String>) list).add(i++, Account.OUTBOX);
             }
             //Sent
-            if (folders.contains(context.getString(R.string.special_mailbox_name_sent))) {
-                ((List<String>) list).add(i++, context.getString(R.string.special_mailbox_name_sent));
+            if (folders.contains(Account.SENT)) {
+                ((List<String>) list).add(i++, Account.SENT);
             }
             //Spam
-            if (folders.contains(context.getString(R.string.special_mailbox_name_spam))) {
-                ((List<String>) list).add(i++, context.getString(R.string.special_mailbox_name_spam));
+            if (folders.contains(Account.SPAM)) {
+                ((List<String>) list).add(i++, Account.SPAM);
             }
             //Trashcan
-            if (folders.contains(context.getString(R.string.special_mailbox_name_tiscali_trash))) {
-                ((List<String>) list).add(i++, context.getString(R.string.special_mailbox_name_tiscali_trash));
+            if (folders.contains(Account.TRASH)) {
+                ((List<String>) list).add(i++, Account.TRASH);
             }
         }
     }

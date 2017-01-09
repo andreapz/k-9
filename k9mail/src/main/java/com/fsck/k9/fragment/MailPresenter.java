@@ -212,14 +212,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                         holder.populate(mContext, folder, mAccount, -1);
 
                     }
-                    if (TiscaliUtility.isFolderInTopGroup(mContext, folder.getName()) || folder.isInTopGroup()) {
+                    if (folder.isInTopGroup() || TiscaliUtility.isFolderInTopGroup(mContext, folder.getName())) {
                         topFolders.add(holder);
                     } else {
                         newFolders.add(holder);
                     }
                 }
-                TiscaliUtility.sortFoldersInTopGroup(mContext, topFolders);
                 Collections.sort(newFolders);
+                TiscaliUtility.sortFoldersInTopGroup(mContext, topFolders);
                 topFolders.addAll(newFolders);
                 mHandler.newFolders(topFolders);
             }

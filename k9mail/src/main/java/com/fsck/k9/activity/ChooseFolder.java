@@ -121,7 +121,7 @@ public class ChooseFolder extends K9ListActivity {
                 result.putExtra(EXTRA_ACCOUNT, mAccount.getUuid());
                 result.putExtra(EXTRA_CUR_FOLDER, mFolder);
                 String destFolderName = ((TextView)view).getText().toString();
-                if (mHeldInbox != null && getString(R.string.special_mailbox_name_inbox).equals(destFolderName)) {
+                if (mHeldInbox != null && Account.INBOX.equals(destFolderName)) {
                     destFolderName = mHeldInbox;
                 }
                 result.putExtra(EXTRA_NEW_FOLDER, destFolderName);
@@ -308,7 +308,7 @@ public class ChooseFolder extends K9ListActivity {
                 int position = 0;
                 for (String name : localFolders) {
                     if (mAccount.getInboxFolderName().equalsIgnoreCase(name)) {
-                        folderList.add(getString(R.string.special_mailbox_name_inbox));
+                        folderList.add(Account.INBOX);
                         mHeldInbox = name;
                     } else if (!K9.ERROR_FOLDER_NAME.equals(name) &&
                             !account.getOutboxFolderName().equals(name)) {

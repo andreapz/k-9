@@ -36,7 +36,7 @@ class MigrationTo43 {
             }
 
             // Check if old (pre v3.800) localized outbox folder exists
-            String localizedOutbox = context.getString(R.string.special_mailbox_name_outbox);
+            String localizedOutbox = Account.OUTBOX;
             LocalFolder obsoleteOutbox = new LocalFolder(localStore, localizedOutbox);
             if (obsoleteOutbox.exists()) {
                 // Get all messages from the localized outbox ...

@@ -855,14 +855,14 @@ public class AccountSettings extends K9PreferenceActivity {
 
     private String translateFolder(String in) {
         if (mAccount.getInboxFolderName().equalsIgnoreCase(in)) {
-            return getString(R.string.special_mailbox_name_inbox);
+            return Account.INBOX;
         } else {
             return in;
         }
     }
 
     private String reverseTranslateFolder(String in) {
-        if (getString(R.string.special_mailbox_name_inbox).equals(in)) {
+        if (Account.INBOX.equals(in)) {
             return mAccount.getInboxFolderName();
         } else {
             return in;

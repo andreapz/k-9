@@ -59,12 +59,16 @@ public class Account implements BaseAccount, StoreConfig {
      * Default value for the inbox folder (never changes for POP3 and IMAP)
      */
     public static final String INBOX = "INBOX";
-    public static final int DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES = 60;
-
     /**
      * This local folder is used to store messages to be sent.
      */
     public static final String OUTBOX = "K9MAIL_INTERNAL_OUTBOX";
+    public static final String DRAFT = "Draft";
+    public static final String TRASH = "Trashcan";
+    public static final String SENT = "Sent";
+    public static final String SPAM = "Spam";
+
+    public static final int DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES = 60;
 
     public enum Expunge {
         EXPUNGE_IMMEDIATELY,
@@ -412,12 +416,12 @@ public class Account implements BaseAccount, StoreConfig {
         mInboxFolderName = storage.getString(mUuid  + ".inboxFolderName", INBOX);
 
         // imported from Tiscali Mail
-        mDraftsFolderName = storage.getString(mUuid  + ".draftsFolderName", "Draft");
-        mSentFolderName = storage.getString(mUuid  + ".sentFolderName", "Sent");
-        mTrashFolderName = storage.getString(mUuid  + ".trashFolderName", "Trashcan");
+        mDraftsFolderName = storage.getString(mUuid  + ".draftsFolderName", DRAFT);
+        mSentFolderName = storage.getString(mUuid  + ".sentFolderName", SENT);
+        mTrashFolderName = storage.getString(mUuid  + ".trashFolderName", TRASH);
         mArchiveFolderName = storage.getString(mUuid  + ".archiveFolderName", "Archivio");
 
-        mSpamFolderName = storage.getString(mUuid  + ".spamFolderName", "Spam");
+        mSpamFolderName = storage.getString(mUuid  + ".spamFolderName", SPAM);
         mExpungePolicy = getEnumStringPref(storage, mUuid + ".expungePolicy", Expunge.EXPUNGE_IMMEDIATELY);
         mSyncRemoteDeletions = storage.getBoolean(mUuid  + ".syncRemoteDeletions", true);
 
