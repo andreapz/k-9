@@ -19,12 +19,24 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 
 import com.fsck.k9.R;
+import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
+import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.MailNavDrawerClickListener;
+import com.fsck.k9.adapter.NavDrawerClickListener;
+import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.view.ViewSwitcher;
 
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,6 +56,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     private static final String STATE_DISPLAY_MODE = "displayMode";
     private final INavigationDrawerActivityListener mListener;
     private ActionBar mActionBar;
+    private TextView mActionBarTitle;
     private NewsFragment mNewsViewFragment;
     private NewsFragment mNewsDetailFragment;
     private DisplayMode mDisplayMode;
@@ -166,6 +179,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mActionBar.setCustomView(R.layout.actionbar_custom);
 
         View customView = mActionBar.getCustomView();
+        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
         mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
 
 
@@ -173,6 +187,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
+    public void setActionBarTitle(String title) {
+        mActionBarTitle.setText(title);
+    }
 
     private boolean useSplitView() {
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
@@ -277,4 +294,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     }
 
 
-}
+
+
+
+
+
+    }

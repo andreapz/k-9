@@ -61,7 +61,8 @@ public class NavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
         if(holder instanceof HeaderViewHolder) {
             // TODO
             final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
-            headerViewHolder.mAccountTv.setVisibility(View.GONE);
+            headerViewHolder.mAccountTv.setVisibility(View.VISIBLE);
+            headerViewHolder.mAccountTv.setText("Name Surname");
 
             headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
                 @Override

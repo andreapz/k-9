@@ -439,7 +439,6 @@ public class NavigationDrawerActivity extends K9Activity
 
             }
 
-
         };
 
 
