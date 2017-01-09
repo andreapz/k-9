@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,10 +60,10 @@ public class NewsFragment extends Fragment {
         home_url = getArguments().getString(ARG_HOME);
 
         mFragmentListener = getFragmentListner();
-
+        loadUrl(home_url);
         init();
 
-        loadUrl(home_url);
+
 
         return v;
     }
@@ -152,6 +153,7 @@ public class NewsFragment extends Fragment {
         void detailPageLoad(String url);
         boolean isDetailStatus();
         void setActionBarToggle();
+        void setActionBarTitle(String title);
         void setActionBarUp();
         void goBack();
      }
@@ -166,9 +168,10 @@ public class NewsFragment extends Fragment {
         @JavascriptInterface
         public void setTitle(String value) {
             if (value.length() > 0) {
-                Log.d("TiscaliWebView","[TITLE]:"+value);
-                if(mFragmentListener != null) {
-                    //Todo set title
+
+                if(mFragmentListener != null && !TextUtils.isEmpty(value)) {
+                    Log.d("TiscaliWebView","[TITLE]:"+value);
+                    mFragmentListener.setActionBarTitle(value);
                 }
             }
         }
