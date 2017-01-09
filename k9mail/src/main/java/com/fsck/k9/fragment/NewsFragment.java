@@ -2,9 +2,7 @@ package com.fsck.k9.fragment;
 
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -13,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -22,7 +19,6 @@ import android.webkit.WebViewClient;
 import com.fsck.k9.R;
 
 import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -34,9 +30,14 @@ import java.util.Map;
 public class NewsFragment extends Fragment {
 
     private static final String ARG_HOME = "HOME";
+    public static final String PLATFORM_ANDROID = "android";
+    public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
+    private HashMap<String, String> mExtraHeaders;
+
     public WebView mWebView;
     public String home_url;
     private NewsFragmentListener mFragmentListener;
+
 
     public  static NewsFragment newInstance(String home) {
 
@@ -46,63 +47,82 @@ public class NewsFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v=inflater.inflate(R.layout.news, container, false);
+        View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
 
-        // Enable Javascript
-        WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
         home_url = getArguments().getString(ARG_HOME);
-        Map<String, String> extraHeaders = new HashMap<String, String>();
-        extraHeaders.put("X-Tiscali-App","iPhone");
-        mWebView.loadUrl(home_url,extraHeaders);
+
         mFragmentListener = getFragmentListner();
-        mFragmentListener.enableActionBarProgress(true);
 
+        init();
 
-        // register class containing methods to be exposed to JavaScript
-
-//        mWebView.addJavascriptInterface(new Object(){
-//            @JavascriptInterface
-//            public void ongetTitle(){
-//                Log.d("JS", "test");
-//            }
-//        },"Android");
-        mWebView.setWebViewClient(new WebViewClient(){
-            //            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url){
-
-                if(!mFragmentListener.isDetailStatus()){
-                    mFragmentListener.detailPageLoad(url);
-                    return true;
-                }
-                return false;
-            }
-            public void onPageFinished(WebView view, String url) {
-//                view.loadUrl("javascript:tiscaliApp.getTitle");
-                mFragmentListener.enableActionBarProgress(false);
-            }
-        });
-        mWebView.setWebChromeClient(new WebChromeClient());
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//            // In KitKat+ you should use the evaluateJavascript method
-//            mWebView.evaluateJavascript("(tiscaliApp.getTitle() { return \"this\"; })();", new ValueCallback<String>() {
-//                @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-//                @Override
-//                public void onReceiveValue(String s) {
-//                    Log.d("JS", s);
-//                }
-//            });
-//        }
-
-
+        loadUrl(home_url);
 
         return v;
+    }
+
+    public void init() {
+        mExtraHeaders = new HashMap<String, String>();
+        mExtraHeaders.put(HEADER_X_TISCALI_APP,PLATFORM_ANDROID);
+        updateWebViewSettings();
+        mWebView.setWebChromeClient(new WebChromeClient());
+        mWebView.setWebViewClient(new WebViewClient(){
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+                Log.d("TiscaliWebViewClient", "[URL]:" + url+" @"+this);
+
+                if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
+                    mFragmentListener.detailPageLoad(url);
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                view.loadUrl("javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)");
+                if(mFragmentListener != null) {
+                    mFragmentListener.enableActionBarProgress(false);
+                }
+            }
+        });
+    }
+
+    private void updateWebViewSettings() {
+        // Enable Javascript
+        WebSettings settings = mWebView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setUseWideViewPort(true);
+        settings.setSupportMultipleWindows(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        settings.setLoadsImagesAutomatically(true);
+        settings.setDomStorageEnabled(true);
+        settings.setLoadWithOverviewMode(true);
+
+        //Todo check if version compliant
+        mWebView.addJavascriptInterface(new JsTiscaliAppObject(), "TiscaliApp");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            settings.setAllowUniversalAccessFromFileURLs(true);
+        }
+    }
+
+    private void loadUrl(String url) {
+        Log.d("TiscaliWebView","[URL]:"+url+" @"+this);
+        mWebView.loadUrl(url, mExtraHeaders);
+        mFragmentListener.enableActionBarProgress(true);
     }
 
     private NewsFragmentListener getFragmentListner() {
@@ -123,33 +143,7 @@ public class NewsFragment extends Fragment {
 
     @SuppressLint("JavascriptInterface")
     public void updateUrl(String newUrl) {
-        Map<String, String> extraHeaders = new HashMap<String, String>();
-        extraHeaders.put("X-Tiscali-App","iPhone");
-        mWebView.loadUrl(newUrl,extraHeaders);
-        mFragmentListener.enableActionBarProgress(true);
-
-//        mWebView.addJavascriptInterface(new Object(){
-//            @JavascriptInterface
-//            public void ongetTitle(){
-//                Log.d("JS", "test");
-//            }
-//        },"Android");
-        mWebView.setWebViewClient(new WebViewClient(){
-            //            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url){
-
-                if(!mFragmentListener.isDetailStatus()){
-                    mFragmentListener.detailPageLoad(url);
-                    return true;
-                }
-                return false;
-            }
-            public void onPageFinished(WebView view, String url) {
-//                view.loadUrl("javascript:tiscaliApp.getTitle");
-                mFragmentListener.enableActionBarProgress(false);
-            }
-        });
-        mWebView.setWebChromeClient(new WebChromeClient());
+        loadUrl(newUrl);
     }
 
 
@@ -163,5 +157,20 @@ public class NewsFragment extends Fragment {
      }
     public interface NewsFragmentGetListener {
         NewsFragmentListener getNewsFragmentListner();
+    }
+
+    class JsTiscaliAppObject {
+        @JavascriptInterface
+        public String toString() { return "tiscaliApp.getTitle"; }
+
+        @JavascriptInterface
+        public void setTitle(String value) {
+            if (value.length() > 0) {
+                Log.d("TiscaliWebView","[TITLE]:"+value);
+                if(mFragmentListener != null) {
+                    //Todo set title
+                }
+            }
+        }
     }
 }
