@@ -446,16 +446,22 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     public void showFolder(LocalSearch search) {
 
-        removeMessageListFragment();
-        removeMessageViewFragment();
-
         mSearch = search;
         mMessageReference = null;
 
         if(updateDataWithNewSearch()) {
-            initializeDisplayMode(null);
-            initializeFragments();
+            updateFragments();
             displayViews();
+        }
+    }
+
+    private void updateFragments() {
+
+        boolean hasMessageListFragment = (mMessageListFragment != null);
+
+        if (hasMessageListFragment) {
+            mMessageListFragment.updateContent(mSearch);
+            // TODO: update content for mMessageViewFragment if split view is restored
         }
     }
 
@@ -490,7 +496,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void removeMessageListFragment() {
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
         ft.remove(mMessageListFragment);
         mMessageListFragment = null;
         ft.commit();
@@ -632,7 +638,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      */
     private void removeMessageViewFragment() {
         if (mMessageViewFragment != null) {
-            FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.remove(mMessageViewFragment);
             mMessageViewFragment = null;
             ft.commit();

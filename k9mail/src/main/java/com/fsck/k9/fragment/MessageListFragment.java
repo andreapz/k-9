@@ -224,7 +224,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     private int mPreviewLines = 0;
 
-
     private MessageListAdapter mAdapter;
     private View mFooterView;
 
@@ -653,6 +652,52 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         return listener;
     }
 
+    private void resetVariables() {
+
+        mFolderName = null;
+        mCurrentFolder = null;
+        mAccount = null;
+        mAccountUuids = null;
+        mSavedListState = null;
+        mUnreadMessageCount = 0;
+        mRemoteSearchPerformed = false;
+        mRemoteSearchFuture = null;
+        mExtraSearchResults = null;
+        mSelectedCount = 0;
+        mSelected = new HashSet<>();
+        mActionMode = null;
+        mActiveMessages = null;
+        mLoaderJustInitialized = true;
+        mInitialized = true;
+    }
+
+    public void updateContent(LocalSearch search) {
+
+        if(search == null) {
+            return;
+        }
+
+        resetVariables();
+
+        mSearch = search;
+        mTitle = mSearch.getName();
+
+        setSearchSensitiveData();
+
+        if (mSingleFolderMode) {
+            updateFooterView();
+        }
+
+        if (mAccount != null && mFolderName != null && !mSearch.isManualSearch()) {
+            mController.getFolderUnreadMessageCount(mAccount, mFolderName, mListener);
+        }
+
+        initializeSortSettings();
+        if (isAdded()) {
+            restartLoader();
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -673,8 +718,13 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             mContactsPictureLoader = ContactPicture.getContactPictureLoader(getActivity());
         }
 
-        restoreInstanceState(savedInstanceState);
-        decodeArguments();
+        if(savedInstanceState != null) {
+            restoreInstanceState(savedInstanceState);
+        } else {
+            decodeArguments();
+        }
+
+        setSearchSensitiveData();
 
         createCacheBroadcastReceiver(mContext);
 
@@ -734,6 +784,9 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         outState.putBoolean(STATE_REMOTE_SEARCH_PERFORMED, mRemoteSearchPerformed);
         outState.putParcelable(STATE_ACTIVE_MESSAGE, mActiveMessage);
+        outState.putBoolean(ARG_THREADED_LIST, mThreadedList);
+        outState.putBoolean(ARG_IS_THREAD_DISPLAY, mIsThreadDisplay);
+        outState.putParcelable(ARG_SEARCH, mSearch);
     }
 
     /**
@@ -751,6 +804,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mRemoteSearchPerformed = savedInstanceState.getBoolean(STATE_REMOTE_SEARCH_PERFORMED);
         mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
         mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+        mThreadedList = savedInstanceState.getBoolean(ARG_THREADED_LIST, false);
+        mIsThreadDisplay = savedInstanceState.getBoolean(ARG_IS_THREAD_DISPLAY, false);
+        mSearch = savedInstanceState.getParcelable(ARG_SEARCH);
+        mTitle = mSearch.getName();
     }
 
     /**
@@ -803,7 +860,9 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mIsThreadDisplay = args.getBoolean(ARG_IS_THREAD_DISPLAY, false);
         mSearch = args.getParcelable(ARG_SEARCH);
         mTitle = mSearch.getName();
+    }
 
+    private void setSearchSensitiveData() {
         String[] accountUuids = mSearch.getAccountUuids();
 
         mSingleAccountMode = false;
