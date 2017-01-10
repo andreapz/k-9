@@ -115,7 +115,6 @@ public class NavigationDrawerActivity extends K9Activity
     public static final int OFFERS_TAB_SELECTED = 3;
 
     public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
-    public static final int HTTP_ERROR_401 = 401;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -136,6 +135,7 @@ public class NavigationDrawerActivity extends K9Activity
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     @Inject MailPresenter mMailPresenter;
+    @Inject ApiController mApiController;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -261,137 +261,12 @@ public class NavigationDrawerActivity extends K9Activity
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
-
-                
-//        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
-
-//        mMailPresenter.setIntent(intent);
-
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
-
-
-        ApiController.getConfig(new Subscriber<MainConfig>() {
-            @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.i("TEST","ERROR: " + e);
-            }
-
-            @Override
-            public void onNext(MainConfig mainConfig) {
-                Log.i("APITEST", "CONFIG AGE: "+mainConfig.getConfig().getAge());
-            }
-        });
-
-
-
-//        ApiController.getAuthorize(new Subscriber<Authorize>() {
-//            @Override
-//            public void onCompleted() {
-//
-//            }
-//
-//            @Override
-//            public void onError(Throwable e) {
-//
-//            }
-//
-//            @Override
-//            public void onNext(Authorize authorize) {
-//                Log.i("APITEST","Result: "+ authorize.getResult());
-//
-//                userLogin();
-//            }
-//        });
-
-
-        ApiController.getAuthorize().concatMap(new Func1<Authorize, Observable<UserLogin>>() {
-            @Override
-            public Observable<UserLogin> call(Authorize authorize) {
-                return ApiController.postUserLogin();
-            }
-        }).subscribe(new SubscriberUserLogin());
 
         mBottomNav.bringToFront();
 
     }
 
-    private void getAuthorize() {
-        ApiController.getAuthorize().subscribe(new Subscriber<Authorize>() {
-            @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(Authorize authorize) {
-                Log.i("APITEST","Result: "+ authorize.getResult());
-            }
-        });
-    }
-
-    class SubscriberUserLogin extends Subscriber<UserLogin> {
-
-        @Override
-        public void onCompleted() {
-
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if(e instanceof RetrofitException) {
-                RetrofitException re = (RetrofitException) e;
-                Log.i("APITEST","ERROR: "+re.getMessage());
-
-                if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_401) {
-
-
-                }
-
-            }
-            Log.i("APITEST","ERROR: "+e.toString());
-        }
-
-        @Override
-        public void onNext(UserLogin userLogin) {
-            Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
-        }
-    }
-
-    private void getMe() {
-        ApiController.getMe().subscribe(new SubscriberUserLogin());
-    }
-
-    private void userLogin() {
-        ApiController.postUserLogin().subscribe(new Subscriber<UserLogin>() {
-            @Override
-            public void onCompleted() {
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                if(e instanceof RetrofitException) {
-                    RetrofitException re = (RetrofitException) e;
-                    Log.i("APITEST","ERROR: "+re.getMessage());
-                }
-                Log.i("APITEST","ERROR: "+e.toString());
-            }
-
-            @Override
-            public void onNext(UserLogin userLogin) {
-                Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
-            }
-        });
-    }
 
 
     public void setDrawerEnable(boolean isEnabled) {

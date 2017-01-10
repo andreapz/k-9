@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 
+import com.fsck.k9.api.ApiController;
 import com.fsck.k9.fragment.MailPresenter;
 
 import dagger.Module;
@@ -38,6 +39,11 @@ public class ActivityModule {
     @Provides @ActivityScope
     MailPresenter provideMailPresenter() {
         return new MailPresenter((INavigationDrawerActivityListener) mActivity, mIntent);
+    }
+
+    @Provides @ActivityScope
+    ApiController provideApiController() {
+        return new ApiController(mActivity);
     }
 
     @Provides @ActivityScope
