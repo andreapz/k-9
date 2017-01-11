@@ -317,6 +317,7 @@ public class AccountSetupBasics extends K9Activity
             }
             mAccount.setName(getOwnerName());
             mAccount.setEmail(email);
+            mAccount.setPassword(passwordEnc);
             mAccount.setStoreUri(incomingUri.toString());
             mAccount.setTransportUri(outgoingUri.toString());
 

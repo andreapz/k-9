@@ -31,6 +31,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -45,11 +46,14 @@ public class ApiController {
     private static final String TAG = ApiController.class.getName();
 
     private static final int HTTP_ERROR_401 = 401;
+    private static final int HTTP_ERROR_403 = 403;
+    private static final int HTTP_ERROR_404 = 404;
 
     private static final String HEADER_APP_ID = "app_id";
 
     private static String mAuthorizedHeaderValue = "";
     private static String UUID = "123456";
+    private static String API_APPID = "2907198221081978";
 
     private MainConfig mMainConfig;
     private Authorize mAuthorize;
@@ -152,13 +156,12 @@ public class ApiController {
         return mApiClient;
     }
 
-    public void getConfig(Subscriber<MainConfig> subscriber) {
-        apiClient()
+    public Observable<MainConfig> getConfig() {
+        return apiClient()
                 .getConfig()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(RETRY_COUNT)
-                .subscribe(subscriber);
+                .retry(RETRY_COUNT); //.subscribe(subscriber)
     }
 
     public Observable<Authorize> getAuthorize() {
@@ -167,7 +170,8 @@ public class ApiController {
         }
         return mAuthorizeRetrofit
                 .create(ApiClient.class)
-                .getAuthorize(mMainConfig.getEndpoints().getAccountAuthorize().getUrl(), "udid","123456")
+                .getAuthorize(mMainConfig.getEndpoints().getAccountAuthorize().getUrl(),
+                        UUID,API_APPID)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
@@ -178,7 +182,8 @@ public class ApiController {
             return null;
         }
         return apiClient()
-                .postUserLogin(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), mAccount.getEmail(), "123456")
+                .postUserLogin(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(),
+                        mAccount.getEmail(), mAccount.getPassword())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
@@ -204,6 +209,7 @@ public class ApiController {
         mEditor = mStorage.edit();
         List<Account> accounts = mPrefs.getAccounts();
         mAccount = accounts.get(0);
+        UUID = mAccount.getUuid();
         init();
     }
 
@@ -228,7 +234,7 @@ public class ApiController {
             }
         }
 
-        getConfig(new Subscriber<MainConfig>() {
+        getConfig().subscribe(new Subscriber<MainConfig>() {
             @Override
             public void onCompleted() {}
 
@@ -303,7 +309,34 @@ public class ApiController {
 
                 if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_401) {
 
+                    Observable<Authorize> authorize = getAuthorize();
+                    if(authorize != null) {
+                        authorize.concatMap(new Func1<Authorize, Observable<UserLogin>>() {
+                            @Override
+                            public Observable<UserLogin> call(Authorize authorize) {
+                                return postUserLogin();
+                            }
+                        }).subscribe(new SubscriberUserLogin());
+                    }
+                } else if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_403) {
+                    //Todo show mail login
+                } else if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
 
+                    Observable<MainConfig> config = getConfig();
+                    if(config != null) {
+                        config.concatMap(new Func1<MainConfig, Observable<Authorize>>() {
+                            @Override
+                            public Observable<Authorize> call(MainConfig mainConfig) {
+                                mMainConfig = mainConfig;
+                                return getAuthorize();
+                            }
+                        }).concatMap(new Func1<Authorize, Observable<UserLogin>>() {
+                            @Override
+                            public Observable<UserLogin> call(Authorize authorize) {
+                                return postUserLogin();
+                            }
+                        }).subscribe(new SubscriberUserLogin());
+                    }
                 }
 
             }

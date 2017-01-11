@@ -42,6 +42,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
@@ -191,7 +192,7 @@ public class NavigationDrawerActivity extends K9Activity
         if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
             onImport();
         } else if (accounts.size() < 1) {
-            WelcomeMessage.showWelcomeMessage(this);
+            AccountSetupBasics.actionNewAccount(this);
             finish();
             return;
         }
