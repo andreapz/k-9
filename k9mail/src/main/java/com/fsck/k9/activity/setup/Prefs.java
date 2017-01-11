@@ -105,7 +105,7 @@ public class Prefs extends K9PreferenceActivity {
     private ListPreference mPreviewLines;
     private CheckBoxPreference mSenderAboveSubject;
 //    private CheckBoxPreference mCheckboxes;
-    private CheckBoxPreference mStars;
+//    private CheckBoxPreference mStars;
     private CheckBoxPreference mShowCorrespondentNames;
     private CheckBoxPreference mShowContactName;
 //    private CheckBoxPreference mChangeContactNameColor;
@@ -221,8 +221,8 @@ public class Prefs extends K9PreferenceActivity {
 //        mCheckboxes = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_CHECKBOXES);
 //        mCheckboxes.setChecked(K9.messageListCheckboxes());
 
-        mStars = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_STARS);
-        mStars.setChecked(K9.messageListStars());
+//        mStars = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_STARS);
+//        mStars.setChecked(K9.messageListStars());
 
         mShowCorrespondentNames = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_SHOW_CORRESPONDENT_NAMES);
         mShowCorrespondentNames.setChecked(K9.showCorrespondentNames());
@@ -411,7 +411,7 @@ public class Prefs extends K9PreferenceActivity {
         K9.setCountSearchMessages(mCountSearch.isChecked());
         K9.setMessageListPreviewLines(Integer.parseInt(mPreviewLines.getValue()));
 //        K9.setMessageListCheckboxes(mCheckboxes.isChecked());
-        K9.setMessageListStars(mStars.isChecked());
+//        K9.setMessageListStars(mStars.isChecked());
         K9.setShowCorrespondentNames(mShowCorrespondentNames.isChecked());
         K9.setMessageListSenderAboveSubject(mSenderAboveSubject.isChecked());
         K9.setShowContactName(mShowContactName.isChecked());
