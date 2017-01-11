@@ -319,7 +319,8 @@ public class ApiController {
                         }).subscribe(new SubscriberUserLogin());
                     }
                 } else if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_403) {
-                    //Todo show mail login
+                    mAccount.setPassword("");
+                    mAccount.save(mPrefs);
                 } else if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
 
                     Observable<MainConfig> config = getConfig();
