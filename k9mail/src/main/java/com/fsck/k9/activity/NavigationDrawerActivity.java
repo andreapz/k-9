@@ -30,9 +30,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.fsck.k9.Account;
@@ -199,6 +202,9 @@ public class NavigationDrawerActivity extends K9Activity
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (RecyclerView) findViewById(R.id.left_drawer);
+        ViewGroup.LayoutParams params = mDrawerList.getLayoutParams();
+        params.width = getNavigationDrawerWidth();
+        mDrawerList.setLayoutParams(params);
         mBottomNav = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
@@ -260,6 +266,32 @@ public class NavigationDrawerActivity extends K9Activity
 
     }
 
+    private int getScreenWidth() {
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        return metrics.widthPixels;
+    }
+
+    private int getActionBarSize() {
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        {
+            return TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        }
+
+        return 0;
+    }
+
+    // get the drawer panel width
+    // From Google docs:
+    // Side nav width: Equal to the screen width minus the height of the action bar. In the example shown above,
+    // the nav drawer is 56dp from the right edge of the screen.
+    // Maximum width: The maximum width of the nav drawer is 280dp on mobile and 320dp on tablet.
+    // This is calculated by multiplying the standard increment by five (the standard increment is 56dp on mobile and 64dp on tablet).
+    private int getNavigationDrawerWidth() {
+        return Math.min(getScreenWidth() - getActionBarSize(), 5*getActionBarSize());
+    }
 
     public void setDrawerEnable(boolean isEnabled) {
         if ( isEnabled ) {
