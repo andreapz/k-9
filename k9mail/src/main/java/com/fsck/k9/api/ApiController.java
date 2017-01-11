@@ -53,7 +53,7 @@ public class ApiController {
 
     private static String mAuthorizedHeaderValue = "";
     private static String UUID = "123456";
-    private static String API_APPID = "2907198221081978";
+    private static String API_APPID = "1907198221081978";
 
     private MainConfig mMainConfig;
     private Authorize mAuthorize;
@@ -83,7 +83,7 @@ public class ApiController {
         public Response intercept(Interceptor.Chain chain) throws IOException {
             Request original = chain.request();
             Request.Builder requestBuilder = original.newBuilder()
-                    .header(HEADER_AUTHORIZATION, mAuthorizedHeaderValue+","+HEADER_APP_ID+"=\""+UUID+"\"");
+                    .header(HEADER_AUTHORIZATION, mAuthorizedHeaderValue+","+HEADER_APP_ID+"=\""+API_APPID+"\"");
 
             Request request = requestBuilder.build();
 //            return chain.proceed(request);

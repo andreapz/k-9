@@ -46,14 +46,9 @@ import com.fsck.k9.R;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
-import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.Authorize;
-import com.fsck.k9.api.model.MainConfig;
-import com.fsck.k9.api.model.UserLogin;
-import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.model.NavDrawerMenuItem;
@@ -65,13 +60,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
-
 
 /**
  * This example illustrates a common usage of the DrawerLayout widget
