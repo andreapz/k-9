@@ -36,6 +36,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -221,6 +222,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private ListView mListView;
     private PullToRefreshListView mPullToRefreshView;
     private Parcelable mSavedListState;
+    private FloatingActionButton mFab;
 
     private int mPreviewLines = 0;
 
@@ -742,6 +744,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         initializePullToRefresh(inflater, view);
 
         initializeLayout();
+
+        initializeFab(view);
         mListView.setVerticalFadingEdgeEnabled(false);
 
         return view;
@@ -1075,6 +1079,17 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mListView.setOnItemClickListener(this);
 
         registerForContextMenu(mListView);
+    }
+
+    private void initializeFab(View layout) {
+
+        mFab = (FloatingActionButton) layout.findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onCompose();
+            }
+        });
     }
 
     public void onCompose() {
