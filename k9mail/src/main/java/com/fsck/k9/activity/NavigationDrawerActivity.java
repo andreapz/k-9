@@ -44,10 +44,16 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.Authorize;
+import com.fsck.k9.api.model.MainConfig;
+import com.fsck.k9.api.model.UserLogin;
+import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.model.NavDrawerMenuItem;
@@ -59,6 +65,12 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 
 /**
@@ -126,6 +138,7 @@ public class NavigationDrawerActivity extends K9Activity
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     @Inject MailPresenter mMailPresenter;
+    @Inject ApiController mApiController;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -181,7 +194,7 @@ public class NavigationDrawerActivity extends K9Activity
         if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
             onImport();
         } else if (accounts.size() < 1) {
-            WelcomeMessage.showWelcomeMessage(this);
+            AccountSetupBasics.actionNewAccount(this);
             finish();
             return;
         }
@@ -254,12 +267,6 @@ public class NavigationDrawerActivity extends K9Activity
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
-
-                
-//        mMailPresenter = new MailPresenter(this, getMailIntent(accounts.get(0)));
-
-//        mMailPresenter.setIntent(intent);
-
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
         mBottomNav.bringToFront();
@@ -293,6 +300,7 @@ public class NavigationDrawerActivity extends K9Activity
         return Math.min(getScreenWidth() - getActionBarSize(), 5*getActionBarSize());
     }
 
+
     public void setDrawerEnable(boolean isEnabled) {
         if ( isEnabled ) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
@@ -300,7 +308,6 @@ public class NavigationDrawerActivity extends K9Activity
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.syncState();
-
         }
         else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);

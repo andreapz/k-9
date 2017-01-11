@@ -119,6 +119,7 @@ public class Account implements BaseAccount, StoreConfig {
     public static final String IDENTITY_NAME_KEY = "name";
     public static final String IDENTITY_EMAIL_KEY = "email";
     public static final String IDENTITY_DESCRIPTION_KEY = "description";
+    public static final String IDENTITY_PASSWORD_KEY = "password";
 
     /*
      * http://developer.android.com/design/style/color.html
@@ -169,6 +170,7 @@ public class Account implements BaseAccount, StoreConfig {
 
     private final String mUuid;
     private String mStoreUri;
+    private String mPassword;
 
     /**
      * Storage provider ID, used to locate and manage the underlying DB/file
@@ -391,6 +393,7 @@ public class Account implements BaseAccount, StoreConfig {
         Storage storage = preferences.getStorage();
 
         mStoreUri = Base64.decode(storage.getString(mUuid + ".storeUri", null));
+        mPassword = storage.getString(mUuid + "."+IDENTITY_PASSWORD_KEY, null);
         mLocalStorageProviderId = storage.getString(mUuid + ".localStorageProvider", StorageManager.getInstance(K9.app).getDefaultProviderId());
         mTransportUri = Base64.decode(storage.getString(mUuid + ".transportUri", null));
         mDescription = storage.getString(mUuid + ".description", null);
@@ -522,6 +525,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.remove(mUuid + ".transportUri");
         editor.remove(mUuid + ".description");
         editor.remove(mUuid + ".name");
+        editor.remove(mUuid + "."+IDENTITY_PASSWORD_KEY);
         editor.remove(mUuid + ".email");
         editor.remove(mUuid + ".alwaysBcc");
         editor.remove(mUuid + ".automaticCheckIntervalMinutes");
@@ -686,6 +690,7 @@ public class Account implements BaseAccount, StoreConfig {
         }
 
         editor.putString(mUuid + ".storeUri", Base64.encode(mStoreUri));
+        editor.putString(mUuid + "."+IDENTITY_PASSWORD_KEY, mPassword);
         editor.putString(mUuid + ".localStorageProvider", mLocalStorageProviderId);
         editor.putString(mUuid + ".transportUri", Base64.encode(mTransportUri));
         editor.putString(mUuid + ".description", mDescription);
@@ -896,6 +901,14 @@ public class Account implements BaseAccount, StoreConfig {
 
     public synchronized void setStoreUri(String storeUri) {
         this.mStoreUri = storeUri;
+    }
+
+    public String getPassword() {
+        return mPassword;
+    }
+
+    public void setPassword(String password) {
+        this.mPassword = password;
     }
 
     public synchronized String getTransportUri() {
