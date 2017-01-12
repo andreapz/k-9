@@ -110,7 +110,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final int VIDEO_TAB_SELECTED = 2;
     public static final int OFFERS_TAB_SELECTED = 3;
 
-    public static final int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
+    public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -197,9 +197,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
-        if(mNewsPresenter == null) {
-            buildDaggerComponent(mailIntent);
-        }
+//        if(mNewsPresenter == null) {
+//            buildDaggerComponent(mailIntent);
+//        }
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
@@ -263,7 +263,7 @@ public class NavigationDrawerActivity extends K9Activity
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
-        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+//        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
 
         mBottomNav.bringToFront();
