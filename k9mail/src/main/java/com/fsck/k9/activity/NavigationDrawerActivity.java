@@ -47,10 +47,14 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.MailNavDrawerClickListener;
+import com.fsck.k9.adapter.NavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.fragment.NewsFragment;
+import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
@@ -91,6 +95,7 @@ import javax.inject.Inject;
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
         MessageViewFragment.MessageViewFragmentGetListener,
+        NewsFragment.NewsFragmentGetListener,
         INavigationDrawerActivityListener
 {
 
@@ -127,6 +132,8 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Inject MailPresenter mMailPresenter;
     @Inject ApiController mApiController;
+    @Inject NewsPresenter mNewsPresenter;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -192,7 +199,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
-
+//        if(mNewsPresenter == null) {
+//            buildDaggerComponent(mailIntent);
+//        }
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
@@ -256,6 +265,8 @@ public class NavigationDrawerActivity extends K9Activity
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+//        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState,mNewsTabMenuItems.get(0).getUrl());
+
 
         mBottomNav.bringToFront();
 
@@ -337,6 +348,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onSaveInstanceState(outState);
+        }
     }
 
     @Override
@@ -350,6 +364,9 @@ public class NavigationDrawerActivity extends K9Activity
         outState.putInt(SELECTED_TAB, mSelectedTab);
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
+        }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onSaveInstanceState(outState);
         }
     }
 
@@ -435,18 +452,41 @@ public class NavigationDrawerActivity extends K9Activity
 
         // news, video and offers
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
+        NavDrawerClickListener mClickListener = new NavDrawerClickListener() {
+            @Override
+            public void onSettingsClick() {
+                super.onSettingsClick();
+                Preferences prefs = Preferences.getPreferences(getApplicationContext());
+                List<Account> accounts = prefs.getAccounts();
+                showDialogSettings(accounts.get(0));
+            }
+            @Override
+            public void onMenuClick(NavDrawerMenuItem item) {
+                super.onMenuClick(item);
+
+                if(mNewsPresenter != null){
+                    closeDrawer();
+                    mNewsPresenter.openSection(item.getUrl());
+                }
+
+
+            }
+
+        };
+
 
         //news tab drawer menu
         mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this);
+        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
+
 
         //video tab drawer menu
         mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
-        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this);
+        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this,mClickListener);
 
         //offers tab drawer menu
         mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
-        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this);
+        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this,mClickListener);
     }
 
 
@@ -482,7 +522,9 @@ public class NavigationDrawerActivity extends K9Activity
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
+        if(mNewsPresenter != null) {
+            return mNewsPresenter.onOptionsItemSelected(item);
+        }
         if(mMailPresenter != null) {
             return mMailPresenter.onOptionsItemSelected(item);
         }
@@ -545,6 +587,13 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     @Override
+    public NewsFragment.NewsFragmentListener getNewsFragmentListner() {
+        if(mNewsPresenter == null) {
+            forceBuildDaggerComponent();
+        }
+        return mNewsPresenter;
+    }
+    @Override
     public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
         if(mMailPresenter == null) {
             forceBuildDaggerComponent();
@@ -562,7 +611,10 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void onBackPressed() {
-        if(mMailPresenter != null
+        if(mNewsPresenter!= null && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL){
+            mNewsPresenter.showNews();
+        }
+        else if(mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
                     && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
