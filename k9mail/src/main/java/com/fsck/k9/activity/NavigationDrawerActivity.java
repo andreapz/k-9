@@ -197,9 +197,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
-//        if(mNewsPresenter == null) {
-//            buildDaggerComponent(mailIntent);
-//        }
+        if(mNewsPresenter == null) {
+            buildDaggerComponent(mailIntent);
+        }
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
@@ -472,6 +472,9 @@ public class NavigationDrawerActivity extends K9Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
 //        getMenuInflater().inflate(R.menu.navigation_drawer, menu);
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
+        }
         if(mMailPresenter != null) {
             mMailPresenter.onCreateOptionsMenu(menu, getMenuInflater());
         }
@@ -484,7 +487,9 @@ public class NavigationDrawerActivity extends K9Activity
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onPrepareOptionsMenu(menu);
+        }
         if(mMailPresenter != null) {
             return mMailPresenter.onPrepareOptionsMenu(menu);
         }
@@ -590,7 +595,7 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public void onBackPressed() {
         if(mNewsPresenter!= null && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL){
-            mNewsPresenter.showNews();
+            mNewsPresenter.goBackOnHistory();
         }
         else if(mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW

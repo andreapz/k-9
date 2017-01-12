@@ -8,12 +8,16 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,14 +32,12 @@ import com.fsck.k9.K9;
 
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
-import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
+
+import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerClickListener;
-import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.model.NavDrawerMenuItem;
-import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
 import com.fsck.k9.view.holder.ItemViewHolder;
@@ -43,6 +45,8 @@ import com.fsck.k9.view.holder.ItemViewHolder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +67,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     private ViewSwitcher mViewSwitcher;
     private LayoutInflater mInflater;
     private static final String STATE_DISPLAY_MODE = "displayMode";
+    private static final String STATE_CURRENT_URL = "currentUrl";
     private final INavigationDrawerActivityListener mListener;
     private ActionBar mActionBar;
     private TextView mActionBarTitle;
@@ -70,9 +75,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     private NewsFragment mNewsDetailFragment;
     private DisplayMode mDisplayMode;
     private String mDefaultHomePage;
+    private String mCurrentPage;
+    private String mMeObjectJsonString ;
+    private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
-    private NewsAdapter mNewsAdapter;
-    List<NavDrawerMenuItem> mNewsTabMenuItems;
+    private NewsPresenter.NewsAdapter mNewsAdapter;
+    private List<NavDrawerMenuItem> mNewsTabMenuItems;
 
 
     public enum DisplayMode {
@@ -105,23 +113,32 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
         mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
         mViewSwitcher.setOnSwitchCompleteListener(this);
+
+
+        mIsHomePage = true;
         initializeActionBar();
         findFragments();
         initializeDisplayMode(savedInstanceState);
-
         // news, video and offers
         String meObjectJsonString = getJsonString(mContext.getResources().openRawResource(R.raw.me_object));
         mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mDefaultHomePage = mNewsTabMenuItems.get(0).getUrl();
+        mNewsTabMenuItems.get(0).getUrl();
         mNewsAdapter = new NewsAdapter(mNewsTabMenuItems,mContext);
         mListener.setDrawerListAdapter(mNewsAdapter);
+        if (savedInstanceState != null) {
+            mCurrentPage = (String) savedInstanceState.getString(STATE_CURRENT_URL);
+            initializeFragments(mCurrentPage);
+        }else{
+            mDefaultHomePage = mNewsTabMenuItems.get(0).getUrl();
+            initializeFragments(mDefaultHomePage);
+        }
 
-        initializeFragments(mDefaultHomePage);
 
     }
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
+        outState.putString(STATE_CURRENT_URL, mCurrentPage);
     }
 
     private void findFragments() {
@@ -147,9 +164,28 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
             ft.commit();
 
         }
+        if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
+            setActionBarToggle();
+            showNews();
+        }else{
+            setActionBarUp();
+            detailPageLoad(home);
+        }
     }
 
+    public void setMeJson(String meObjectJsonString) {
+        mMeObjectJsonString = meObjectJsonString;
+    }
 
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        ((Activity)mContext).getMenuInflater().inflate(R.menu.news_menu_option, menu);
+
+
+    }
+
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return true;
+    }
     private void initializeDisplayMode(Bundle savedInstanceState) {
         if (useSplitView()) {
             mDisplayMode = DisplayMode.SPLIT_VIEW;
@@ -161,27 +197,33 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
                     (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
             if (savedDisplayMode != DisplayMode.SPLIT_VIEW) {
                 mDisplayMode = savedDisplayMode;
+
                 return;
             }
         }
 
         mDisplayMode = DisplayMode.NEWS_VIEW;
 
-    }
 
+    }
+    public void goBackOnHistory(){
+        if (mNewsDetailFragment!= null && mNewsDetailFragment.canGoBack()) {
+            mNewsDetailFragment.goBackOnHistory();
+        } else {
+            showNews();
+        }
+    }
 
     public void showNews() {
         mDisplayMode = DisplayMode.NEWS_VIEW;
         mViewSwitcher.showFirstView();
+        if(mNewsViewFragment!= null){
+            mNewsViewFragment.getTitle();
+            mNewsViewFragment.getSharable();
+        }
 
     }
 
-    private void removeNewsFragment() {
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
-        ft.remove(mNewsViewFragment);
-        mNewsViewFragment = null;
-        ft.commit();
-    }
 
     private void removeDetailFragment() {
         FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
@@ -194,20 +236,16 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mActionBar = ((AppCompatActivity)mContext).getSupportActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
-        mActionBar.setCustomView(R.layout.actionbar_custom);
+        mActionBar.setCustomView(R.layout.actioncustombar_news);
 
         View customView = mActionBar.getCustomView();
         mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
         mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
 
 
-
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-    public void setActionBarTitle(String title) {
-        mActionBarTitle.setText(title);
-    }
 
     private boolean useSplitView() {
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
@@ -219,12 +257,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     }
 
 
-    public void openSection(String url) {
+    public void openSection(String url, boolean isHome) {
         mDisplayMode = DisplayMode.NEWS_VIEW;
         if(mNewsViewFragment != null){
             mNewsViewFragment.updateUrl(url);
         }
+        mIsHomePage = isHome;
         showNews();
+
 
 
     }
@@ -232,18 +272,69 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     @Override
     public void enableActionBarProgress(boolean enable) {
         if(enable){
-            mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+            mListener.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+                }
+            });
+
         }else{
-            mActionBarProgress.setVisibility(ProgressBar.GONE);
+            mListener.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mActionBarProgress.setVisibility(ProgressBar.GONE);
+                }
+            });
         }
 
     }
+
+
 
     @Override
     public boolean isDetailStatus() {
         return mDisplayMode == DisplayMode.NEWS_DETAIL;
     }
 
+    @Override
+    public boolean isHomePage() {
+        return mIsHomePage;
+    }
+
+    @Override
+    public String getMeObject() {
+        return mMeObjectJsonString;
+    }
+
+    @Override
+    public void setPageTitle(String title) {
+        setActionBarTitle(title);
+    }
+
+    public void setActionBarTitle(final String title)  {
+
+        try {
+            final String titleText = URLDecoder.decode(title, "UTF-8");
+
+            mListener.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mActionBarTitle.setText(titleText);
+                }
+            });
+
+        } catch (UnsupportedEncodingException e) {
+
+            mListener.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mActionBarTitle.setText(title);
+                }
+            });
+        }
+
+    }
 
 
     @Override
@@ -256,6 +347,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         ft.commit();
         mDisplayMode = DisplayMode.NEWS_DETAIL;
         mViewSwitcher.showSecondView();
+        if(mNewsDetailFragment!= null){
+            mNewsDetailFragment.getTitle();
+            mNewsDetailFragment.getSharable();
+        }
+
 
 
     }
@@ -280,6 +376,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
         if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
             showNews();
+
         }
     }
 
@@ -290,10 +387,19 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
                 goBack();
                 return true;
             }
+            case R.id.menu_item_share: {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL");
+                i.putExtra(Intent.EXTRA_TEXT, mCurrentPage);
+                mContext.startActivity(Intent.createChooser(i, "Share URL"));
+                return true;
+            }
+
             default: {
                 return true;
             }
-         }
+        }
 
 
     }
@@ -311,6 +417,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         }
     }
 
+    @Override
+    public void setCurrentUrl(String url) {
+        mCurrentPage = url;
+    }
+
     private String getJsonString(InputStream inputStream) {
         try {
             int size = inputStream.available();
@@ -325,6 +436,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
             return null;
         }
     }
+
 
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
 
@@ -347,7 +459,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
             public void onMenuClick(NavDrawerMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl());
+                openSection(item.getUrl(),false);
 
             }
 
