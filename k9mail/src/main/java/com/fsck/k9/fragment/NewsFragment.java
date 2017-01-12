@@ -190,6 +190,7 @@ public class NewsFragment extends Fragment {
 
     private void loadUrl(String url) {
         Log.d("TiscaliWebView","[URL]:"+url+" @"+this);
+
         mWebView.loadUrl(url, mExtraHeaders);
         mFragmentListener.enableActionBarProgress(true);
         mFragmentListener.setCurrentUrl(url);

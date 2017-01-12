@@ -155,15 +155,19 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     private void initializeFragments(String home) {
         FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
 
-        boolean hasNewsFragment = (mNewsViewFragment != null);
+//        boolean hasNewsFragment = (mNewsViewFragment != null);
+//        if (!hasNewsFragment) {
+//            FragmentTransaction ft = fragmentManager.beginTransaction();
+//            mNewsViewFragment = NewsFragment.newInstance(home);
+//            ft.add(R.id.news_view_container, mNewsViewFragment);
+//            ft.commit();
+//
+//        }
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        mNewsViewFragment = NewsFragment.newInstance(home);
+        ft.add(R.id.news_view_container, mNewsViewFragment);
+        ft.commit();
 
-        if (!hasNewsFragment) {
-            FragmentTransaction ft = fragmentManager.beginTransaction();
-            mNewsViewFragment = NewsFragment.newInstance(home);
-            ft.add(R.id.news_view_container, mNewsViewFragment);
-            ft.commit();
-
-        }
         if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
             setActionBarToggle();
             showNews();
@@ -344,7 +348,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
 
     @Override
     public void detailPageLoad(String url) {
-
+        mCurrentPage=url;
         NewsFragment fragment = NewsFragment.newInstance(url);
         FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
         ft.replace(R.id.news_detail_container, fragment);
