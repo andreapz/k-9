@@ -1939,8 +1939,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     }
                 }
                 mailViewHolder.mNewMessageCountTv.setText(String.format("%d", folder.unreadMessageCount));
-                mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false, false).drawable());
+                // new messages icon gone
+                mailViewHolder.mNewMessageCountIconIv.setVisibility(View.INVISIBLE);
+//                mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
+//                        mAccount.generateColorChip(false, false, false, false, false).drawable());
+
                 mailViewHolder.mNewMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
