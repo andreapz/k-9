@@ -1864,8 +1864,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             if(holder instanceof HeaderViewHolder) {
                 // TODO
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
-                headerViewHolder.mAccountTv.setText("Name Surname");
-                headerViewHolder.mAccountTv.setOnClickListener(new View.OnClickListener() {
+                if(mAccount != null) {
+                    headerViewHolder.mAccountTv.setText(mAccount.getEmail());
+                    headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
+                }
+                headerViewHolder.mExpandMenuIconIv.setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+
+                headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                     }
