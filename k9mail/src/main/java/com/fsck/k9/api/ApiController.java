@@ -7,6 +7,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.api.model.Authorize;
 import com.fsck.k9.api.model.MainConfig;
+import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.UserLogin;
 import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.error.RxErrorHandlingCallAdapterFactory;
@@ -15,7 +16,10 @@ import com.fsck.k9.preferences.StorageEditor;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 
 import okhttp3.Headers;
@@ -65,6 +69,8 @@ public class ApiController {
     private final Storage mStorage;
     private final Account mAccount;
     private ApiClient mApiClient;
+
+    private final Set<ApiControllerInterface> listeners = new CopyOnWriteArraySet<>();
 
     private ResponseHeaderInterceptor.ResponseHeaderListener headerListener = new ResponseHeaderInterceptor.ResponseHeaderListener(){
         @Override
@@ -371,6 +377,47 @@ public class ApiController {
                 mListener.onHeadersIntercepted(response.headers());
             }
             return response;
+        }
+    }
+
+    public void sendMe(ApiControllerInterface listener) {
+        if(mUserLogin != null && mUserLogin.getMe() != null) {
+            listener.updateMe(mUserLogin.getMe());
+        }
+    }
+
+    public void addListener(ApiControllerInterface listener) {
+        listeners.add(listener);
+        sendMe(listener);
+    }
+
+    public void removeListener(ApiControllerInterface listener) {
+        listeners.remove(listener);
+    }
+
+    public Set<ApiControllerInterface> getListeners() {
+        return listeners;
+    }
+
+
+    public Set<ApiControllerInterface> getListeners(ApiControllerInterface listener) {
+        if (listener == null) {
+            return listeners;
+        }
+
+        Set<ApiControllerInterface> listeners = new HashSet<>(this.listeners);
+        listeners.add(listener);
+        return listeners;
+
+    }
+
+    public interface ApiControllerInterface {
+        void updateMe(Me me);
+    }
+
+    public void refreshListeners() {
+        for (ApiControllerInterface listener : listeners) {
+            sendMe(listener);
         }
     }
 }

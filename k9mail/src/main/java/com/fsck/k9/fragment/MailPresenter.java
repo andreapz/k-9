@@ -47,9 +47,6 @@ import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
-import com.fsck.k9.activity.setup.AccountSettings;
-import com.fsck.k9.activity.setup.FolderSettings;
-import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.MailNavDrawerClickListener;
 import com.fsck.k9.controller.MessagingController;
@@ -859,17 +856,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return false;
         }
 
-        // Set visibility of account/folder settings menu items
-        if (mMessageListFragment == null) {
-            menu.findItem(R.id.account_settings).setVisible(false);
-            menu.findItem(R.id.folder_settings).setVisible(false);
-        } else {
-            menu.findItem(R.id.account_settings).setVisible(
-                    mMessageListFragment.isSingleAccountMode());
-            menu.findItem(R.id.folder_settings).setVisible(
-                    mMessageListFragment.isSingleFolderMode());
-        }
-
         /*
          * Set visibility of menu items related to the message view
          */
@@ -881,7 +867,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             menu.findItem(R.id.previous_message).setVisible(false);
             menu.findItem(R.id.single_message_options).setVisible(false);
             menu.findItem(R.id.delete).setVisible(false);
-            menu.findItem(R.id.compose).setVisible(false);
             menu.findItem(R.id.archive).setVisible(false);
             menu.findItem(R.id.move).setVisible(false);
             menu.findItem(R.id.copy).setVisible(false);
@@ -998,7 +983,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
             menu.findItem(R.id.select_all).setVisible(true);
-            menu.findItem(R.id.compose).setVisible(true);
             menu.findItem(R.id.mark_all_as_read).setVisible(
                     mMessageListFragment.isMarkAllAsReadSupported());
 
@@ -1328,14 +1312,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         ((Activity)mContext).finish();
     }
 
-    private void onEditPrefs() {
-        Prefs.actionPrefs(mContext);
-    }
-
-    private void onEditAccount() {
-        AccountSettings.actionSettings(mContext, mAccount);
-    }
-
 //    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         ((Activity)mContext).getMenuInflater().inflate(R.menu.message_list_option, menu);
@@ -1356,10 +1332,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         switch (itemId) {
             case android.R.id.home: {
                 goBack();
-                return true;
-            }
-            case R.id.compose: {
-                mMessageListFragment.onCompose();
                 return true;
             }
             case R.id.toggle_message_view_theme: {
@@ -1401,14 +1373,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
             case R.id.select_all: {
                 mMessageListFragment.selectAll();
-                return true;
-            }
-            case R.id.app_settings: {
-                onEditPrefs();
-                return true;
-            }
-            case R.id.account_settings: {
-                onEditAccount();
                 return true;
             }
             case R.id.search: {
@@ -1501,12 +1465,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         switch (itemId) {
             case R.id.send_messages: {
                 mMessageListFragment.onSendPendingMessages();
-                return true;
-            }
-            case R.id.folder_settings: {
-                if (mFolderName != null) {
-                    FolderSettings.actionSettings(mContext, mAccount, mFolderName);
-                }
                 return true;
             }
             case R.id.expunge: {
@@ -1939,8 +1897,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     }
                 }
                 mailViewHolder.mNewMessageCountTv.setText(String.format("%d", folder.unreadMessageCount));
-                mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false, false).drawable());
+                // new messages icon gone
+                mailViewHolder.mNewMessageCountIconIv.setVisibility(View.INVISIBLE);
+//                mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
+//                        mAccount.generateColorChip(false, false, false, false, false).drawable());
+
                 mailViewHolder.mNewMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
