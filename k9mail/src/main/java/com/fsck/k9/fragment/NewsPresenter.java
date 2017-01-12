@@ -107,7 +107,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mInflater = inflater;
         FrameLayout container = mListener.getContainer();
         mInflater.inflate(R.layout.fragment_news, container, true);
-        mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
+        mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container_news);
         mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
         mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
         mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
@@ -299,7 +299,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
 
     @Override
     public boolean isHomePage() {
-        return mIsHomePage;
+        if(mDisplayMode == DisplayMode.NEWS_DETAIL){
+            return false;
+        }else{
+            return mIsHomePage;
+        }
+
     }
 
     @Override
@@ -459,7 +464,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
             public void onMenuClick(NavDrawerMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),false);
+                openSection(item.getUrl(),item.equals(mNewsTabMenuItems.get(0)));
 
             }
 
