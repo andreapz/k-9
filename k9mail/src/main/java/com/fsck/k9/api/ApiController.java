@@ -160,7 +160,7 @@ public class ApiController {
         return apiClient()
                 .getConfig()
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+//                .observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT); //.subscribe(subscriber)
     }
 
@@ -173,7 +173,7 @@ public class ApiController {
                 .getAuthorize(mMainConfig.getEndpoints().getAccountAuthorize().getUrl(),
                         UUID,API_APPID)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+//                .observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
     }
 
