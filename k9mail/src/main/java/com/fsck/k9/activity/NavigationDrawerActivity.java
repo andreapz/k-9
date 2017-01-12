@@ -110,7 +110,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final int VIDEO_TAB_SELECTED = 2;
     public static final int OFFERS_TAB_SELECTED = 3;
 
-    public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
+    public static final int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -120,14 +120,12 @@ public class NavigationDrawerActivity extends K9Activity
     private CharSequence mTitle;
 
     private NavDrawerMenuAdapter mOffersAdapter;
-    private NavDrawerMenuAdapter mNewsAdapter;
     private NavDrawerMenuAdapter mVideoAdapter;
 
     private int mSelectedTab;
     private BottomNavigationView mBottomNav;
 
     List<NavDrawerMenuItem> mOffersTabMenuItems;
-    List<NavDrawerMenuItem> mNewsTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     @Inject MailPresenter mMailPresenter;
@@ -265,7 +263,7 @@ public class NavigationDrawerActivity extends K9Activity
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
         mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
-//        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState,mNewsTabMenuItems.get(0).getUrl());
+        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
 
         mBottomNav.bringToFront();
@@ -416,9 +414,9 @@ public class NavigationDrawerActivity extends K9Activity
         BaseNavDrawerMenuAdapter selectedAdapter = null;
         switch (selectedTab) {
 //            mMailTabMenuItems
-            case NEWS_TAB_SELECTED:
-                selectedAdapter = mNewsAdapter;
-                break;
+//            case NEWS_TAB_SELECTED:
+//                selectedAdapter = mNewsAdapter;
+//                break;
             case VIDEO_TAB_SELECTED:
                 selectedAdapter = mVideoAdapter;
                 break;
@@ -452,41 +450,21 @@ public class NavigationDrawerActivity extends K9Activity
 
         // news, video and offers
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
-        NavDrawerClickListener mClickListener = new NavDrawerClickListener() {
-            @Override
-            public void onSettingsClick() {
-                super.onSettingsClick();
-                Preferences prefs = Preferences.getPreferences(getApplicationContext());
-                List<Account> accounts = prefs.getAccounts();
-                showDialogSettings(accounts.get(0));
-            }
-            @Override
-            public void onMenuClick(NavDrawerMenuItem item) {
-                super.onMenuClick(item);
 
-                if(mNewsPresenter != null){
-                    closeDrawer();
-                    mNewsPresenter.openSection(item.getUrl());
-                }
-
-
-            }
-
-        };
 
 
         //news tab drawer menu
-        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
+//        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
+//        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
 
 
         //video tab drawer menu
         mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
-        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this,mClickListener);
+        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this);
 
         //offers tab drawer menu
         mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
-        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this,mClickListener);
+        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this);
     }
 
 
