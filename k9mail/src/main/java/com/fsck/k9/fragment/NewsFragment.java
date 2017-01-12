@@ -175,7 +175,7 @@ public class NewsFragment extends Fragment {
 
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
         if(mMenu == null){
-            getActivity().getMenuInflater().inflate(R.menu.news_menu_option, menu);
+//            getActivity().getMenuInflater().inflate(R.menu.news_menu_option, menu);
             mMenu = menu;
         }
 

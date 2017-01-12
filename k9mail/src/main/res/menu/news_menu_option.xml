@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/menu_item_share"
-        android:showAsAction="ifRoom"
-        android:title="Share"
-        android:icon="@android:drawable/ic_menu_share"
-        android:actionProviderClass=
-            "android.widget.ShareActionProvider" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+tools:context=".ui.home.activities.TransactionSearchActivity">
+<item
+    android:id="@+id/menu_item_share"
+    android:icon="@android:drawable/ic_menu_share"
+    android:title="Share"
+    android:actionProviderClass=
+        "android.widget.ShareActionProvider"
+    app:showAsAction="ifRoom" />
 </menu>
