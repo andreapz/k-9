@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.api.ApiController;
 
 /**
  * Created by andreaputzu on 12/12/16.
@@ -20,4 +21,6 @@ public interface INavigationDrawerActivityListener {
     void showDialogSettings(Account account);
 
     void setDrawerEnable(boolean isEnabled);
+
+    ApiController getApiController();
 }

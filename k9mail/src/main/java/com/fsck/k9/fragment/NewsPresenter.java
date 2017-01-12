@@ -14,6 +14,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +36,10 @@ import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.MailNavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.Me;
 import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
@@ -55,9 +60,11 @@ import javax.inject.Singleton;
  */
 
 @Singleton
-public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener {
+public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
+        ViewSwitcher.OnSwitchCompleteListener, PresenterLifeCycle,
+        ApiController.ApiControllerInterface {
 
-    private final Context mContext;
+    private final Activity mContext;
     private static final String ARG_HOME = "HOME";
     private Intent mIntent;
     private ViewSwitcher mViewSwitcher;
@@ -74,15 +81,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     private NewsAdapter mNewsAdapter;
     List<NavDrawerMenuItem> mNewsTabMenuItems;
 
+    private Bundle mSavedInstanceState;
+    private boolean mStarted;
 
     public enum DisplayMode {
         NEWS_VIEW,
         NEWS_DETAIL,
         SPLIT_VIEW
     }
-
-
-
 
     @Inject
     public NewsPresenter(INavigationDrawerActivityListener listener, Intent intent) {
@@ -94,9 +100,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     public void setIntent(Intent intent) {
         mIntent = intent;
     }
+
     @Nullable
-    public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
-        mInflater = inflater;
+    public void onCreateView() {
+        mStarted = true;
+        mInflater = mContext.getLayoutInflater();
         FrameLayout container = mListener.getContainer();
         mInflater.inflate(R.layout.fragment_news, container, true);
         mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
@@ -107,7 +115,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mViewSwitcher.setOnSwitchCompleteListener(this);
         initializeActionBar();
         findFragments();
-        initializeDisplayMode(savedInstanceState);
+        initializeDisplayMode(mSavedInstanceState);
 
         // news, video and offers
         String meObjectJsonString = getJsonString(mContext.getResources().openRawResource(R.raw.me_object));
@@ -117,10 +125,13 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mListener.setDrawerListAdapter(mNewsAdapter);
 
         initializeFragments(mDefaultHomePage);
-
     }
 
+    @Override
     public void onSaveInstanceState(Bundle outState) {
+        if(!mStarted) {
+            return;
+        }
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
     }
 
@@ -129,7 +140,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
         mNewsDetailFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
     }
-
 
     /**
      * Create fragment instances if necessary.
@@ -149,7 +159,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         }
     }
 
-
     private void initializeDisplayMode(Bundle savedInstanceState) {
         if (useSplitView()) {
             mDisplayMode = DisplayMode.SPLIT_VIEW;
@@ -166,7 +175,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         }
 
         mDisplayMode = DisplayMode.NEWS_VIEW;
-
     }
 
 
@@ -225,8 +233,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
             mNewsViewFragment.updateUrl(url);
         }
         showNews();
-
-
     }
 
     @Override
@@ -236,7 +242,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         }else{
             mActionBarProgress.setVisibility(ProgressBar.GONE);
         }
-
     }
 
     @Override
@@ -256,8 +261,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         ft.commit();
         mDisplayMode = DisplayMode.NEWS_DETAIL;
         mViewSwitcher.showSecondView();
-
-
     }
 
     public DisplayMode getDisplayMode() {
@@ -272,7 +275,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         }else{
             setActionBarUp();
         }
-
     }
 
     @Override
@@ -294,9 +296,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
                 return true;
             }
          }
-
-
     }
+
     @Override
     public void setActionBarUp() {
         if(mContext instanceof INavigationDrawerActivityListener) {
@@ -524,4 +525,51 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
     }
 
 
+    @Override
+    public void onResume() {
+        if(!mStarted) {
+            return;
+        }
+        mListener.getApiController().addListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        if(!mStarted) {
+            return;
+        }
+        mListener.getApiController().removeListener(this);
+    }
+
+
+    @Override
+    public void onDetach() {
+        if(!mStarted) {
+            return;
+        }
+        removeNewsFragment();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return true;
+    }
+
+    @Override
+    public void updateMe(Me me) {
+
+    }
+
+    @Override
+    public void setStartInstanceState(Bundle savedInstanceState) {
+        if(!mStarted) {
+            return;
+        }
+        mSavedInstanceState = savedInstanceState;
+    }
 }
