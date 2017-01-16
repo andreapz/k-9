@@ -100,9 +100,10 @@ public class NewsFragment extends Fragment {
     }
 
     public void init() {
-        mExtraHeaders = new HashMap<String, String>();
+        mExtraHeaders = new HashMap<>();
         mExtraHeaders.put(HEADER_X_TISCALI_APP,PLATFORM_ANDROID);
         updateWebViewSettings();
+
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setWebViewClient(new WebViewClient(){
             @Override
@@ -135,7 +136,6 @@ public class NewsFragment extends Fragment {
         });
     }
 
-
     private void updateWebViewSettings() {
         // Enable Javascript
         WebSettings settings = mWebView.getSettings();
@@ -159,6 +159,7 @@ public class NewsFragment extends Fragment {
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 

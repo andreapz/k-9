@@ -57,11 +57,13 @@ import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.CategoryNewsAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.Me;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.NewsFragment;
 import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.preferences.StorageEditor;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 
@@ -102,7 +104,8 @@ public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
         MessageViewFragment.MessageViewFragmentGetListener,
         NewsFragment.NewsFragmentGetListener,
-        INavigationDrawerActivityListener
+        INavigationDrawerActivityListener,
+        ApiController.ApiControllerInterface
 {
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
@@ -111,12 +114,22 @@ public class NavigationDrawerActivity extends K9Activity
     private static final int DIALOG_NO_FILE_MANAGER = 40;
 
     public static final String SELECTED_TAB = "SELECTED_TAB";
+
+    public static final int NONE_TAB_SELECTED = -1;
     public static final int MAIL_TAB_SELECTED = 0;
     public static final int NEWS_TAB_SELECTED = 1;
     public static final int VIDEO_TAB_SELECTED = 2;
     public static final int OFFERS_TAB_SELECTED = 3;
 
-    public static final int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
+
+    public static final String MAIL_TAB = "mail";
+    public static final String NEWS_TAB = "news";
+    public static final String VIDEO_TAB = "video";
+    public static final String OFFERS_TAB = "offerte";
+
+    public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
+    public static final String DEFAULT_TAB_KEY = "default_tab";
+
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -143,21 +156,31 @@ public class NavigationDrawerActivity extends K9Activity
         @Override
         public boolean onNavigationItemSelected(MenuItem item) {
 
+            switch (mSelectedTab) {
+                case MAIL_TAB_SELECTED:
+                    if(item.getItemId() != R.id.menu_mail) {
+                        mMailPresenter.onDetach();
+                    }
+                    break;
+
+                case NEWS_TAB_SELECTED:
+                    if(item.getItemId() != R.id.menu_news) {
+                        mNewsPresenter.onDetach();
+                    }
+                    break;
+            }
+
             switch (item.getItemId()) {
                 case R.id.menu_mail:
-                    mSelectedTab = NavigationDrawerActivity.MAIL_TAB_SELECTED;
                     onMailTabClicked();
                     break;
                 case R.id.menu_news:
-                    mSelectedTab = NavigationDrawerActivity.NEWS_TAB_SELECTED;
                     onNewsTabClicked();
                     break;
                 case R.id.menu_video:
-                    mSelectedTab = NavigationDrawerActivity.VIDEO_TAB_SELECTED;
                     onVideoTabClicked();
                     break;
                 case R.id.menu_offers:
-                    mSelectedTab = NavigationDrawerActivity.OFFERS_TAB_SELECTED;
                     onOffersTabClicked();
                     break;
             }
@@ -186,7 +209,8 @@ public class NavigationDrawerActivity extends K9Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+        Preferences pref = Preferences.getPreferences(this);
+        List<Account> accounts = pref.getAccounts();
 
         Intent intent = getIntent();
         // see if we should show the welcome message
@@ -200,12 +224,14 @@ public class NavigationDrawerActivity extends K9Activity
 
         Intent mailIntent = getMailIntent(accounts.get(0));
 
-//        if(mMailPresenter == null) {
-//            buildDaggerComponent(mailIntent);
-//        }
         if(mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
+
+        if(mMailPresenter == null) {
+            buildDaggerComponent(mailIntent);
+        }
+
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
@@ -245,7 +271,6 @@ public class NavigationDrawerActivity extends K9Activity
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(mTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                setAdapterBasedOnSelectedTab(mSelectedTab);
             }
 
             public void onDrawerOpened(View drawerView) {
@@ -255,25 +280,27 @@ public class NavigationDrawerActivity extends K9Activity
         };
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
+        DEFAULT_SELECTED_TAB = pref.getStorage().getInt(DEFAULT_TAB_KEY, DEFAULT_SELECTED_TAB);
+
+        mSelectedTab = NONE_TAB_SELECTED;
+
         // init values
         if (savedInstanceState == null) {
-            mSelectedTab = DEFAULT_SELECTED_TAB;
-            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(mSelectedTab).getItemId());
+            int tempSelectedTab = DEFAULT_SELECTED_TAB;
+            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId());
             menuItem.performClick();
         } else {
-            mSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
+            int tempSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
             // selected item not automatically saved after rotation
-            setSelectedTab(mSelectedTab);
+            setSelectedTab(tempSelectedTab);
         }
 
-        setAdapterBasedOnSelectedTab(mSelectedTab);
 
-//        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
-        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+        mMailPresenter.setStartInstanceState(savedInstanceState);
+        mNewsPresenter.setStartInstanceState(savedInstanceState);
 
 
         mBottomNav.bringToFront();
-
     }
 
     private int getScreenWidth() {
@@ -305,7 +332,7 @@ public class NavigationDrawerActivity extends K9Activity
 
 
     public void setDrawerEnable(boolean isEnabled) {
-        if ( isEnabled ) {
+        if (isEnabled) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
@@ -349,6 +376,7 @@ public class NavigationDrawerActivity extends K9Activity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
+
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
@@ -366,6 +394,7 @@ public class NavigationDrawerActivity extends K9Activity
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
+
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
@@ -377,17 +406,31 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onResume() {
         super.onResume();
-//        if(mMailPresenter != null) {
-//            mMailPresenter.onResume();
-//        }
+
+        if(mMailPresenter != null) {
+            mMailPresenter.onResume();
+        }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onResume();
+        }
+
+        mApiController.addListener(this);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-//        if(mMailPresenter != null) {
-//            mMailPresenter.onPause();
-//        }
+
+        if(mMailPresenter != null) {
+            mMailPresenter.onPause();
+        }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onPause();
+        }
+
+        mApiController.removeListener(this);
+
     }
 
     private void onImport() {
@@ -413,26 +456,6 @@ public class NavigationDrawerActivity extends K9Activity
             } else {
                 mBottomNav.getMenu().getItem(i).setChecked(false);
             }
-        }
-    }
-
-    private void setAdapterBasedOnSelectedTab(int selectedTab) {
-        BaseNavDrawerMenuAdapter selectedAdapter = null;
-        switch (selectedTab) {
-//            mMailTabMenuItems
-//            case NEWS_TAB_SELECTED:
-//                selectedAdapter = mNewsAdapter;
-//                break;
-            case VIDEO_TAB_SELECTED:
-                selectedAdapter = mVideoAdapter;
-                break;
-            case OFFERS_TAB_SELECTED:
-                selectedAdapter = mOffersAdapter;
-                break;
-        }
-
-        if(mDrawerList != null && selectedAdapter != null) {
-            mDrawerList.setAdapter(selectedAdapter);
         }
     }
 
@@ -478,13 +501,12 @@ public class NavigationDrawerActivity extends K9Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
 //        getMenuInflater().inflate(R.menu.navigation_drawer, menu);
-        if(mNewsPresenter != null) {
-            mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
-        }
         if(mMailPresenter != null) {
             mMailPresenter.onCreateOptionsMenu(menu, getMenuInflater());
         }
-
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
+        }
         return true;
     }
 
@@ -492,12 +514,13 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        if(mNewsPresenter != null) {
-            mNewsPresenter.onPrepareOptionsMenu(menu);
-        }
+//        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+
         if(mMailPresenter != null) {
             return mMailPresenter.onPrepareOptionsMenu(menu);
+        }
+        if(mNewsPresenter != null) {
+            return mNewsPresenter.onPrepareOptionsMenu(menu);
         }
 
 //        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
@@ -547,26 +570,30 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     private void onMailTabClicked() {
-        mSelectedTab = MAIL_TAB_SELECTED;
-        setAdapterBasedOnSelectedTab(mSelectedTab);
-        // TODO show content
+        if(mSelectedTab != MAIL_TAB_SELECTED) {
+            mSelectedTab = MAIL_TAB_SELECTED;
+            mMailPresenter.onCreateView();
+        }
     }
 
     private void onNewsTabClicked() {
-        mSelectedTab = NEWS_TAB_SELECTED;
-        setAdapterBasedOnSelectedTab(mSelectedTab);
-        // TODO show content
+        if(mSelectedTab != NEWS_TAB_SELECTED) {
+            mSelectedTab = NEWS_TAB_SELECTED;
+            mNewsPresenter.onCreateView();
+        }
     }
 
     private void onVideoTabClicked() {
-        mSelectedTab = VIDEO_TAB_SELECTED;
-        setAdapterBasedOnSelectedTab(mSelectedTab);
-        // TODO show content
+        if(mSelectedTab != VIDEO_TAB_SELECTED) {
+            mSelectedTab = VIDEO_TAB_SELECTED;
+        }
+//        setAdapterBasedOnSelectedTab(mSelectedTab);
     }
 
     private void onOffersTabClicked() {
-        mSelectedTab = OFFERS_TAB_SELECTED;
-        // TODO show content
+        if(mSelectedTab != OFFERS_TAB_SELECTED) {
+            mSelectedTab = OFFERS_TAB_SELECTED;
+        }
     }
 
     private void forceBuildDaggerComponent() {
@@ -685,5 +712,29 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
 
+
+
+    public void updateMe(Me me) {
+
+        String defaultTab = me.getDefaultTab();
+        int defaultTabIndex = NEWS_TAB_SELECTED;
+
+        if(defaultTab.equals(MAIL_TAB)) {
+            defaultTabIndex = MAIL_TAB_SELECTED;
+        } else if(defaultTab.equals(VIDEO_TAB)) {
+            defaultTabIndex = NEWS_TAB_SELECTED;
+        } else if(defaultTab.equals(OFFERS_TAB)) {
+            defaultTabIndex = OFFERS_TAB_SELECTED;
+        }
+
+        StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
+        editor.putInt(DEFAULT_TAB_KEY, defaultTabIndex);
+        editor.commit();
+    }
+
+    @Override
+    public ApiController getApiController() {
+        return mApiController;
+    }
 
 }

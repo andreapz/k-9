@@ -7,8 +7,9 @@ import android.widget.FrameLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.model.NavDrawerMenuItem;
-
 import java.util.List;
+import com.fsck.k9.api.ApiController;
+
 
 /**
  * Created by andreaputzu on 12/12/16.
@@ -24,4 +25,6 @@ public interface INavigationDrawerActivityListener {
     void showDialogCustomize(List<NavDrawerMenuItem> data);
 
     void setDrawerEnable(boolean isEnabled);
+
+    ApiController getApiController();
 }
