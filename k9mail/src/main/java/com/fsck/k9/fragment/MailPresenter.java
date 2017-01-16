@@ -492,7 +492,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void findFragments() {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        FragmentManager fragmentManager = mContext.getFragmentManager();
         mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
                 R.id.message_list_container);
         mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
@@ -500,10 +500,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void removeMessageListFragment() {
-        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-        ft.remove(mMessageListFragment);
-        mMessageListFragment = null;
-        ft.commit();
+        if(mMessageListFragment != null) {
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+            ft.remove(mMessageListFragment);
+            mMessageListFragment = null;
+            ft.commit();
+        }
     }
 
     /**
@@ -568,7 +570,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void initializeLayout() {
-        mMessageViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.message_view_container);
+        mMessageViewContainer = (ViewGroup) mContext.findViewById(R.id.message_view_container);
 
         mMessageViewPlaceHolder = mInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
     }
@@ -791,7 +793,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
 
             MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-            FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.message_view_container, fragment);
             mMessageViewFragment = fragment;
             ft.commit();
@@ -1090,6 +1092,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
         removeMessageListFragment();
+        removeMessageViewFragment();
+        updateFragments();
     }
 
     @Override
@@ -1747,11 +1751,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
 
         ft.replace(R.id.message_list_container, fragment);
-        if (addToBackStack)
+        if (addToBackStack) {
             ft.addToBackStack(null);
+        }
 
         mMessageListFragment = fragment;
 

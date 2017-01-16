@@ -55,6 +55,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+
 /**
  * Created by thomascastangia on 02/01/17.
  */
@@ -82,7 +86,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     List<NavDrawerMenuItem> mNewsTabMenuItems;
 
     private Bundle mSavedInstanceState;
-    private boolean mStarted;
+    private boolean mStarted = false;
 
     public enum DisplayMode {
         NEWS_VIEW,
@@ -185,17 +189,23 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     private void removeNewsFragment() {
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
-        ft.remove(mNewsViewFragment);
-        mNewsViewFragment = null;
-        ft.commit();
+        if(mNewsViewFragment != null) {
+            mNewsViewFragment.mWebView.loadUrl("about:blank");
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+            ft.remove(mNewsViewFragment);
+            mNewsViewFragment = null;
+            ft.commit();
+        }
     }
 
     private void removeDetailFragment() {
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
-        ft.remove(mNewsDetailFragment);
-        mNewsDetailFragment = null;
-        ft.commit();
+        if(mNewsDetailFragment != null) {
+            mNewsDetailFragment.mWebView.loadUrl("about:blank");
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+            ft.remove(mNewsDetailFragment);
+            mNewsDetailFragment = null;
+            ft.commit();
+        }
     }
 
     private void initializeActionBar() {
@@ -213,8 +223,26 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-    public void setActionBarTitle(String title) {
-        mActionBarTitle.setText(title);
+    public void setActionBarTitle(final String title) {
+        Observable.empty().observeOn(AndroidSchedulers.mainThread()).subscribe(
+                new Subscriber<Object>() {
+                    @Override
+                    public void onCompleted() {
+                        mActionBarTitle.setText(title);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+
+                    }
+                }
+        );
+
     }
 
     private boolean useSplitView() {
@@ -255,7 +283,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     public void detailPageLoad(String url) {
 
         NewsFragment fragment = NewsFragment.newInstance(url);
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
         ft.replace(R.id.news_detail_container, fragment);
         mNewsDetailFragment = fragment;
         ft.commit();
@@ -548,6 +576,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             return;
         }
         removeNewsFragment();
+        removeDetailFragment();
     }
 
     @Override

@@ -106,6 +106,8 @@ public class NavigationDrawerActivity extends K9Activity
     private static final int DIALOG_NO_FILE_MANAGER = 40;
 
     public static final String SELECTED_TAB = "SELECTED_TAB";
+
+    public static final int NONE_TAB_SELECTED = -1;
     public static final int MAIL_TAB_SELECTED = 0;
     public static final int NEWS_TAB_SELECTED = 1;
     public static final int VIDEO_TAB_SELECTED = 2;
@@ -146,21 +148,23 @@ public class NavigationDrawerActivity extends K9Activity
 
             switch (mSelectedTab) {
                 case MAIL_TAB_SELECTED:
-                    mMailPresenter.onDetach();
+                    if(item.getItemId() != R.id.menu_mail) {
+                        mMailPresenter.onDetach();
+                    }
                     break;
 
                 case NEWS_TAB_SELECTED:
-                    mNewsPresenter.onDetach();
+                    if(item.getItemId() != R.id.menu_news) {
+                        mNewsPresenter.onDetach();
+                    }
                     break;
             }
 
             switch (item.getItemId()) {
                 case R.id.menu_mail:
-                    mSelectedTab = NavigationDrawerActivity.MAIL_TAB_SELECTED;
                     onMailTabClicked();
                     break;
                 case R.id.menu_news:
-                    mSelectedTab = NavigationDrawerActivity.NEWS_TAB_SELECTED;
                     onNewsTabClicked();
                     break;
                 case R.id.menu_video:
@@ -266,16 +270,18 @@ public class NavigationDrawerActivity extends K9Activity
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         DEFAULT_SELECTED_TAB = pref.getStorage().getInt(DEFAULT_TAB_KEY, DEFAULT_SELECTED_TAB);
-        
+
+        mSelectedTab = NONE_TAB_SELECTED;
+
         // init values
         if (savedInstanceState == null) {
-            mSelectedTab = DEFAULT_SELECTED_TAB;
-            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(mSelectedTab).getItemId());
+            int tempSelectedTab = DEFAULT_SELECTED_TAB;
+            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId());
             menuItem.performClick();
         } else {
-            mSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
+            int tempSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
             // selected item not automatically saved after rotation
-            setSelectedTab(mSelectedTab);
+            setSelectedTab(tempSelectedTab);
         }
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
@@ -556,28 +562,30 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     private void onMailTabClicked() {
-        mSelectedTab = MAIL_TAB_SELECTED;
-        mMailPresenter.onCreateView();
-//        setAdapterBasedOnSelectedTab(mSelectedTab);
-
+        if(mSelectedTab != MAIL_TAB_SELECTED) {
+            mSelectedTab = MAIL_TAB_SELECTED;
+            mMailPresenter.onCreateView();
+        }
     }
 
     private void onNewsTabClicked() {
-        mSelectedTab = NEWS_TAB_SELECTED;
-        mNewsPresenter.onCreateView();
-//        setAdapterBasedOnSelectedTab(mSelectedTab);
-        // TODO show content
+        if(mSelectedTab != NEWS_TAB_SELECTED) {
+            mSelectedTab = NEWS_TAB_SELECTED;
+            mNewsPresenter.onCreateView();
+        }
     }
 
     private void onVideoTabClicked() {
-//        mSelectedTab = VIDEO_TAB_SELECTED;
+        if(mSelectedTab != VIDEO_TAB_SELECTED) {
+            mSelectedTab = VIDEO_TAB_SELECTED;
+        }
 //        setAdapterBasedOnSelectedTab(mSelectedTab);
-        // TODO show content
     }
 
     private void onOffersTabClicked() {
-//        mSelectedTab = OFFERS_TAB_SELECTED;
-        // TODO show content
+        if(mSelectedTab != OFFERS_TAB_SELECTED) {
+            mSelectedTab = OFFERS_TAB_SELECTED;
+        }
     }
 
     private void forceBuildDaggerComponent() {
