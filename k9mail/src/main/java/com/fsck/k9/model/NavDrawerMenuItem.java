@@ -13,8 +13,9 @@ import java.util.List;
  */
 
 public class NavDrawerMenuItem implements Serializable {
-    private static final long serialVersionUID = 4054223372059735340L;
 
+
+    private static final long serialVersionUID = 7848978294622353787L;
     private String title;
     private String section_id;
     private String url;
@@ -113,8 +114,16 @@ public class NavDrawerMenuItem implements Serializable {
             menuItem.setUrl(obj.optString("url", null));
             menuItem.setIconUrl(obj.optString("ico", null));
             menuItem.setVisible(obj.optBoolean("visibility", true));
+            Object visible = (obj.opt("visibility"));
+            Object fav = (obj.opt("fav"));
+            if(visible != null && !(visible.toString().compareToIgnoreCase("null")==0)){
+                if(fav != null && !(fav.toString().compareToIgnoreCase("null")==0)){
+                    menuItem.setCustomizable(Boolean.valueOf(visible.toString()));
+                }
+            }
+
             menuItem.setFav(obj.optBoolean("fav", false));
-            JSONArray sectionsJson = obj.optJSONArray("sections");
+            JSONArray sectionsJson = obj.optJSONArray("password");
             if(sectionsJson != null) {
                 List<NavDrawerMenuItem> sections = new ArrayList<>();
                 for(int j=0; j<sectionsJson.length(); j++) {
@@ -142,6 +151,27 @@ public class NavDrawerMenuItem implements Serializable {
                 JSONObject obj = menuJsonArray.getJSONObject(i);
                 NavDrawerMenuItem menuItem = getMenuItem(obj);
                 menuList.add(menuItem);
+            }
+            return menuList;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static List<NavDrawerMenuItem> getCustomNewsCategoriesList(String meObjectJsonString) {
+        try {
+            JSONObject meObjectJson = new JSONObject(meObjectJsonString);
+            JSONObject meJsonObject = meObjectJson.getJSONObject("me");
+            JSONObject tabJsonObject = meJsonObject.getJSONObject("news");
+            JSONArray menuJsonArray = tabJsonObject.getJSONArray("menu");
+            List<NavDrawerMenuItem> menuList = new ArrayList<>();
+            for (int i=0; i<menuJsonArray.length(); i++) {
+                JSONObject obj = menuJsonArray.getJSONObject(i);
+                NavDrawerMenuItem menuItem = getMenuItem(obj);
+                if(menuItem.customizable ){
+                    menuList.add(menuItem);
+                }
+
             }
             return menuList;
         } catch (JSONException e) {

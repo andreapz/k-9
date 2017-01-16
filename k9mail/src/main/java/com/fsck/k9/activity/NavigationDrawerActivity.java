@@ -17,6 +17,7 @@
 package com.fsck.k9.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,12 +32,18 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.SparseBooleanArray;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.ApplicationComponent;
@@ -47,8 +54,7 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerClickListener;
-import com.fsck.k9.adapter.NavDrawerClickListener;
+import com.fsck.k9.adapter.CategoryNewsAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.fragment.MailPresenter;
@@ -110,7 +116,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final int VIDEO_TAB_SELECTED = 2;
     public static final int OFFERS_TAB_SELECTED = 3;
 
-    public static final int DEFAULT_SELECTED_TAB = MAIL_TAB_SELECTED;
+    public static final int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -194,12 +200,12 @@ public class NavigationDrawerActivity extends K9Activity
 
         Intent mailIntent = getMailIntent(accounts.get(0));
 
-        if(mMailPresenter == null) {
-            buildDaggerComponent(mailIntent);
-        }
-//        if(mNewsPresenter == null) {
+//        if(mMailPresenter == null) {
 //            buildDaggerComponent(mailIntent);
 //        }
+        if(mNewsPresenter == null) {
+            buildDaggerComponent(mailIntent);
+        }
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
@@ -262,8 +268,8 @@ public class NavigationDrawerActivity extends K9Activity
 
         setAdapterBasedOnSelectedTab(mSelectedTab);
 
-        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
-//        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+//        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
 
         mBottomNav.bringToFront();
@@ -371,17 +377,17 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onResume() {
         super.onResume();
-        if(mMailPresenter != null) {
-            mMailPresenter.onResume();
-        }
+//        if(mMailPresenter != null) {
+//            mMailPresenter.onResume();
+//        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(mMailPresenter != null) {
-            mMailPresenter.onPause();
-        }
+//        if(mMailPresenter != null) {
+//            mMailPresenter.onPause();
+//        }
     }
 
     private void onImport() {
@@ -646,4 +652,38 @@ public class NavigationDrawerActivity extends K9Activity
         });
         builder.create().show();
     }
+
+    @Override
+    public void showDialogCustomize(List<NavDrawerMenuItem> data) {
+        closeDrawer();
+
+        final Dialog customize=new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+//        customize.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        customize.setContentView(R.layout.dialog_custom_news);
+        customize.setCancelable(false);
+
+        ListView listInterests = (ListView) customize
+                .findViewById(R.id.list_catagory);
+
+        final CategoryNewsAdapter adapter;
+        adapter = new CategoryNewsAdapter(this,
+                data, true);
+
+        listInterests.setAdapter(adapter);
+
+        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                List<NavDrawerMenuItem> selected = adapter.getSelectedItmes();
+                customize.dismiss();
+             }
+        });
+
+        customize.show();
+    }
+
+
+
 }

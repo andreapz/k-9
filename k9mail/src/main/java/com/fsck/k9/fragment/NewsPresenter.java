@@ -120,9 +120,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
         findFragments();
         initializeDisplayMode(savedInstanceState);
         // news, video and offers
-        String meObjectJsonString = getJsonString(mContext.getResources().openRawResource(R.raw.me_object));
-        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mNewsTabMenuItems.get(0).getUrl();
+        mMeObjectJsonString = getJsonString(mContext.getResources().openRawResource(R.raw.me_object));
+        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(mMeObjectJsonString, "news");
+
         mNewsAdapter = new NewsAdapter(mNewsTabMenuItems,mContext);
         mListener.setDrawerListAdapter(mNewsAdapter);
         if (savedInstanceState != null) {
@@ -449,6 +449,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
 
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
 
+        private static final int HOME_POSITION = 1 ;
         // data set
         private List<NavDrawerMenuItem> mItems;
         Context mContext;
@@ -471,6 +472,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
                 openSection(item.getUrl(),item.equals(mNewsTabMenuItems.get(0)));
 
             }
+
 
         };
 
@@ -528,7 +530,16 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener, ViewSw
                 } else {
                     itemViewHolder.mItemIconIv.setVisibility(View.GONE);
                 }
-
+                if(position == HOME_POSITION){
+                    itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
+                    itemViewHolder.mItemActionTv.setText("personalizza");
+                    itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mListener.showDialogCustomize(NavDrawerMenuItem.getCustomNewsCategoriesList(mMeObjectJsonString));
+                        }
+                    });
+                }
                 // add additionally left margin depending on depth
                 if(itemViewHolder.mItemContainerRl.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
                     ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl.getLayoutParams();
