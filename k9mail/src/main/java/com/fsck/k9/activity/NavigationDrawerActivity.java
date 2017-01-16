@@ -168,11 +168,9 @@ public class NavigationDrawerActivity extends K9Activity
                     onNewsTabClicked();
                     break;
                 case R.id.menu_video:
-                    mSelectedTab = NavigationDrawerActivity.VIDEO_TAB_SELECTED;
                     onVideoTabClicked();
                     break;
                 case R.id.menu_offers:
-                    mSelectedTab = NavigationDrawerActivity.OFFERS_TAB_SELECTED;
                     onOffersTabClicked();
                     break;
             }
@@ -259,7 +257,6 @@ public class NavigationDrawerActivity extends K9Activity
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(mTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                setAdapterBasedOnSelectedTab(mSelectedTab);
             }
 
             public void onDrawerOpened(View drawerView) {
@@ -283,12 +280,6 @@ public class NavigationDrawerActivity extends K9Activity
             // selected item not automatically saved after rotation
             setSelectedTab(tempSelectedTab);
         }
-
-        setAdapterBasedOnSelectedTab(mSelectedTab);
-
-
-//        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
-//        mNewsPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
 
         mMailPresenter.setStartInstanceState(savedInstanceState);
         mNewsPresenter.setStartInstanceState(savedInstanceState);
@@ -325,7 +316,7 @@ public class NavigationDrawerActivity extends K9Activity
 
 
     public void setDrawerEnable(boolean isEnabled) {
-        if ( isEnabled ) {
+        if (isEnabled) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
@@ -369,6 +360,7 @@ public class NavigationDrawerActivity extends K9Activity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
+
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
@@ -386,6 +378,7 @@ public class NavigationDrawerActivity extends K9Activity
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
+
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
@@ -400,6 +393,9 @@ public class NavigationDrawerActivity extends K9Activity
         if(mMailPresenter != null) {
             mMailPresenter.onResume();
         }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onResume();
+        }
 
         mApiController.addListener(this);
     }
@@ -409,6 +405,9 @@ public class NavigationDrawerActivity extends K9Activity
         super.onPause();
         if(mMailPresenter != null) {
             mMailPresenter.onPause();
+        }
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onPause();
         }
 
         mApiController.removeListener(this);
@@ -438,26 +437,6 @@ public class NavigationDrawerActivity extends K9Activity
                 mBottomNav.getMenu().getItem(i).setChecked(false);
             }
         }
-    }
-
-    private void setAdapterBasedOnSelectedTab(int selectedTab) {
-//        BaseNavDrawerMenuAdapter selectedAdapter = null;
-//        switch (selectedTab) {
-////            mMailTabMenuItems
-////            case NEWS_TAB_SELECTED:
-////                selectedAdapter = mNewsAdapter;
-////                break;
-//            case VIDEO_TAB_SELECTED:
-//                selectedAdapter = mVideoAdapter;
-//                break;
-//            case OFFERS_TAB_SELECTED:
-//                selectedAdapter = mOffersAdapter;
-//                break;
-//        }
-//
-//        if(mDrawerList != null && selectedAdapter != null) {
-//            mDrawerList.setAdapter(selectedAdapter);
-//        }
     }
 
     private String getJsonString(InputStream inputStream) {
@@ -502,13 +481,12 @@ public class NavigationDrawerActivity extends K9Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
 //        getMenuInflater().inflate(R.menu.navigation_drawer, menu);
-        if(mNewsPresenter != null) {
-            mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
-        }
         if(mMailPresenter != null) {
             mMailPresenter.onCreateOptionsMenu(menu, getMenuInflater());
         }
-
+        if(mNewsPresenter != null) {
+            mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
+        }
         return true;
     }
 
@@ -516,12 +494,13 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        if(mNewsPresenter != null) {
-            mNewsPresenter.onPrepareOptionsMenu(menu);
-        }
+//        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+
         if(mMailPresenter != null) {
             return mMailPresenter.onPrepareOptionsMenu(menu);
+        }
+        if(mNewsPresenter != null) {
+            return mNewsPresenter.onPrepareOptionsMenu(menu);
         }
 
 //        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);

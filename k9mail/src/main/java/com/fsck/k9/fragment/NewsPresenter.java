@@ -40,8 +40,6 @@ import com.fsck.k9.view.holder.ItemViewHolder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +114,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
         mViewSwitcher.setOnSwitchCompleteListener(this);
 
-
         mIsHomePage = true;
         initializeActionBar();
         findFragments();
@@ -150,7 +147,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     private void findFragments() {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        FragmentManager fragmentManager = mContext.getFragmentManager();
         mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
         mNewsDetailFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
     }
@@ -160,20 +157,20 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
      *
      */
     private void initializeFragments(String home) {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        FragmentManager fragmentManager = mContext.getFragmentManager();
 
-//        boolean hasNewsFragment = (mNewsViewFragment != null);
-//        if (!hasNewsFragment) {
-//            FragmentTransaction ft = fragmentManager.beginTransaction();
-//            mNewsViewFragment = NewsFragment.newInstance(home);
-//            ft.add(R.id.news_view_container, mNewsViewFragment);
-//            ft.commit();
-//
-//        }
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        mNewsViewFragment = NewsFragment.newInstance(home);
-        ft.add(R.id.news_view_container, mNewsViewFragment);
-        ft.commit();
+        boolean hasNewsFragment = (mNewsViewFragment != null);
+        if (!hasNewsFragment) {
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            mNewsViewFragment = NewsFragment.newInstance(home);
+            ft.add(R.id.news_view_container, mNewsViewFragment);
+            ft.commit();
+
+        }
+//        FragmentTransaction ft = fragmentManager.beginTransaction();
+//        mNewsViewFragment = NewsFragment.newInstance(home);
+//        ft.add(R.id.news_view_container, mNewsViewFragment);
+//        ft.commit();
 
         if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
             setActionBarToggle();
