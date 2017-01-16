@@ -29,9 +29,10 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.NavDrawerClickListener;
+import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.Me;
+import com.fsck.k9.api.model.TiscaliMenuItem;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
@@ -78,8 +79,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private String mMeObjectJsonString ;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
-    private NewsPresenter.NewsAdapter mNewsAdapter;
-    private List<NavDrawerMenuItem> mNewsTabMenuItems;
+    private NewsPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
+    private List<TiscaliMenuItem> mTiscaliMenuItem = new ArrayList<>();
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
@@ -120,18 +121,17 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         initializeDisplayMode(mSavedInstanceState);
 
-        // news, video and offers
-        String meObjectJsonString = getJsonString(mContext.getResources().openRawResource(R.raw.me_object));
-        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        mNewsTabMenuItems.get(0).getUrl();
-        mNewsAdapter = new NewsAdapter(mNewsTabMenuItems,mContext);
         mListener.setDrawerListAdapter(mNewsAdapter);
+
         if (mSavedInstanceState != null) {
             mCurrentPage = mSavedInstanceState.getString(STATE_CURRENT_URL);
             initializeFragments(mCurrentPage);
         }else{
-            mDefaultHomePage = mNewsTabMenuItems.get(0).getUrl();
-            initializeFragments(mDefaultHomePage);
+            if(mTiscaliMenuItem.size() > 0) {
+                mDefaultHomePage = mTiscaliMenuItem.get(0).getUrl();
+                initializeFragments(mDefaultHomePage);
+            }
+
         }
 
         initializeFragments(mDefaultHomePage);
@@ -165,12 +165,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mNewsViewFragment = NewsFragment.newInstance(home);
             ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
-
         }
-//        FragmentTransaction ft = fragmentManager.beginTransaction();
-//        mNewsViewFragment = NewsFragment.newInstance(home);
-//        ft.add(R.id.news_view_container, mNewsViewFragment);
-//        ft.commit();
 
         if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
             setActionBarToggle();
@@ -179,10 +174,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             setActionBarUp();
             detailPageLoad(home);
         }
-    }
-
-    public void setMeJson(String meObjectJsonString) {
-        mMeObjectJsonString = meObjectJsonString;
     }
 
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
@@ -452,13 +443,13 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
 
         // data set
-        private List<NavDrawerMenuItem> mItems;
+        private List<TiscaliMenuItem> mItems;
         Context mContext;
-        private List<NavDrawerMenuItem> mVisibleItems = new ArrayList<>();
+        private List<TiscaliMenuItem> mVisibleItems = new ArrayList<>();
         private HashMap<String, Boolean> mItemsOpenStatus = new HashMap<>();
         private HashMap<String, Integer> mItemsDepth = new HashMap<>();
 
-        NavDrawerClickListener mClickListener = new NavDrawerClickListener() {
+        TiscaliMenuClickListener mClickListener = new TiscaliMenuClickListener() {
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
@@ -467,36 +458,41 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                 mListener.showDialogSettings(accounts.get(0));
             }
             @Override
-            public void onMenuClick(NavDrawerMenuItem item) {
+            public void onMenuClick(TiscaliMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),item.equals(mNewsTabMenuItems.get(0)));
+                openSection(item.getUrl(),item.equals(mTiscaliMenuItem.get(0)));
 
             }
 
         };
 
-        public NewsAdapter(List<NavDrawerMenuItem> data, Context context) {
+        public NewsAdapter() {
 
-            mItems = data;
-            mVisibleItems.addAll(data);
-            mContext = context;
+//            mItems = data;
+//            mVisibleItems.addAll(data);
+//            mContext = context;
             // init item status hash map. Elements all collapsed
+
+        }
+
+        public void updateData() {
+            mItems = mTiscaliMenuItem;
             setItemsStatus(mVisibleItems, false);
             // init depth level
             setItemsDepth(mVisibleItems, -1);
         }
 
-        private void setItemsStatus(List<NavDrawerMenuItem> items, boolean status) {
-            for(NavDrawerMenuItem item : items) {
+        private void setItemsStatus(List<TiscaliMenuItem> items, boolean status) {
+            for(TiscaliMenuItem item : items) {
                 // items initially collapsed
                 mItemsOpenStatus.put(item.getSectionId(), status);
             }
         }
 
-        private void setItemsDepth(List<NavDrawerMenuItem> items, int upperDepth) {
+        private void setItemsDepth(List<TiscaliMenuItem> items, int upperDepth) {
             for(int i=0; i<items.size(); i++) {
-                NavDrawerMenuItem item = items.get(i);
+                TiscaliMenuItem item = items.get(i);
                 if(!mItemsDepth.containsKey(item.getSectionId())) {
                     mItemsDepth.put(item.getSectionId(), upperDepth+1);
                 }
@@ -517,14 +513,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     }
                 });
             } else if (holder instanceof ItemViewHolder) {
-                final NavDrawerMenuItem item = getItem(position);
+                final TiscaliMenuItem item = getItem(position);
                 ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
 
                 //Icon
-                if(item.getIconUrl() != null) {
+                if(item.getIco() != null) {
                     itemViewHolder.mItemIconIv.setVisibility(View.VISIBLE);
                     Glide.with(mContext)
-                            .load(item.getIconUrl())
+                            .load(item.getIco())
                             .into(itemViewHolder.mItemIconIv);
 
                 } else {
@@ -616,7 +612,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             return position == 0 ? HEADER : ITEM;
         }
 
-        private NavDrawerMenuItem getItem(int position) {
+        private TiscaliMenuItem getItem(int position) {
             // without header
 //        return mVisibleItems.get(position);
             // with header
@@ -625,14 +621,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         @Override
         public int getItemCount() {
-            // without header
-//        return mVisibleItems.size();
-            // with header
             return mVisibleItems.size() + 1;
         }
 
-        private List<NavDrawerMenuItem> getItemsToHide(int position) {
-            List<NavDrawerMenuItem> itemsToHide = new ArrayList<>();
+        private List<TiscaliMenuItem> getItemsToHide(int position) {
+            List<TiscaliMenuItem> itemsToHide = new ArrayList<>();
             // without header
 //        int firstItemPosition = 0;
             //with header
@@ -676,7 +669,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void updateMe(Me me) {
-
+        mTiscaliMenuItem = me.getNews().getTiscaliMenuItem();
+        mNewsAdapter.notifyDataSetChanged();
     }
 
     @Override

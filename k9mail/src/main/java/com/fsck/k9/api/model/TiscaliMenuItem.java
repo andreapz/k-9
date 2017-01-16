@@ -2,10 +2,11 @@
 package com.fsck.k9.api.model;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Menu {
+public class TiscaliMenuItem {
 
     @SerializedName("title")
     @Expose
@@ -27,7 +28,7 @@ public class Menu {
     private Boolean customizable;
     @SerializedName("sections")
     @Expose
-    private List<Section> sections = null;
+    private List<TiscaliMenuItem> sections = null;
     @SerializedName("ico")
     @Expose
     private String ico;
@@ -83,11 +84,11 @@ public class Menu {
         this.customizable = customizable;
     }
 
-    public List<Section> getSections() {
+    public List<TiscaliMenuItem> getSections() {
         return sections;
     }
 
-    public void setSections(List<Section> sections) {
+    public void setSections(List<TiscaliMenuItem> sections) {
         this.sections = sections;
     }
 
@@ -106,5 +107,17 @@ public class Menu {
     public void setJs(String js) {
         this.js = js;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof TiscaliMenuItem) {
+            TiscaliMenuItem tiscaliMenuItemItem = (TiscaliMenuItem) obj;
+            if(tiscaliMenuItemItem.getSectionId() != null) {
+                return this.getSectionId().equals(tiscaliMenuItemItem.getSectionId());
+            }
+        }
+        return false;
+    }
+
 
 }

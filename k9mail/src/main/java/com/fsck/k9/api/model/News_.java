@@ -12,7 +12,7 @@ public class News_ {
     private Integer refreshTimeout;
     @SerializedName("menu")
     @Expose
-    private List<Menu> menu = null;
+    private List<TiscaliMenuItem> tiscaliMenuItem = null;
 
     public Integer getRefreshTimeout() {
         return refreshTimeout;
@@ -22,12 +22,12 @@ public class News_ {
         this.refreshTimeout = refreshTimeout;
     }
 
-    public List<Menu> getMenu() {
-        return menu;
+    public List<TiscaliMenuItem> getTiscaliMenuItem() {
+        return tiscaliMenuItem;
     }
 
-    public void setMenu(List<Menu> menu) {
-        this.menu = menu;
+    public void setTiscaliMenuItem(List<TiscaliMenuItem> tiscaliMenuItem) {
+        this.tiscaliMenuItem = tiscaliMenuItem;
     }
 
 }
