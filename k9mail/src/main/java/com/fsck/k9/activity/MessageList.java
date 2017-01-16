@@ -126,7 +126,7 @@ public class MessageList extends K9Activity
             setContentView(R.layout.message_list);
         }
 
-        mMailPresenter.onCreateView(getLayoutInflater(), savedInstanceState);
+        mMailPresenter.onCreateView();
 
 
         ChangeLog cl = new ChangeLog(this);

@@ -55,6 +55,7 @@ import com.fsck.k9.helper.SizeFormatter;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.StorageManager;
+import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
@@ -83,7 +84,8 @@ import javax.inject.Singleton;
 
 @Singleton
 public class MailPresenter implements MessageListFragmentListener, MessageViewFragmentListener,
-        OnBackStackChangedListener, OnSwipeGestureListener, OnSwitchCompleteListener {
+        OnBackStackChangedListener, OnSwipeGestureListener, OnSwitchCompleteListener,
+        PresenterLifeCycle {
 
     private static final String ARG_ACTION = "ARG_ACTION";
     private static final String ARG_URI = "ARG_URI";
@@ -111,6 +113,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private final Activity mContext;
     private final INavigationDrawerActivityListener mListener;
     private Intent mIntent;
+
+    private boolean mStarted = false;
 
     private LayoutInflater mInflater;
     private Menu mMenu;
@@ -142,6 +146,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
+
+    private Bundle mSavedInstanceState;
 
     /**
      * {@code true} when the message list was displayed once. This is used in
@@ -401,8 +407,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     @Nullable
-    public void onCreateView(LayoutInflater inflater, Bundle savedInstanceState) {
-        mInflater = inflater;
+    public void onCreateView() {
+        mStarted = true;
+        mInflater = mContext.getLayoutInflater();
 
         FrameLayout container = mListener.getContainer();
 
@@ -425,7 +432,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         findFragments();
-        initializeDisplayMode(savedInstanceState);
+        initializeDisplayMode(mSavedInstanceState);
         initializeLayout();
         initializeFragments();
         displayViews();
@@ -485,7 +492,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void findFragments() {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        FragmentManager fragmentManager = mContext.getFragmentManager();
         mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
                 R.id.message_list_container);
         mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
@@ -493,10 +500,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void removeMessageListFragment() {
-        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-        ft.remove(mMessageListFragment);
-        mMessageListFragment = null;
-        ft.commit();
+        if(mMessageListFragment != null) {
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+            ft.remove(mMessageListFragment);
+            mMessageListFragment = null;
+            ft.commit();
+        }
     }
 
     /**
@@ -561,7 +570,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void initializeLayout() {
-        mMessageViewContainer = (ViewGroup) ((Activity)mContext).findViewById(R.id.message_view_container);
+        mMessageViewContainer = (ViewGroup) mContext.findViewById(R.id.message_view_container);
 
         mMessageViewPlaceHolder = mInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
     }
@@ -784,7 +793,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
 
             MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-            FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.message_view_container, fragment);
             mMessageViewFragment = fragment;
             ft.commit();
@@ -1037,8 +1046,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         Accounts.listAccounts(mContext);
     }
 
-
+    @Override
     public void onPause() {
+
+        if(!mStarted) {
+            return;
+        }
 
         StorageManager.getInstance((mContext).getApplication()).removeListener(mStorageListener);
 
@@ -1046,8 +1059,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mMessagingListener.onPause(mContext);
     }
 
-
+    @Override
     public void onResume() {
+
+        if(!mStarted) {
+            return;
+        }
 
         if (!(this instanceof Search)) {
             //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
@@ -1069,10 +1086,30 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mMessagingListener.onResume(mContext);
     }
 
+    @Override
+    public void onDetach() {
+        if(!mStarted) {
+            return;
+        }
+        removeMessageListFragment();
+        removeMessageViewFragment();
+        updateFragments();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
+        if(!mStarted) {
+            return;
+        }
+
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(STATE_FIRST_BACK_STACK_ID, mFirstBackStackId);
+    }
+
+    @Override
+    public void setStartInstanceState(Bundle savedInstanceState) {
+        mSavedInstanceState = savedInstanceState;
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -1304,30 +1341,39 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private void onShowFolderList() {
         FolderList.actionHandleAccount(mContext, mAccount);
-        ((Activity)mContext).finish();
+        mContext.finish();
     }
 
     private void onAccounts() {
         Accounts.listAccounts(mContext);
-        ((Activity)mContext).finish();
+        mContext.finish();
     }
 
-//    @Override
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((Activity)mContext).getMenuInflater().inflate(R.menu.message_list_option, menu);
+        if(!mStarted) {
+            return;
+        }
+
+        mContext.getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
         mMenuButtonCheckMail= menu.findItem(R.id.check_mail);
-//        super.onCreateOptionsMenu(menu, inflater);
     }
 
-//    @Override
+    @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        if(!mStarted) {
+            return false;
+        }
         return configureMenu(menu);
-//        super.onPrepareOptionsMenu(menu);
     }
 
-//    @Override
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if(!mStarted) {
+            return false;
+        }
+
         int itemId = item.getItemId();
         switch (itemId) {
             case android.R.id.home: {
@@ -1705,11 +1751,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
-        FragmentTransaction ft = ((Activity)mContext).getFragmentManager().beginTransaction();
+        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
 
         ft.replace(R.id.message_list_container, fragment);
-        if (addToBackStack)
+        if (addToBackStack) {
             ft.addToBackStack(null);
+        }
 
         mMessageListFragment = fragment;
 
