@@ -311,7 +311,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mListener.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+                    if(mActionBarProgress!=null){
+                        mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+                    }
+
                 }
             });
 
@@ -319,7 +322,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mListener.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mActionBarProgress.setVisibility(ProgressBar.GONE);
+                    if(mActionBarProgress!=null){
+                        mActionBarProgress.setVisibility(ProgressBar.GONE);
+                    }
+
                 }
             });
         }
