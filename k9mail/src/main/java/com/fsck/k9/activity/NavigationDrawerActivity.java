@@ -56,6 +56,7 @@ import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.CategoryNewsAdapter;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
@@ -736,7 +737,13 @@ public class NavigationDrawerActivity extends K9Activity
                 .findViewById(R.id.webview);
 
         view.getSettings().setJavaScriptEnabled(true);
-        view.loadUrl("http://www.google.com");
+        MainConfig mainConfig = null ;
+        if(mApiController != null){
+            mainConfig = mApiController.getMainConfig();
+        }
+        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
+            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
+        }
         view.setWebViewClient(new WebViewClient());
         Button btnOk = (Button) customize.findViewById(R.id.btn_close);
         btnOk.setOnClickListener(new View.OnClickListener() {

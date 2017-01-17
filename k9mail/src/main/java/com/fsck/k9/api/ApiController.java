@@ -391,6 +391,10 @@ public class ApiController {
         sendMe(listener);
     }
 
+    public MainConfig getMainConfig() {
+        return mMainConfig;
+    }
+
     public void removeListener(ApiControllerInterface listener) {
         listeners.remove(listener);
     }
