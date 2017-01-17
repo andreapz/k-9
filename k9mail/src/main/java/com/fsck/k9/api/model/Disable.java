@@ -11,7 +11,7 @@ public class Disable {
     private Mail mail;
     @SerializedName("news")
     @Expose
-    private News news;
+    private AdvNews advNews;
 
     public Mail getMail() {
         return mail;
@@ -21,12 +21,12 @@ public class Disable {
         this.mail = mail;
     }
 
-    public News getNews() {
-        return news;
+    public AdvNews getAdvNews() {
+        return advNews;
     }
 
-    public void setNews(News news) {
-        this.news = news;
+    public void setAdvNews(AdvNews advNews) {
+        this.advNews = advNews;
     }
 
 }

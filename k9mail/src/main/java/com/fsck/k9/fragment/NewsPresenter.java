@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,7 +34,6 @@ import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
-import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
@@ -43,7 +43,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -80,7 +83,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
     private NewsPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
-    private List<TiscaliMenuItem> mTiscaliMenuItem = new ArrayList<>();
+    private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
@@ -127,14 +130,15 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mCurrentPage = mSavedInstanceState.getString(STATE_CURRENT_URL);
             initializeFragments(mCurrentPage);
         }else{
-            if(mTiscaliMenuItem.size() > 0) {
-                mDefaultHomePage = mTiscaliMenuItem.get(0).getUrl();
+            if(mMenuItems.size() > 0) {
+                mDefaultHomePage = mMenuItems.get(0).getUrl();
                 initializeFragments(mDefaultHomePage);
             }
 
         }
 
         initializeFragments(mDefaultHomePage);
+
     }
 
     @Override
@@ -443,11 +447,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
 
         // data set
-        private List<TiscaliMenuItem> mItems;
-        Context mContext;
-        private List<TiscaliMenuItem> mVisibleItems = new ArrayList<>();
-        private HashMap<String, Boolean> mItemsOpenStatus = new HashMap<>();
-        private HashMap<String, Integer> mItemsDepth = new HashMap<>();
+        private List<TiscaliMenuItem> mItems = new ArrayList<>();
+        private Map<TiscaliMenuItem, List<TiscaliMenuItem>> mTree = new HashMap<>();
+        private Map<TiscaliMenuItem, Integer> mDepth = new HashMap<>();
+        private TiscaliMenuItem mRoot = new TiscaliMenuItem();
+        private MenuHeader mMenuHeader = new MenuHeader();
 
         TiscaliMenuClickListener mClickListener = new TiscaliMenuClickListener() {
             @Override
@@ -461,44 +465,96 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onMenuClick(TiscaliMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),item.equals(mTiscaliMenuItem.get(0)));
-
+                openSection(item.getUrl(),item.equals(mMenuItems.get(0)));
             }
-
         };
 
         public NewsAdapter() {
-
-//            mItems = data;
-//            mVisibleItems.addAll(data);
-//            mContext = context;
-            // init item status hash map. Elements all collapsed
-
         }
 
         public void updateData() {
-            mItems = mTiscaliMenuItem;
-            setItemsStatus(mVisibleItems, false);
-            // init depth level
-            setItemsDepth(mVisibleItems, -1);
-        }
+            mItems.clear();
+            mTree.clear();
+            mDepth.clear();
 
-        private void setItemsStatus(List<TiscaliMenuItem> items, boolean status) {
-            for(TiscaliMenuItem item : items) {
-                // items initially collapsed
-                mItemsOpenStatus.put(item.getSectionId(), status);
+            mItems.add(mMenuHeader);
+            mItems.addAll(mMenuItems);
+
+            mTree.put(mRoot, mItems);
+
+            for (TiscaliMenuItem item : mItems) {
+                mDepth.put(item, 0);
             }
         }
 
-        private void setItemsDepth(List<TiscaliMenuItem> items, int upperDepth) {
-            for(int i=0; i<items.size(); i++) {
-                TiscaliMenuItem item = items.get(i);
-                if(!mItemsDepth.containsKey(item.getSectionId())) {
-                    mItemsDepth.put(item.getSectionId(), upperDepth+1);
-                }
+
+        private int removeSubTree(TiscaliMenuItem root) {
+
+            List<TiscaliMenuItem> children = mTree.get(root);
+            int count = (children == null) ? 0 : children.size();
+
+            for (TiscaliMenuItem child : children) {
+                count += removeSubTree(child);
             }
+
+            Log.i("NEWS-ADAPTER","REMOVE:"+root.getSectionId());
+
+            mTree.remove(root);
+            mDepth.remove(root);
+            mItems.remove(root);
+
+            return count;
         }
 
+        private int addSubTree(TiscaliMenuItem root, List<TiscaliMenuItem> items, int position) {
+            mTree.put(root, items);
+
+            int depth = mDepth.get(root);
+
+            for (TiscaliMenuItem item : items) {
+                mDepth.put(item, depth);
+            }
+
+            mItems.addAll(position, items);
+
+            return items.size();
+        }
+
+        @Override
+        public int getChildrenCount(int position) {
+            return getItem(position).getSections().size();
+        }
+
+        @Override
+        public int getItemDepth(int position) {
+            return mDepth.get(getItem(position));
+        }
+
+        @Override
+        public boolean isItemExpanded(int position) {
+            TiscaliMenuItem item = mItems.get(position);
+            return mTree.containsKey(item);
+        }
+
+        private int getFirstChildPosition(int position) {
+            return position;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position == 0 ? HEADER : ITEM;
+        }
+
+        private TiscaliMenuItem getItem(int position) {
+            return mItems.get(position);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mItems.size();
+        }
+
+        @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             if(holder instanceof HeaderViewHolder) {
                 // TODO
@@ -530,7 +586,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                 // add additionally left margin depending on depth
                 if(itemViewHolder.mItemContainerRl.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
                     ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl.getLayoutParams();
-                    int marginLeft = (int) (getItemDepth(position)*mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
+                    int marginLeft = (int) (getItemDepth(position) * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
                     p.setMargins(marginLeft, 0, 0, 0);
                     itemViewHolder.mItemContainerRl.requestLayout();
                 }
@@ -557,85 +613,33 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     @Override
                     public void onClick(View view) {
                         if(hasChildren(position)) {
-                            //update status for expandable item (if opened set to close, and vice versa)
-                            boolean oldStatus = isItemExpanded(position);
-                            boolean newStatus = !oldStatus;
-                            mItemsOpenStatus.put(item.getSectionId(), newStatus);
-
-                            // update data set for rendering
-                            int childPosition = getFirstChildPosition(position);
-                            if(newStatus) { // expandable item just opened
-                                mVisibleItems.addAll(childPosition, item.getSections());
-                                setItemsStatus(item.getSections(), false);
-                                setItemsDepth(item.getSections(), getItemDepth(position));
-                            } else { // expandable item just closed
-                                // remove all elements with depth > item depth (consider nested children)
-                                setItemsStatus(getItemsToHide(position), false);
-                                mVisibleItems.removeAll(getItemsToHide(position));
+                            TiscaliMenuItem item = mItems.get(position);
+                            if(mTree.containsKey(item)) {
+                                //isExpanded
+                                removeSubTree(item);
+                            } else {
+                                //isCollapsed
+                                addSubTree(item, item.getSections(), position);
                             }
                             notifyDataSetChanged();
-                        } else {
-                            mClickListener.onMenuClick(item);
                         }
+
+                        mClickListener.onMenuClick(item);
                     }
                 });
             }
         }
 
-        @Override
-        public int getChildrenCount(int position) {
-            return getItem(position).getSections().size();
-        }
-
-        @Override
-        public int getItemDepth(int position) {
-            return mItemsDepth.get(getItem(position).getSectionId());
-        }
-
-        @Override
-        public boolean isItemExpanded(int position) {
-            return mItemsOpenStatus.get(getItem(position).getSectionId());
-        }
-
-        private int getFirstChildPosition(int position) {
-            // without header
-//        return position + 1;
-            //with header
-            return position;
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            // without header
-//        return ITEM;
-            // with header
-            return position == 0 ? HEADER : ITEM;
-        }
-
-        private TiscaliMenuItem getItem(int position) {
-            // without header
-//        return mVisibleItems.get(position);
-            // with header
-            return mVisibleItems.get(position - 1);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mVisibleItems.size() + 1;
-        }
-
-        private List<TiscaliMenuItem> getItemsToHide(int position) {
-            List<TiscaliMenuItem> itemsToHide = new ArrayList<>();
-            // without header
-//        int firstItemPosition = 0;
-            //with header
-            int firstItemPosition = 1;
-            for(int i=firstItemPosition; i<getItemCount(); i++) {
-                if(getItemDepth(i) > getItemDepth(position)) {
-                    itemsToHide.add(getItem(i));
-                }
+        class MenuHeader extends TiscaliMenuItem{
+            @Override
+            public String getSectionId() {
+                return "HEADER";
             }
-            return itemsToHide;
+
+            @Override
+            public String getTitle() {
+                return "HEADER";
+            }
         }
     }
 
@@ -669,8 +673,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void updateMe(Me me) {
-        mTiscaliMenuItem = me.getNews().getTiscaliMenuItem();
-        mNewsAdapter.notifyDataSetChanged();
+        mMenuItems = me.getNews().getTiscaliMenuItem();
+        mNewsAdapter.updateData();
     }
 
     @Override
