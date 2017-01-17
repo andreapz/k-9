@@ -77,7 +77,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private NewsFragment mNewsViewFragment;
     private NewsFragment mNewsDetailFragment;
     private DisplayMode mDisplayMode;
-    private String mDefaultHomePage;
     private String mCurrentPage;
     private String mMeObjectJsonString ;
     private boolean mIsHomePage;
@@ -128,17 +127,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         if (mSavedInstanceState != null) {
             mCurrentPage = mSavedInstanceState.getString(STATE_CURRENT_URL);
-            initializeFragments(mCurrentPage);
-        }else{
-            if(mMenuItems.size() > 0) {
-                mDefaultHomePage = mMenuItems.get(0).getUrl();
-                initializeFragments(mDefaultHomePage);
+            if(mCurrentPage != null) {
+                initializeFragments(mCurrentPage);
             }
-
         }
-
-        initializeFragments(mDefaultHomePage);
-
     }
 
     @Override
@@ -218,11 +210,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     public void showNews() {
         mDisplayMode = DisplayMode.NEWS_VIEW;
         mViewSwitcher.showFirstView();
-        if(mNewsViewFragment!= null){
-            mNewsViewFragment.getTitle();
-            mNewsViewFragment.getSharable();
-        }
-
     }
 
     private void removeNewsFragment() {
@@ -292,12 +279,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
 
     public void openSection(String url, boolean isHome) {
-        mDisplayMode = DisplayMode.NEWS_VIEW;
+        showNews();
         if(mNewsViewFragment != null){
             mNewsViewFragment.updateUrl(url);
         }
         mIsHomePage = isHome;
-        showNews();
     }
 
     @Override
@@ -465,7 +451,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onMenuClick(TiscaliMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),item.equals(mMenuItems.get(0)));
+                openSection(item.getUrl(),item.equals(mItems.get(0)));
             }
         };
 
@@ -488,20 +474,23 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
 
-        private int removeSubTree(TiscaliMenuItem root) {
+        private int removeSubTree(TiscaliMenuItem root, TiscaliMenuItem node) {
 
-            List<TiscaliMenuItem> children = mTree.get(root);
+            List<TiscaliMenuItem> children = mTree.get(node);
             int count = (children == null) ? 0 : children.size();
 
-            for (TiscaliMenuItem child : children) {
-                count += removeSubTree(child);
+            if(children != null) {
+                for (TiscaliMenuItem child : children) {
+                    count += removeSubTree(root, child);
+                }
+                mTree.remove(node);
             }
 
-            Log.i("NEWS-ADAPTER","REMOVE:"+root.getSectionId());
-
-            mTree.remove(root);
-            mDepth.remove(root);
-            mItems.remove(root);
+            if(!root.equals(node)) {
+                mDepth.remove(node);
+                mItems.remove(node);
+                Log.i("NEWS-ADAPTER", "REMOVE:" + node.getSectionId());
+            }
 
             return count;
         }
@@ -512,10 +501,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             int depth = mDepth.get(root);
 
             for (TiscaliMenuItem item : items) {
-                mDepth.put(item, depth);
+                mDepth.put(item, depth + 1);
             }
 
-            mItems.addAll(position, items);
+            mItems.addAll(position + 1, items);
 
             return items.size();
         }
@@ -616,15 +605,17 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                             TiscaliMenuItem item = mItems.get(position);
                             if(mTree.containsKey(item)) {
                                 //isExpanded
-                                removeSubTree(item);
+                                removeSubTree(item, item);
                             } else {
                                 //isCollapsed
                                 addSubTree(item, item.getSections(), position);
                             }
                             notifyDataSetChanged();
+                            openSection(item.getUrl(),item.equals(mItems.get(0)));
                         }
-
-                        mClickListener.onMenuClick(item);
+                        else {
+                            mClickListener.onMenuClick(item);
+                        }
                     }
                 });
             }
@@ -673,7 +664,19 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void updateMe(Me me) {
-        mMenuItems = me.getNews().getTiscaliMenuItem();
+        boolean isInitialized = false;
+
+        if(mMenuItems.size() > 0) {
+            isInitialized = true;
+            mMenuItems.clear();
+        }
+
+        mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+
+        if(!isInitialized) {
+            initializeFragments(mMenuItems.get(0).getUrl());
+        }
+
         mNewsAdapter.updateData();
     }
 
