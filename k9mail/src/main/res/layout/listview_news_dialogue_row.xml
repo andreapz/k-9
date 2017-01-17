@@ -15,8 +15,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:textSize="18sp"
-            android:text="TextView"
+            android:textSize="20sp"
+            android:text=""
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:clickable="true" />
 
@@ -24,6 +25,8 @@
             android:id="@+id/toggle_news"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:button="@drawable/toggle_news_selector"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_marginRight="5dp"
             android:text=""
             android:layout_alignParentRight="true"
