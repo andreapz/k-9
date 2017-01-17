@@ -44,6 +44,8 @@ import rx.schedulers.Schedulers;
 
 public class ApiController {
 
+    private static final String USERLOGIN = "USERLOGIN";
+
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String HEADER_AUTHORIZED = "Authorized";
     private static final int RETRY_COUNT = 1;
@@ -162,7 +164,7 @@ public class ApiController {
         return mApiClient;
     }
 
-    public Observable<MainConfig> getConfig() {
+    private Observable<MainConfig> getConfig() {
         return apiClient()
                 .getConfig()
                 .subscribeOn(Schedulers.io())
@@ -170,7 +172,7 @@ public class ApiController {
                 .retry(RETRY_COUNT); //.subscribe(subscriber)
     }
 
-    public Observable<Authorize> getAuthorize() {
+    private Observable<Authorize> getAuthorize() {
         if(mMainConfig == null) {
             return null;
         }
@@ -183,7 +185,7 @@ public class ApiController {
                 .retry(RETRY_COUNT);
     }
 
-    public Observable<UserLogin> postUserLogin() {
+    private Observable<UserLogin> postUserLogin() {
         if(mMainConfig == null || mAccount == null) {
             return null;
         }
@@ -195,7 +197,7 @@ public class ApiController {
                 .retry(RETRY_COUNT);
     }
 
-    public Observable<UserLogin> getMe() {
+    private Observable<UserLogin> getMe() {
         if(mMainConfig == null) {
             return null;
         }
@@ -219,7 +221,7 @@ public class ApiController {
         init();
     }
 
-    public void init() {
+    private void init() {
 
         String mainConfig = mStorage.getString(ApiClient.TISCALIAPP_BASEURL+ApiClient.TISCALIAPP_CONFIG_URL, "");
         if(mainConfig.length() > 0) {
@@ -237,6 +239,12 @@ public class ApiController {
 //                        return postUserLogin();
 //                    }
 //                }).subscribe(new SubscriberUserLogin());
+            }
+
+            String userLogin = mStorage.getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
+            if(userLogin.length() > 0) {
+                Gson gson = new Gson();
+                mUserLogin = gson.fromJson(userLogin, UserLogin.class);
             }
         }
 
@@ -357,7 +365,7 @@ public class ApiController {
         }
     }
 
-    public static class ResponseHeaderInterceptor implements Interceptor {
+    private static class ResponseHeaderInterceptor implements Interceptor {
         public interface ResponseHeaderListener {
             public void onHeadersIntercepted(Headers headers);
         }

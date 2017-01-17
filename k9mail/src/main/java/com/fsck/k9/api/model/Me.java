@@ -18,7 +18,7 @@ public class Me {
     private List<Object> mail = null;
     @SerializedName("news")
     @Expose
-    private News_ news;
+    private News news;
     @SerializedName("video")
     @Expose
     private Video video;
@@ -53,11 +53,11 @@ public class Me {
         this.mail = mail;
     }
 
-    public News_ getNews() {
+    public News getNews() {
         return news;
     }
 
-    public void setNews(News_ news) {
+    public void setNews(News news) {
         this.news = news;
     }
 
