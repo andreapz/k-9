@@ -7,6 +7,7 @@ tools:context=".ui.home.activities.TransactionSearchActivity">
     android:id="@+id/menu_item_share"
     android:icon="@android:drawable/ic_menu_share"
     android:title="Share"
+    android:visible="false"
     android:actionProviderClass=
         "android.widget.ShareActionProvider"
     app:showAsAction="ifRoom" />
