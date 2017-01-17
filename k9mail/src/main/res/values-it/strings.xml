@@ -116,6 +116,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="account_settings_action">Impostazioni account</string>
   <string name="folder_settings_action">Impostazioni cartella</string>
   <string name="global_settings_action">Impostazioni globali</string>
+  <string name="informations_action">Iinformazioni</string>
   <string name="remove_account_action">Rimuovi account</string>
   <string name="clear_pending_action">Annulla tutte le azioni in corso (pericolo!)</string>
   <string name="mark_as_read_action">Marca come letto</string>
@@ -1006,4 +1007,5 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="special_mailbox_name_archive_fmt">Archivio</string>
   <string name="special_mailbox_name_spam_fmt">Spam</string>
   <string name="status_last_poll">Ultima verifica <xliff:g id="lasttime">%s</xliff:g></string>
+  <string name="customize_categories">Personalizza la tua home page selezionando gli argomenti che ti interessano</string>
 </resources>

@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
-                android:text="Interested in"
+                android:text="@string/customize_categories"
                 android:layout_centerVertical="true"
                 android:textColor="#3C3C3C"
                 android:textSize="18sp"

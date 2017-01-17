@@ -39,6 +39,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ListView;
@@ -676,6 +678,21 @@ public class NavigationDrawerActivity extends K9Activity
         });
         builder.create().show();
     }
+    @Override
+    public void showDialogInformations() {
+        closeDrawer();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(R.array.informations_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        showInformations();
+                        break;
+                }
+            }
+        });
+        builder.create().show();
+    }
 
     @Override
     public void showDialogCustomize(List<NavDrawerMenuItem> data) {
@@ -708,7 +725,31 @@ public class NavigationDrawerActivity extends K9Activity
         customize.show();
     }
 
+    public void showInformations() {
 
+
+        final Dialog customize= new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        customize.setContentView(R.layout.dialog_informations);
+        customize.setCancelable(true);
+
+        WebView view = (WebView) customize
+                .findViewById(R.id.webview);
+
+        view.getSettings().setJavaScriptEnabled(true);
+        view.loadUrl("http://www.google.com");
+        view.setWebViewClient(new WebViewClient());
+        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                customize.dismiss();
+            }
+        });
+
+        customize.show();
+    }
 
 
     public void updateMe(Me me) {

@@ -22,6 +22,7 @@ public interface INavigationDrawerActivityListener {
     void setDrawerListAdapter(BaseNavDrawerMenuAdapter adapter);
     void closeDrawer();
     void showDialogSettings(Account account);
+    void showDialogInformations();
     void showDialogCustomize(List<NavDrawerMenuItem> data);
 
     void setDrawerEnable(boolean isEnabled);

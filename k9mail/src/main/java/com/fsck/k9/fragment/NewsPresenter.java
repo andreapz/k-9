@@ -269,7 +269,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                 new Subscriber<Object>() {
                     @Override
                     public void onCompleted() {
-                        mActionBarTitle.setText(title);
+                        if(mActionBarTitle!=null){
+                            mActionBarTitle.setText(title);
+                        }
+
                     }
 
                     @Override
@@ -469,9 +472,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-                Preferences prefs = Preferences.getPreferences(mContext.getApplicationContext());
-                List<Account> accounts = prefs.getAccounts();
-                mListener.showDialogSettings(accounts.get(0));
+                mListener.showDialogInformations();
             }
             @Override
             public void onMenuClick(NavDrawerMenuItem item) {

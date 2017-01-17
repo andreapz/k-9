@@ -759,4 +759,9 @@
         <item>@string/account_settings_action</item>
         <item>@string/global_settings_action</item>
     </string-array>
+
+    <string-array name="informations_titles">
+        <item>@string/informations_action</item>
+    </string-array>
+
 </resources>
