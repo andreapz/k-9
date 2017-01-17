@@ -20,13 +20,12 @@
             android:layout_centerVertical="true"
             android:clickable="true" />
 
-        <ToggleButton
+        <CheckBox
             android:id="@+id/toggle_news"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
-            android:textOn="ON"
-            android:textOff="OFF"
+            android:text=""
             android:layout_alignParentRight="true"
             />
 

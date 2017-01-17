@@ -24,7 +24,7 @@
     <TextView
         android:id="@+id/item_action"
         android:textColor="@android:color/white"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
         android:visibility="gone"

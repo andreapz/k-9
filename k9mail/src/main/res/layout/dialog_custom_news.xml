@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@color/cardview_light_background"
@@ -9,11 +9,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_alignParentRight="true"
         android:background="@drawable/ic_action_cancel_light" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"
+        android:layout_below="@id/btn_close"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical" >
@@ -29,6 +31,7 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:text="Interested in"
+                android:layout_centerVertical="true"
                 android:textColor="#3C3C3C"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -47,4 +50,4 @@
 
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

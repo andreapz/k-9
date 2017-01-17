@@ -70,7 +70,7 @@ public class CategoryNewsAdapter extends BaseAdapter {
     }
 
     public class ViewHolder {
-        public ToggleButton news_button;
+        public CheckBox news_button;
         public TextView news_category;
         public RelativeLayout rl_news;
     }
@@ -87,7 +87,7 @@ public class CategoryNewsAdapter extends BaseAdapter {
             convertView = inflater.inflate(
                     R.layout.listview_news_dialogue_row, null);
 
-            holder.news_button = (ToggleButton) convertView
+            holder.news_button = (CheckBox) convertView
                     .findViewById(R.id.toggle_news);
             holder.news_category =  (TextView) convertView
                     .findViewById(R.id.category_news);
