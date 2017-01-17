@@ -107,21 +107,17 @@ public class CategoryNewsAdapter extends BaseAdapter {
         }else{
             holder.news_button.setChecked(false);
         }
-        holder.rl_news.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if( mNewsCategory.get(pos).isVisible()){
-                    mNewsCategory.get(pos).setVisible(false);
-                    final_Holder.news_button.setChecked(false);
 
-                }else{
-                    mNewsCategory.get(pos).setVisible(true);
-                    final_Holder.news_button.setChecked(true);
-                }
+
+        holder.news_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                mNewsCategory.get(pos).setVisible(isChecked);
+
             }
         });
-
-
 
 
 
