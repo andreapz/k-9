@@ -32,19 +32,16 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.SparseBooleanArray;
+
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-
 import com.fsck.k9.Account;
 import com.fsck.k9.ApplicationComponent;
 import com.fsck.k9.K9;
@@ -685,7 +682,6 @@ public class NavigationDrawerActivity extends K9Activity
         closeDrawer();
 
         final Dialog customize=new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-//        customize.requestWindowFeature(Window.FEATURE_NO_TITLE);
         customize.setContentView(R.layout.dialog_custom_news);
         customize.setCancelable(false);
 
@@ -704,6 +700,7 @@ public class NavigationDrawerActivity extends K9Activity
             @Override
             public void onClick(View v) {
                 List<NavDrawerMenuItem> selected = adapter.getSelectedItmes();
+
                 customize.dismiss();
              }
         });

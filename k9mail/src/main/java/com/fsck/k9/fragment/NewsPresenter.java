@@ -65,8 +65,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private Intent mIntent;
     private ViewSwitcher mViewSwitcher;
     private LayoutInflater mInflater;
-    private static final String STATE_DISPLAY_MODE = "displayMode";
-    private static final String STATE_CURRENT_URL = "currentUrl";
+    private static final String NEWS_STATE_DISPLAY_MODE = "News_displayMode";
+    private static final String NEWS_STATE_CURRENT_URL = "News_currentUrl";
     private final INavigationDrawerActivityListener mListener;
     private ActionBar mActionBar;
     private TextView mActionBarTitle;
@@ -127,7 +127,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         mNewsAdapter = new NewsAdapter(mNewsTabMenuItems,mContext);
         mListener.setDrawerListAdapter(mNewsAdapter);
         if (mSavedInstanceState != null) {
-            mCurrentPage = mSavedInstanceState.getString(STATE_CURRENT_URL);
+            mCurrentPage = mSavedInstanceState.getString(NEWS_STATE_CURRENT_URL);
             initializeFragments(mCurrentPage);
         }else{
             mDefaultHomePage = mNewsTabMenuItems.get(0).getUrl();
@@ -142,8 +142,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         if(!mStarted) {
             return;
         }
-        outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
-        outState.putString(STATE_CURRENT_URL, mCurrentPage);
+        outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
+        outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
     }
 
     private void findFragments() {
@@ -201,7 +201,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         if (savedInstanceState != null) {
             DisplayMode savedDisplayMode =
-                    (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
+                    (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
             if (savedDisplayMode != DisplayMode.SPLIT_VIEW) {
                 mDisplayMode = savedDisplayMode;
 
