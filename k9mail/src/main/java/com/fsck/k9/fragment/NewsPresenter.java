@@ -60,7 +60,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         ViewSwitcher.OnSwitchCompleteListener, PresenterLifeCycle,
         ApiController.ApiControllerInterface {
 
-    private static final int ITEM_HOME_POSITION = 1;
+    private static final int HOME_POSITION_ADAPTER = 1;
+    private static final int HOME_POSITION_PRESENTER = 0;
     private final Activity mContext;
     private static final String ARG_HOME = "HOME";
     private Intent mIntent;
@@ -127,6 +128,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             if(mCurrentPage != null) {
                 initializeFragments(mCurrentPage);
             }
+        } else {
+            if(mMenuItems.size() > 0) {
+                initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
+            }
         }
     }
 
@@ -158,6 +163,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mNewsViewFragment = NewsFragment.newInstance(home);
             ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
+        } else {
+            if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
+                FragmentTransaction ft = fragmentManager.beginTransaction();
+                ft.add(R.id.news_view_container, mNewsViewFragment);
+                ft.commit();
+            }
         }
 
         if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
@@ -456,7 +467,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onMenuClick(TiscaliMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),item.equals(mItems.get(ITEM_HOME_POSITION)));
+                openSection(item.getUrl(),item.equals(mItems.get(HOME_POSITION_ADAPTER)));
             }
         };
 
@@ -625,7 +636,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                                 addSubTree(item, item.getSections(), position);
                             }
                             notifyDataSetChanged();
-                            openSection(item.getUrl(),item.equals(mItems.get(ITEM_HOME_POSITION)));
+                            openSection(item.getUrl(),item.equals(mItems.get(HOME_POSITION_ADAPTER)));
                         }
                         else {
                             mClickListener.onMenuClick(item);
@@ -690,7 +701,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         if(!isInitialized) {
             mIsHomePage = true;
-            initializeFragments(mMenuItems.get(0).getUrl());
+            initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
 
         mNewsAdapter.updateData();

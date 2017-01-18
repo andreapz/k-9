@@ -581,6 +581,7 @@ public class NavigationDrawerActivity extends K9Activity
         if(mSelectedTab != NEWS_TAB_SELECTED) {
             mSelectedTab = NEWS_TAB_SELECTED;
             mNewsPresenter.onCreateView();
+            mNewsPresenter.onResume();
         }
     }
 

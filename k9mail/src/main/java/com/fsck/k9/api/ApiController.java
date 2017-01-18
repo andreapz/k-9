@@ -84,7 +84,7 @@ public class ApiController {
         }
     };
 
-    private HttpLoggingInterceptor mLoggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
+    private HttpLoggingInterceptor mLoggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE);
 
     private Interceptor mInterceptor = new Interceptor() {
         @Override
