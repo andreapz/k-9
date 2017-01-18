@@ -273,27 +273,22 @@ public class NavigationDrawerActivity extends K9Activity
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
+
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         DEFAULT_SELECTED_TAB = pref.getStorage().getInt(DEFAULT_TAB_KEY, DEFAULT_SELECTED_TAB);
 
         mSelectedTab = NONE_TAB_SELECTED;
 
-        // init values
         if (savedInstanceState == null) {
             int tempSelectedTab = DEFAULT_SELECTED_TAB;
-            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId());
-            menuItem.performClick();
+            mBottomNav.findViewById(mBottomNav.getMenu()
+                    .getItem(tempSelectedTab).getItemId()).performClick();
         } else {
-            int tempSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
-            // selected item not automatically saved after rotation
-            setSelectedTab(tempSelectedTab);
+            mMailPresenter.setStartInstanceState(savedInstanceState);
+            mNewsPresenter.setStartInstanceState(savedInstanceState);
+            setSelectedTab(savedInstanceState.getInt(SELECTED_TAB));
         }
-
-
-        mMailPresenter.setStartInstanceState(savedInstanceState);
-        mNewsPresenter.setStartInstanceState(savedInstanceState);
-
 
         mBottomNav.bringToFront();
     }

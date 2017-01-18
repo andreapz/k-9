@@ -1112,10 +1112,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if(!mStarted) {
-            return;
-        }
-
         outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);

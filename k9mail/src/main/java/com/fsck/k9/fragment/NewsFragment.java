@@ -23,13 +23,8 @@ import com.fsck.k9.R;
 
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
-
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 
 
 /**
@@ -40,11 +35,11 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class NewsFragment extends Fragment {
 
-    private static final String UTF8 = "utf-8";
     private static final String JAVASCRIPT_TISCALI_APP_GET_TITLE = "javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)";
     private static final String ARG_HOME = "HOME";
     public static final String PLATFORM_ANDROID = "android";
     public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
+    public static final String CURRENT_URL = "CURRENT_URL";
 
 
     private static final String JAVASCRIPT_PREFIX = "javascript:";
@@ -68,7 +63,7 @@ public class NewsFragment extends Fragment {
     private HashMap<String, String> mExtraHeaders;
 
     public WebView mWebView;
-    private String home_url;
+    private String mUrl;
     private boolean mIsShareable = false;
     private NewsFragmentListener mFragmentListener;
 
@@ -107,13 +102,21 @@ public class NewsFragment extends Fragment {
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
 
-        home_url = getArguments().getString(ARG_HOME);
-
         mFragmentListener = getFragmentListner();
 
         init();
 
-        loadUrl(home_url);
+        if (savedInstanceState == null)
+        {
+            mUrl = getArguments().getString(ARG_HOME);
+            loadUrl(mUrl);
+        } else {
+            mUrl = savedInstanceState.getString(CURRENT_URL);
+            mWebView.restoreState(savedInstanceState);
+//            if(mWebView.getUrl() == null) {
+//                loadUrl(mUrl);
+//            }
+        }
 
         return v;
     }
@@ -166,6 +169,13 @@ public class NewsFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(CURRENT_URL, mUrl);
+        mWebView.saveState(outState);
+    }
+
     private void updateWebViewSettings() {
         // Enable Javascript
         WebSettings settings = mWebView.getSettings();
@@ -177,6 +187,9 @@ public class NewsFragment extends Fragment {
         settings.setLoadsImagesAutomatically(true);
         settings.setDomStorageEnabled(true);
         settings.setLoadWithOverviewMode(true);
+
+        settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         //Todo check if version compliant
         mWebView.addJavascriptInterface(new JsTiscaliAppObject(), TISCALI_APP);
@@ -245,6 +258,7 @@ public class NewsFragment extends Fragment {
 
     @SuppressLint("JavascriptInterface")
     public void updateUrl(String newUrl) {
+        mUrl = newUrl;
         loadUrl(newUrl);
     }
 
