@@ -184,7 +184,7 @@ public class NavigationDrawerActivity extends K9Activity
                     onOffersTabClicked();
                     break;
             }
-            setSelectedTab(mSelectedTab);
+//            setSelectedTab(mSelectedTab);
             return true;
         }
     };
@@ -454,14 +454,34 @@ public class NavigationDrawerActivity extends K9Activity
         }
     }
 
+//    private void setSelectedTab(int position) {
+//        for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
+//            if(i == position) {
+//                mBottomNav.getMenu().getItem(i).setChecked(true);
+//            } else {
+//                mBottomNav.getMenu().getItem(i).setChecked(false);
+//            }
+//        }
+//    }
+
     private void setSelectedTab(int position) {
-        for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
-            if(i == position) {
-                mBottomNav.getMenu().getItem(i).setChecked(true);
-            } else {
-                mBottomNav.getMenu().getItem(i).setChecked(false);
-            }
+
+        switch (position) {
+            case MAIL_TAB_SELECTED:
+                mBottomNav.findViewById(R.id.menu_mail).performClick();
+                onMailTabClicked();
+                break;
+            case NEWS_TAB_SELECTED:
+                mBottomNav.findViewById(R.id.menu_news).performClick();
+                break;
+            case VIDEO_TAB_SELECTED:
+                mBottomNav.findViewById(R.id.menu_video).performClick();
+                break;
+            case OFFERS_TAB_SELECTED:
+                mBottomNav.findViewById(R.id.menu_offers).performClick();
+                break;
         }
+
     }
 
     private String getJsonString(InputStream inputStream) {
