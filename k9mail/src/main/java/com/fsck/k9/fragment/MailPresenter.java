@@ -47,8 +47,10 @@ import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
+import com.fsck.k9.activity.setup.AccountSetupBasics;
+import com.fsck.k9.adapter.AccountsAdapterClickListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerClickListener;
+import com.fsck.k9.adapter.MailAdapterClickListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.helper.SizeFormatter;
@@ -64,6 +66,7 @@ import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.MessageTitleView;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
+import com.fsck.k9.view.holder.AccountViewHolder;
 import com.fsck.k9.view.holder.FolderViewHolder;
 import com.fsck.k9.view.holder.HeaderViewHolder;
 
@@ -143,6 +146,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
 
+    private List<Account> mAccounts = new ArrayList<>();
+
     /**
      * {@code true} when the message list was displayed once. This is used in
      * {@link # onBackPressed()} to decide whether to go from the message view to the message list or
@@ -151,11 +156,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private boolean mMessageListWasDisplayed = false;
     private ViewSwitcher mViewSwitcher;
 
-    private static final String STATE_DISPLAY_MODE = "displayMode";
-    private static final String STATE_MESSAGE_LIST_WAS_DISPLAYED = "messageListWasDisplayed";
-    private static final String STATE_FIRST_BACK_STACK_ID = "firstBackstackId";
+    private static final String MAIL_DISPLAY_MODE = "mailDisplayMode";
+    private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED = "mailMessageListWasDisplayed";
+    private static final String MAIL_FIRST_BACKSTACK_ID = "mailFirstBackstackId";
+    private static final String MAIL_ACCOUNT = "mailAccount";
 
     private MailAdapter mMailAdapter;
+    private AccountsAdapter mAccountsAdapter;
     List<FolderInfoHolder> mFolders = new ArrayList<>();
     private MailPresenterHandler mHandler = new MailPresenterHandler();
 
@@ -420,6 +427,19 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         initializeActionBar();
 
+        mAccounts.clear();
+        mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
+        if(savedInstanceState != null) {
+            mAccount = (Account) savedInstanceState.getSerializable(MAIL_ACCOUNT);
+        }
+
+        if(mAccount == null) {
+            mAccount = mAccounts.get(0);
+        }
+        if(!mAccounts.isEmpty()) {
+            mAccounts.remove(mAccount);
+        }
+
         if (!decodeExtras()) {
             Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
         }
@@ -434,11 +454,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mMailAdapter = new MailAdapter();
         mListener.setDrawerListAdapter(mMailAdapter);
 
-        // mail tab
-        List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
-        if(accounts != null && !accounts.isEmpty()) {
-            mAccount = accounts.get(0);
-        }
+        mAccountsAdapter = new AccountsAdapter();
     }
 
     public void showFolder(LocalSearch search) {
@@ -546,7 +562,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (savedInstanceState != null) {
             DisplayMode savedDisplayMode =
-                    (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
+                    (DisplayMode) savedInstanceState.getSerializable(MAIL_DISPLAY_MODE);
             if (savedDisplayMode != DisplayMode.SPLIT_VIEW) {
                 mDisplayMode = savedDisplayMode;
                 return;
@@ -741,14 +757,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (mSearch.searchAllAccounts()) {
             List<Account> accounts = prefs.getAccounts();
             mSingleAccountMode = (accounts.size() == 1);
-            if (mSingleAccountMode) {
-                mAccount = accounts.get(0);
-            }
+//            if (mSingleAccountMode) {
+//                mAccount = accounts.get(0);
+//            }
         } else {
             mSingleAccountMode = (accountUuids.length == 1);
-            if (mSingleAccountMode) {
-                mAccount = prefs.getAccount(accountUuids[0]);
-            }
+//            if (mSingleAccountMode) {
+//                mAccount = prefs.getAccount(accountUuids[0]);
+//            }
         }
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
@@ -1070,15 +1086,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     public void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
-        outState.putBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
-        outState.putInt(STATE_FIRST_BACK_STACK_ID, mFirstBackStackId);
+        outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
+        outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
+        outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
+        outState.putSerializable(MAIL_ACCOUNT, mAccount);
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            mMessageListWasDisplayed = savedInstanceState.getBoolean(STATE_MESSAGE_LIST_WAS_DISPLAYED);
-            mFirstBackStackId = savedInstanceState.getInt(STATE_FIRST_BACK_STACK_ID);
+            mMessageListWasDisplayed = savedInstanceState.getBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED);
+            mFirstBackStackId = savedInstanceState.getInt(MAIL_FIRST_BACKSTACK_ID);
         }
     }
 
@@ -1826,7 +1843,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     public class MailAdapter extends BaseNavDrawerMenuAdapter {
 
-        MailNavDrawerClickListener mClickListener = new MailNavDrawerClickListener() {
+        MailAdapterClickListener mClickListener = new MailAdapterClickListener() {
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
@@ -1862,7 +1879,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             if(holder instanceof HeaderViewHolder) {
-                // TODO
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
                 if(mAccount != null) {
                     headerViewHolder.mAccountTv.setText(mAccount.getEmail());
@@ -1873,6 +1889,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        mListener.setDrawerListAdapter(mAccountsAdapter);
                     }
                 });
 
@@ -1885,6 +1902,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             } else if (holder instanceof FolderViewHolder) {
                 final FolderInfoHolder folder = getItem(position);
                 FolderViewHolder mailViewHolder = (FolderViewHolder) holder;
+
+                // icon
+                mailViewHolder.mFolderIconIv.setImageResource(R.drawable.ic_email_white_24dp);
 
                 // Title
                 if(folder.displayName != null) {
@@ -1903,7 +1923,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 }
                 mailViewHolder.mNewMessageCountTv.setText(String.format("%d", folder.unreadMessageCount));
                 // new messages icon gone
-                mailViewHolder.mNewMessageCountIconIv.setVisibility(View.INVISIBLE);
+                mailViewHolder.mNewMessageCountIconIv.setVisibility(View.GONE);
 //                mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
 //                        mAccount.generateColorChip(false, false, false, false, false).drawable());
 
@@ -2007,12 +2027,175 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
     }
 
+    public class AccountsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        private static final int HEADER = 0;
+        private static final int ACCOUNT = 1;
+        private static final int ADD_ACCOUNT = 2;
+
+        private int mAddAccountPosition;
+
+        AccountsAdapterClickListener mClickListener = new AccountsAdapterClickListener(){
+            @Override
+            public void onSettingsClick() {
+                super.onSettingsClick();
+                mListener.showDialogSettings(mAccount);
+            }
+
+            @Override
+            public void onAccountClick(Account account) {
+                super.onAccountClick(account);
+                // update current account
+                mAccount = account;
+                // update accounts list
+                mAccounts.clear();
+                mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
+                mAccounts.remove(mAccount);
+                // set mail adapter as current list adapter
+                mFolders.clear();
+                mListener.setDrawerListAdapter(mMailAdapter);
+                // update folders list for new current account
+                onRefresh(!REFRESH_REMOTE);
+                // show default folder for new current account
+                LocalSearch search = new LocalSearch(account.getAutoExpandFolderName());
+                search.addAllowedFolder(account.getAutoExpandFolderName());
+                search.addAccountUuid(account.getUuid());
+                showFolder(search);
+                // close drawer
+                mListener.closeDrawer();
+            }
+
+            @Override
+            public void onAddAccountClick() {
+                super.onAddAccountClick();
+                AccountSetupBasics.actionNewAccount(mContext);
+            }
+        };
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
+
+            View view;
+            LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            switch (type) {
+                case HEADER:
+                    view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
+                    return new HeaderViewHolder(view);
+                case ACCOUNT:
+                    view = inflater.inflate(R.layout.account_holder, parent, false);
+                    return new AccountViewHolder(view);
+                case ADD_ACCOUNT:
+                    view = inflater.inflate(R.layout.account_holder, parent, false);
+                    return new AccountViewHolder(view);
+            }
+            return null;
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            if(holder instanceof HeaderViewHolder) {
+                final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
+                if(mAccount != null) {
+                    headerViewHolder.mAccountTv.setText(mAccount.getEmail());
+                    headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
+                }
+                headerViewHolder.mExpandMenuIconIv.setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+
+                headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mListener.setDrawerListAdapter(mMailAdapter);
+                    }
+                });
+
+                headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mClickListener.onSettingsClick();
+                    }
+                });
+            } else if (holder instanceof AccountViewHolder) {
+                AccountViewHolder accountViewHolder = (AccountViewHolder) holder;
+
+                if(position == mAddAccountPosition) {
+                    // icon
+                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_add_white_24dp);
+                    accountViewHolder.mAccountNameTv.setText(R.string.add_account_action);
+                    accountViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mClickListener.onAddAccountClick();
+                        }
+                    });
+
+                } else {
+                    final Account account = getItem(position);
+                    // icon
+                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_email_white_24dp);
+
+                    // Name
+                    if(mAccount.getEmail() != null) {
+                        accountViewHolder.mAccountNameTv.setText(account.getEmail());
+                    }
+                    //click listener
+                    accountViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mClickListener.onAccountClick(account);
+                        }
+                    });
+                }
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            if(mAccounts == null) {
+                return 2;
+            }
+            // without header. One for add new account item
+//          mAddAccountPosition = 0;
+//        return mAccounts.size() + 1;
+            // with header
+            mAddAccountPosition = 1;
+            return mAccounts.size() + 2;
+        }
+
+        private Account getItem(int position) {
+            // without header. One for add new account item
+//        return mAccounts.get(position - 1);
+            // with header
+            return mAccounts.get(position - 2);
+        }
+
+
+        @Override
+        public int getItemViewType(int position) {
+            // without header. One for add new account item
+//          return position == 0 ? ADD_ACCOUNT : ACCOUNT;
+            // with header
+            switch (position) {
+                // header
+                case 0:
+                    return HEADER;
+                // add account account
+                case 1:
+                    return ADD_ACCOUNT;
+                default:
+                    // account
+                    return ACCOUNT;
+            }
+        }
+    }
+
     class MailPresenterHandler extends Handler {
 
         public void newFolders(final List<FolderInfoHolder> newFolders) {
             mContext.runOnUiThread(new Runnable() {
                 public void run() {
-                    mFolders.clear();
+                    if(!mFolders.isEmpty()) {
+                        mFolders.clear();
+                    }
                     mFolders.addAll(newFolders);
                     mHandler.dataChanged();
                 }

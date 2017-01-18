@@ -47,8 +47,6 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.MailNavDrawerClickListener;
-import com.fsck.k9.adapter.NavDrawerClickListener;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.fragment.MailPresenter;
@@ -618,7 +616,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     @Override
-    public void setDrawerListAdapter(BaseNavDrawerMenuAdapter adapter) {
+    public void setDrawerListAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
         if(mDrawerList != null && adapter != null) {
             mDrawerList.setAdapter(adapter);
         }
