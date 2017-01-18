@@ -573,6 +573,7 @@ public class NavigationDrawerActivity extends K9Activity
         if(mSelectedTab != MAIL_TAB_SELECTED) {
             mSelectedTab = MAIL_TAB_SELECTED;
             mMailPresenter.onCreateView();
+            mMailPresenter.onResume();
         }
     }
 
@@ -759,7 +760,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
 
-    public void updateMe(Me me) {
+    public void updateMe(Me me, String json) {
 
         String defaultTab = me.getDefaultTab();
         int defaultTabIndex = NEWS_TAB_SELECTED;
