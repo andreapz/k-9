@@ -173,11 +173,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
         } else {
-            if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
-                FragmentTransaction ft = fragmentManager.beginTransaction();
-                ft.add(R.id.news_view_container, mNewsViewFragment);
-                ft.commit();
-            }
+//            if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
+//                FragmentTransaction ft = fragmentManager.beginTransaction();
+//                ft.add(R.id.news_view_container, mNewsViewFragment);
+//                ft.commit();
+//            }
         }
 
         if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){

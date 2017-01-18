@@ -227,10 +227,6 @@ public class NavigationDrawerActivity extends K9Activity
             buildDaggerComponent(mailIntent);
         }
 
-        if(mMailPresenter == null) {
-            buildDaggerComponent(mailIntent);
-        }
-
         if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
             finish();
             return;
