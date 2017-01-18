@@ -113,24 +113,7 @@ public class NewsFragment extends Fragment {
 
         init();
 
-        Observable.empty()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Object>() {
-                    @Override
-                    public void onCompleted() {
-                        loadUrl(home_url);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-
-                    }
-                });
+        loadUrl(home_url);
 
         return v;
     }

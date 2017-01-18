@@ -184,7 +184,6 @@ public class NavigationDrawerActivity extends K9Activity
                     onOffersTabClicked();
                     break;
             }
-//            setSelectedTab(mSelectedTab);
             return true;
         }
     };
@@ -374,10 +373,6 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if(mMailPresenter != null) {
-            mMailPresenter.onDetach();
-        }
-
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
 
