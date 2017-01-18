@@ -7,6 +7,7 @@ import android.app.FragmentManager.OnBackStackChangedListener;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -43,11 +45,14 @@ import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
+import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
+import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.AccountsAdapterClickListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.MailAdapterClickListener;
@@ -161,15 +166,17 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private boolean mMessageListWasDisplayed = false;
     private ViewSwitcher mViewSwitcher;
 
-    private static final String MAIL_DISPLAY_MODE = "mailDisplayMode";
-    private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED = "mailMessageListWasDisplayed";
-    private static final String MAIL_FIRST_BACKSTACK_ID = "mailFirstBackstackId";
-    private static final String MAIL_ACCOUNT = "mailAccount";
+    private static final String MAIL_PREFIX = "MAIL";
+    private static final String MAIL_DISPLAY_MODE = MAIL_PREFIX + "DisplayMode";
+    private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED = MAIL_PREFIX + "MessageListWasDisplayed";
+    private static final String MAIL_FIRST_BACKSTACK_ID = MAIL_PREFIX + "FirstBackstackId";
+    private static final String MAIL_ACCOUNT_INDEX = MAIL_PREFIX + "AccountIndex";
 
     private MailAdapter mMailAdapter;
     private AccountsAdapter mAccountsAdapter;
     List<FolderInfoHolder> mFolders = new ArrayList<>();
     private MailPresenterHandler mHandler = new MailPresenterHandler();
+    private int mAccountIndex = 0;
 
     private ActivityListener mMessagingListener = new ActivityListener() {
         @Override
@@ -436,13 +443,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mAccounts.clear();
         mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
         if(mSavedInstanceState != null) {
-            mAccount = (Account) mSavedInstanceState.getSerializable(MAIL_ACCOUNT);
+            mAccountIndex = mSavedInstanceState.getInt(MAIL_ACCOUNT_INDEX);
         }
 
-        if(mAccount == null) {
-            mAccount = mAccounts.get(0);
-        }
         if(!mAccounts.isEmpty()) {
+            mAccount = mAccounts.get(mAccountIndex);
             mAccounts.remove(mAccount);
         }
 
@@ -571,7 +576,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (savedInstanceState != null) {
             DisplayMode savedDisplayMode =
                     (DisplayMode) savedInstanceState.getSerializable(MAIL_DISPLAY_MODE);
-            if (savedDisplayMode != DisplayMode.SPLIT_VIEW) {
+            if (savedDisplayMode != null && savedDisplayMode != DisplayMode.SPLIT_VIEW) {
                 mDisplayMode = savedDisplayMode;
                 return;
             }
@@ -765,14 +770,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (mSearch.searchAllAccounts()) {
             List<Account> accounts = prefs.getAccounts();
             mSingleAccountMode = (accounts.size() == 1);
-//            if (mSingleAccountMode) {
-//                mAccount = accounts.get(0);
-//            }
         } else {
             mSingleAccountMode = (accountUuids.length == 1);
-//            if (mSingleAccountMode) {
-//                mAccount = prefs.getAccount(accountUuids[0]);
-//            }
         }
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
@@ -1120,7 +1119,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
-        outState.putSerializable(MAIL_ACCOUNT, mAccount);
+        outState.putInt(MAIL_ACCOUNT_INDEX, mAccountIndex);
     }
 
     @Override
@@ -1887,13 +1886,30 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mListener.closeDrawer();
     }
 
+    public void showDialogSettings(final Account account) {
+        mListener.closeDrawer();
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        AccountSettings.actionSettings(mListener.getActivity(), account);
+                        break;
+                    case 1:
+                        Prefs.actionPrefs(mListener.getActivity());
+                }
+            }
+        });
+        builder.create().show();
+    }
+
     public class MailAdapter extends BaseNavDrawerMenuAdapter {
 
         MailAdapterClickListener mClickListener = new MailAdapterClickListener() {
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-                mListener.showDialogSettings(mAccount);
+                showDialogSettings(mAccount);
             }
 
             @Override
@@ -2085,7 +2101,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-                mListener.showDialogSettings(mAccount);
+                showDialogSettings(mAccount);
             }
 
             @Override
@@ -2096,6 +2112,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 // update accounts list
                 mAccounts.clear();
                 mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
+                mAccountIndex = mAccounts.contains(mAccount) ? mAccounts.indexOf(mAccount) : 0;
                 mAccounts.remove(mAccount);
                 // set mail adapter as current list adapter
                 mFolders.clear();

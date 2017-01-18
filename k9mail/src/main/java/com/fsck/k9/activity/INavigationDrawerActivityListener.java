@@ -21,9 +21,6 @@ public interface INavigationDrawerActivityListener {
     FrameLayout getContainer();
     void setDrawerListAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter);
     void closeDrawer();
-    void showDialogSettings(Account account);
-    void showDialogInformations();
-    void showDialogCustomize(List<NavDrawerMenuItem> data);
 
     void setDrawerEnable(boolean isEnabled);
 

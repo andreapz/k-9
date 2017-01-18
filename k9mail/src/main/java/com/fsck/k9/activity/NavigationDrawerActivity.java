@@ -374,12 +374,17 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        if(mMailPresenter != null) {
+            mMailPresenter.onDetach();
+        }
+
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
 
         if(mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
+
         if(mNewsPresenter != null) {
             mNewsPresenter.onSaveInstanceState(outState);
         }
@@ -450,7 +455,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     private void setSelectedTab(int position) {
-        for(int i=0; i<mBottomNav.getMenu().size(); i++) {
+        for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
             if(i == position) {
                 mBottomNav.getMenu().getItem(i).setChecked(true);
             } else {
@@ -664,101 +669,7 @@ public class NavigationDrawerActivity extends K9Activity
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
-    @Override
-    public void showDialogSettings(final Account account) {
-        closeDrawer();
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        AccountSettings.actionSettings(NavigationDrawerActivity.this, account);
-                        break;
-                    case 1:
-                        Prefs.actionPrefs(NavigationDrawerActivity.this);
-                }
-            }
-        });
-        builder.create().show();
-    }
-    @Override
-    public void showDialogInformations() {
-        closeDrawer();
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setItems(R.array.informations_titles, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        showInformations();
-                        break;
-                }
-            }
-        });
-        builder.create().show();
-    }
 
-    @Override
-    public void showDialogCustomize(List<NavDrawerMenuItem> data) {
-        closeDrawer();
-
-        final Dialog customize=new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_custom_news);
-        customize.setCancelable(false);
-
-        ListView listInterests = (ListView) customize
-                .findViewById(R.id.list_catagory);
-
-        final CategoryNewsAdapter adapter;
-        adapter = new CategoryNewsAdapter(this,
-                data, true);
-
-        listInterests.setAdapter(adapter);
-
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                List<NavDrawerMenuItem> selected = adapter.getSelectedItmes();
-
-                customize.dismiss();
-             }
-        });
-
-        customize.show();
-    }
-
-    public void showInformations() {
-
-
-        final Dialog customize= new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_informations);
-        customize.setCancelable(true);
-
-        WebView view = (WebView) customize
-                .findViewById(R.id.webview);
-
-        view.getSettings().setJavaScriptEnabled(true);
-        MainConfig mainConfig = null ;
-        if(mApiController != null){
-            mainConfig = mApiController.getMainConfig();
-        }
-        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
-            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
-        }
-        view.setWebViewClient(new WebViewClient());
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-                customize.dismiss();
-            }
-        });
-
-        customize.show();
-    }
 
 
     public void updateMe(Me me, String json) {
