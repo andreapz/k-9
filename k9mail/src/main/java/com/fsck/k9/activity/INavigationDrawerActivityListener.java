@@ -19,7 +19,7 @@ public interface INavigationDrawerActivityListener {
     Activity getActivity();
 
     FrameLayout getContainer();
-    void setDrawerListAdapter(BaseNavDrawerMenuAdapter adapter);
+    void setDrawerListAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter);
     void closeDrawer();
     void showDialogSettings(Account account);
     void showDialogInformations();

@@ -3,15 +3,23 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/item_container"
     android:padding="16dp"
-    android:layout_centerVertical="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:id="@+id/folder_icon"
+        android:layout_alignParentLeft="true" />
 
     <TextView
         android:id="@+id/folder_name"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/margin_standard_56dp"
         android:gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
@@ -21,11 +29,11 @@
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:layout_toLeftOf="@+id/new_message_count_wrapper"
         android:gravity="center_vertical"
         android:clickable="true"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp">
+        android:layout_marginRight="@dimen/margin_standard_8dp" >
 
         <ImageView
             android:id="@+id/flagged_message_count_icon"
@@ -49,11 +57,10 @@
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
-        android:clickable="true"
-        android:paddingLeft="4dip"
-        android:paddingRight="4dip">
+        android:clickable="true">
 
         <ImageView
             android:id="@+id/new_message_count_icon"
