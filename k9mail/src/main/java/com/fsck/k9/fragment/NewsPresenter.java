@@ -186,7 +186,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         if (savedInstanceState != null) {
             DisplayMode savedDisplayMode =
                     (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
-            if (savedDisplayMode != DisplayMode.SPLIT_VIEW) {
+            if (savedDisplayMode != DisplayMode.SPLIT_VIEW &&  savedDisplayMode != null) {
                 mDisplayMode = savedDisplayMode;
 
                 return;
