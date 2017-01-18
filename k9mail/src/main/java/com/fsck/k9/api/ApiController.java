@@ -109,7 +109,7 @@ public class ApiController {
             String responseBodyString = response.body().string();
             Response newResponse = response.newBuilder().body(ResponseBody.create(responseBody.contentType(), responseBodyString.getBytes())).build();
 
-            Log.d(getClass().getName(),"URL:"+request.url().toString()+" Body:"+responseBodyString);
+//            Log.d(getClass().getName(),"URL:"+request.url().toString()+" Body:"+responseBodyString);
             if(response.isSuccessful()) {
                 mEditor.putString(request.url().toString(), responseBodyString);
                 mEditor.commit();
@@ -233,12 +233,6 @@ public class ApiController {
             Observable<Authorize> authorize = getAuthorize();
             if(authorize != null) {
                 authorizeApi(true);
-//                authorize.concatMap(new Func1<Authorize, Observable<UserLogin>>() {
-//                    @Override
-//                    public Observable<UserLogin> call(Authorize authorize) {
-//                        return postUserLogin();
-//                    }
-//                }).subscribe(new SubscriberUserLogin());
             }
 
             String userLogin = mStorage.getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
@@ -389,8 +383,13 @@ public class ApiController {
     }
 
     public void sendMe(ApiControllerInterface listener) {
+        String json = mStorage.getString(mMainConfig.getEndpoints().getUserMe().getUrl(), "");
+        if(json.length() == 0) {
+            json = mStorage.getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
+        }
+
         if(mUserLogin != null && mUserLogin.getMe() != null) {
-            listener.updateMe(mUserLogin.getMe());
+            listener.updateMe(mUserLogin.getMe(), json);
         }
     }
 
@@ -424,7 +423,7 @@ public class ApiController {
     }
 
     public interface ApiControllerInterface {
-        void updateMe(Me me);
+        void updateMe(Me me, String json);
     }
 
     public void refreshListeners() {

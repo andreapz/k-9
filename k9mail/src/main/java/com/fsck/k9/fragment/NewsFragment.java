@@ -2,9 +2,7 @@ package com.fsck.k9.fragment;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -24,7 +22,14 @@ import android.webkit.WebViewClient;
 import com.fsck.k9.R;
 
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
 
 
 /**
@@ -35,21 +40,35 @@ import java.util.HashMap;
 
 public class NewsFragment extends Fragment {
 
-    public static final String JAVASCRIPT_TISCALI_APP_GET_TITLE = "javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)";
+    private static final String UTF8 = "utf-8";
+    private static final String JAVASCRIPT_TISCALI_APP_GET_TITLE = "javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)";
     private static final String ARG_HOME = "HOME";
     public static final String PLATFORM_ANDROID = "android";
     public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
-    public static final String JAVASCRIPT_TISCALI_APP_IS_SHAREABLE = "javascript:window.TiscaliApp.setShareable(tiscaliApp.isShareable)";
-    public static final String JAVASCRIPT_TISCALI_APP_GET_ID_SECTION = "javascript:window.TiscaliApp.setIdSection(tiscaliApp.getIdSection)";
-    public static final String JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT = "javascript:window.TiscaliApp.setResizableText(tiscaliApp.hasResizableText)";
-    public static final String JAVASCRIPT_FIRST_PART_SET_PAGE_STATUS = "javascript:window.TiscaliApp.setResult(tiscaliApp.setPageStatus(";
-    public static final String JAVASCRIPT_SECOND_PART_SET_PAGE_STATUS = "))";
-    public static final String TISCALI_APP_GET_TITLE = "tiscaliApp.getTitle";
-    public static final String TISCALI_APP = "TiscaliApp";
+
+
+    private static final String JAVASCRIPT_PREFIX = "javascript:";
+    private static final String JAVASCRIPT_TISCALI_APP_PREFIX = "window.TiscaliApp";
+
+    private static final String JAVASCRIPT_TISCALI_APP_IS_SHAREABLE = JAVASCRIPT_PREFIX
+            + JAVASCRIPT_TISCALI_APP_PREFIX
+            + ".setShareable(tiscaliApp.isShareable)";
+    private static final String JAVASCRIPT_TISCALI_APP_GET_ID_SECTION = JAVASCRIPT_PREFIX
+            + JAVASCRIPT_TISCALI_APP_PREFIX
+            + ".setIdSection(tiscaliApp.getIdSection)";
+    private static final String JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT = JAVASCRIPT_PREFIX
+            + JAVASCRIPT_TISCALI_APP_PREFIX
+            + ".setResizableText(tiscaliApp.hasResizableText)";
+    private static final String JAVASCRIPT_TISCALI_APP_SET_PAGE_STATUS = JAVASCRIPT_PREFIX
+            + JAVASCRIPT_TISCALI_APP_PREFIX
+            + ".setResult(tiscaliApp.setPageStatus(\"%D\"))";
+
+    private static final String TISCALI_APP_GET_TITLE = "tiscaliApp.getTitle";
+    private static final String TISCALI_APP = "TiscaliApp";
     private HashMap<String, String> mExtraHeaders;
 
     public WebView mWebView;
-    public String home_url;
+    private String home_url;
     private boolean mIsShareable = false;
     private NewsFragmentListener mFragmentListener;
 
@@ -94,7 +113,24 @@ public class NewsFragment extends Fragment {
 
         init();
 
-        loadUrl(home_url);
+        Observable.empty()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Object>() {
+                    @Override
+                    public void onCompleted() {
+                        loadUrl(home_url);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+
+                    }
+                });
 
         return v;
     }
@@ -130,7 +166,18 @@ public class NewsFragment extends Fragment {
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT);
 
                 if(mFragmentListener.isHomePage()){
-                    view.loadUrl(JAVASCRIPT_FIRST_PART_SET_PAGE_STATUS +mFragmentListener.getMeObject()+ JAVASCRIPT_SECOND_PART_SET_PAGE_STATUS);
+                    NewsFragmentListener listener = getFragmentListner();
+                    if(listener != null) {
+                        String value = listener.getMeJSON();
+                        try {
+
+                            String valueEncoded = URLEncoder.encode(value, "UTF-8").replace("%","\\x");
+
+                            view.loadUrl(JAVASCRIPT_TISCALI_APP_SET_PAGE_STATUS.replace("%D", valueEncoded));
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         });
@@ -243,7 +290,7 @@ public class NewsFragment extends Fragment {
         void detailPageLoad(String url);
         boolean isDetailStatus();
         boolean isHomePage();
-        String getMeObject();
+        String getMeJSON();
         void setPageTitle(String title);
         void setActionBarToggle();
         void setCurrentUrl(String url);
@@ -275,20 +322,22 @@ public class NewsFragment extends Fragment {
             mIsShareable = value;
             getActivity().invalidateOptionsMenu();
         }
+
         @JavascriptInterface
         public void setIdSection(String value) {
             Log.d("TiscaliWebView","[SECTION_ID]:"+value);
             mIdSection = value;
         }
+
         @JavascriptInterface
         public void setResizableText(boolean value) {
             Log.d("TiscaliWebView","[RESIZABLE]:"+value);
             mIsResizable = value;
         }
+
         @JavascriptInterface
         public void setResult(boolean value) {
             Log.d("TiscaliWebView","[SET]:"+value);
-
         }
 
     }

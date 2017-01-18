@@ -3,7 +3,6 @@ package com.fsck.k9.fragment;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -24,9 +23,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
@@ -44,10 +41,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -65,6 +60,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         ViewSwitcher.OnSwitchCompleteListener, PresenterLifeCycle,
         ApiController.ApiControllerInterface {
 
+    private static final int ITEM_HOME_POSITION = 1;
     private final Activity mContext;
     private static final String ARG_HOME = "HOME";
     private Intent mIntent;
@@ -79,7 +75,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private NewsFragment mNewsDetailFragment;
     private DisplayMode mDisplayMode;
     private String mCurrentPage;
-    private String mMeObjectJsonString;
+    private String mMeJson;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
     private NewsPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
@@ -334,8 +330,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     @Override
-    public String getMeObject() {
-        return mMeObjectJsonString;
+    public String getMeJSON() {
+        return mMeJson;
     }
 
     @Override
@@ -460,7 +456,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onMenuClick(TiscaliMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),item.equals(mItems.get(0)));
+                openSection(item.getUrl(),item.equals(mItems.get(ITEM_HOME_POSITION)));
             }
         };
 
@@ -586,7 +582,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            mListener.showDialogCustomize(NavDrawerMenuItem.getCustomNewsCategoriesList(mMeObjectJsonString));
+                            mListener.showDialogCustomize(NavDrawerMenuItem.getCustomNewsCategoriesList(mMeJson));
                         }
                     });
                 }
@@ -629,7 +625,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                                 addSubTree(item, item.getSections(), position);
                             }
                             notifyDataSetChanged();
-                            openSection(item.getUrl(),item.equals(mItems.get(0)));
+                            openSection(item.getUrl(),item.equals(mItems.get(ITEM_HOME_POSITION)));
                         }
                         else {
                             mClickListener.onMenuClick(item);
@@ -681,7 +677,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
 
     @Override
-    public void updateMe(Me me) {
+    public void updateMe(Me me, String json) {
         boolean isInitialized = false;
 
         if(mMenuItems.size() > 0) {
@@ -690,8 +686,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+        mMeJson = json;
 
         if(!isInitialized) {
+            mIsHomePage = true;
             initializeFragments(mMenuItems.get(0).getUrl());
         }
 
