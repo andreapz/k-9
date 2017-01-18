@@ -7,6 +7,7 @@ import android.app.FragmentManager.OnBackStackChangedListener;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -43,11 +45,14 @@ import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
+import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
+import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.AccountsAdapterClickListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.MailAdapterClickListener;
@@ -1880,13 +1885,30 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mListener.closeDrawer();
     }
 
+    public void showDialogSettings(final Account account) {
+        mListener.closeDrawer();
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        AccountSettings.actionSettings(mListener.getActivity(), account);
+                        break;
+                    case 1:
+                        Prefs.actionPrefs(mListener.getActivity());
+                }
+            }
+        });
+        builder.create().show();
+    }
+
     public class MailAdapter extends BaseNavDrawerMenuAdapter {
 
         MailAdapterClickListener mClickListener = new MailAdapterClickListener() {
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-                mListener.showDialogSettings(mAccount);
+                showDialogSettings(mAccount);
             }
 
             @Override
@@ -2078,7 +2100,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-                mListener.showDialogSettings(mAccount);
+                showDialogSettings(mAccount);
             }
 
             @Override

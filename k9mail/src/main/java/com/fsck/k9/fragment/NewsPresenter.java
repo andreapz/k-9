@@ -1,13 +1,16 @@
 package com.fsck.k9.fragment;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,7 +21,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -27,8 +34,10 @@ import com.fsck.k9.K9;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.CategoryNewsAdapter;
 import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
 import com.fsck.k9.model.NavDrawerMenuItem;
@@ -450,7 +459,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-                mListener.showDialogInformations();
+               showDialogInformations();
             }
             @Override
             public void onMenuClick(TiscaliMenuItem item) {
@@ -582,7 +591,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            mListener.showDialogCustomize(NavDrawerMenuItem.getCustomNewsCategoriesList(mMeJson));
+                            showDialogCustomize(NavDrawerMenuItem.getCustomNewsCategoriesList(mMeJson));
                         }
                     });
                 }
@@ -702,5 +711,84 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             return;
         }
         mSavedInstanceState = savedInstanceState;
+    }
+
+
+    public void showDialogInformations() {
+        mListener.closeDrawer();
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setItems(R.array.informations_titles, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        showInformations();
+                        break;
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+
+    public void showDialogCustomize(List<NavDrawerMenuItem> data) {
+        mListener.closeDrawer();
+
+        final Dialog customize=new Dialog(mListener.getActivity(),android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        customize.setContentView(R.layout.dialog_custom_news);
+        customize.setCancelable(false);
+
+        ListView listInterests = (ListView) customize
+                .findViewById(R.id.list_catagory);
+
+        final CategoryNewsAdapter adapter;
+        adapter = new CategoryNewsAdapter(mListener.getActivity(),
+                data, true);
+
+        listInterests.setAdapter(adapter);
+
+        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                List<NavDrawerMenuItem> selected = adapter.getSelectedItmes();
+
+                customize.dismiss();
+            }
+        });
+
+        customize.show();
+    }
+
+    public void showInformations() {
+
+
+        final Dialog customize= new Dialog(mListener.getActivity(),android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        customize.setContentView(R.layout.dialog_informations);
+        customize.setCancelable(true);
+
+        WebView view = (WebView) customize
+                .findViewById(R.id.webview);
+
+        view.getSettings().setJavaScriptEnabled(true);
+        MainConfig mainConfig = null ;
+        if(mListener.getApiController() != null){
+            mainConfig = mListener.getApiController().getMainConfig();
+        }
+        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
+            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
+        }
+        view.setWebViewClient(new WebViewClient());
+        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                customize.dismiss();
+            }
+        });
+
+        customize.show();
     }
 }
