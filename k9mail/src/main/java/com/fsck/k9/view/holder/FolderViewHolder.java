@@ -13,10 +13,10 @@ import com.fsck.k9.R;
  */
 
 public class FolderViewHolder extends RecyclerView.ViewHolder {
-    public RelativeLayout mFolderContainerRl;
     public TextView mFolderNameTv;
     public TextView mNewMessageCountTv;
     public TextView mFlaggedMessageCountTv;
+    public ImageView mFolderIconIv;
     public ImageView mNewMessageCountIconIv;
     public ImageView mFlaggedMessageCountIconIv;
     public View mNewMessageCountWrapperV;
@@ -24,7 +24,6 @@ public class FolderViewHolder extends RecyclerView.ViewHolder {
 
     public FolderViewHolder(View itemView) {
         super(itemView);
-        mFolderContainerRl = (RelativeLayout) itemView.findViewById(R.id.item_container);
         mFolderNameTv = (TextView) itemView.findViewById(R.id.folder_name);
         mNewMessageCountTv = (TextView) itemView.findViewById(R.id.new_message_count);
         mFlaggedMessageCountTv = (TextView) itemView.findViewById(R.id.flagged_message_count);
@@ -32,5 +31,6 @@ public class FolderViewHolder extends RecyclerView.ViewHolder {
         mFlaggedMessageCountWrapperV = itemView.findViewById(R.id.flagged_message_count_wrapper);
         mNewMessageCountIconIv = (ImageView) itemView.findViewById(R.id.new_message_count_icon);
         mFlaggedMessageCountIconIv = (ImageView) itemView.findViewById(R.id.flagged_message_count_icon);
+        mFolderIconIv = (ImageView) itemView.findViewById(R.id.folder_icon);
     }
 }

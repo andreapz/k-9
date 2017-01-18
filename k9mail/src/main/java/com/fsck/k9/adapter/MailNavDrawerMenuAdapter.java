@@ -18,10 +18,10 @@ import java.util.List;
 public class MailNavDrawerMenuAdapter extends BaseNavDrawerMenuAdapter {
 
     List<FolderInfoHolder> mItems;
-    MailNavDrawerClickListener mMailNavDrawerClickListener;
+    MailAdapterClickListener mMailNavDrawerClickListener;
     Account mAccount;
 
-    public MailNavDrawerMenuAdapter(Account account, List<FolderInfoHolder> data, Context context, MailNavDrawerClickListener settingsListener) {
+    public MailNavDrawerMenuAdapter(Account account, List<FolderInfoHolder> data, Context context, MailAdapterClickListener settingsListener) {
         this.mContext = context;
         this.mMailNavDrawerClickListener = settingsListener;
         this.mAccount = account;

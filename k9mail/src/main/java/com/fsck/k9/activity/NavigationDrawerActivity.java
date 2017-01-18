@@ -652,7 +652,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     @Override
-    public void setDrawerListAdapter(BaseNavDrawerMenuAdapter adapter) {
+    public void setDrawerListAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
         if(mDrawerList != null && adapter != null) {
             mDrawerList.setAdapter(adapter);
         }
