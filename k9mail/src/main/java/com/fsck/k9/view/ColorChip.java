@@ -7,6 +7,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
 
+import java.io.Serializable;
+
 
 public class ColorChip {
     public static final Path CIRCULAR = new Path();
@@ -14,6 +16,7 @@ public class ColorChip {
     public static final Path RIGHT_POINTING = new Path();
     public static final Path RIGHT_NOTCH = new Path();
     public static final Path STAR = new Path();
+    private static final long serialVersionUID = -6211003972372471527L;
 
     static {
         CIRCULAR.addCircle(160, 160, 70f, Path.Direction.CW);

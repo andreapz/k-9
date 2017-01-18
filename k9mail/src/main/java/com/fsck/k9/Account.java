@@ -55,7 +55,7 @@ import static com.fsck.k9.Preferences.getEnumStringPref;
  * Account stores all of the settings for a single account defined by the user. It is able to save
  * and delete itself given a Preferences to work with. Each account is defined by a UUID.
  */
-public class Account implements BaseAccount, StoreConfig, Serializable {
+public class Account implements BaseAccount, StoreConfig {
     /**
      * Default value for the inbox folder (never changes for POP3 and IMAP)
      */
@@ -70,7 +70,6 @@ public class Account implements BaseAccount, StoreConfig, Serializable {
     public static final String SPAM = "Spam";
 
     public static final int DEFAULT_AUTOMATIC_CHECK_INTERVAL_MINUTES = 60;
-    private static final long serialVersionUID = -3717660103458796610L;
 
     public enum Expunge {
         EXPUNGE_IMMEDIATELY,
