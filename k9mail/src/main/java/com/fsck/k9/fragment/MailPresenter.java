@@ -45,7 +45,6 @@ import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
@@ -170,13 +169,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final String MAIL_DISPLAY_MODE = MAIL_PREFIX + "DisplayMode";
     private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED = MAIL_PREFIX + "MessageListWasDisplayed";
     private static final String MAIL_FIRST_BACKSTACK_ID = MAIL_PREFIX + "FirstBackstackId";
-    private static final String MAIL_ACCOUNT_INDEX = MAIL_PREFIX + "AccountIndex";
+    private static final String MAIL_ACCOUNT_UUID = MAIL_PREFIX + "AccountUuid";
 
     private MailAdapter mMailAdapter;
     private AccountsAdapter mAccountsAdapter;
     List<FolderInfoHolder> mFolders = new ArrayList<>();
     private MailPresenterHandler mHandler = new MailPresenterHandler();
-    private int mAccountIndex = 0;
+    private String mAccountUuid;
 
     private ActivityListener mMessagingListener = new ActivityListener() {
         @Override
@@ -442,17 +441,21 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         mAccounts.clear();
         mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
-        if(mSavedInstanceState != null) {
-            mAccountIndex = mSavedInstanceState.getInt(MAIL_ACCOUNT_INDEX);
-        }
-
-        if(!mAccounts.isEmpty()) {
-            mAccount = mAccounts.get(mAccountIndex);
-            mAccounts.remove(mAccount);
-        }
 
         if (!decodeExtras()) {
             Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
+        }
+
+        if(mSavedInstanceState != null) {
+            mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
+        } else {
+            String[] accountUuids = mSearch.getAccountUuids();
+            mAccountUuid = accountUuids[0];
+        }
+
+        mAccount = Preferences.getPreferences(mContext).getAccount(mAccountUuid);
+        if(!mAccounts.isEmpty() && mAccount != null) {
+            mAccounts.remove(mAccount);
         }
 
         findFragments();
@@ -1115,7 +1118,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
-        outState.putInt(MAIL_ACCOUNT_INDEX, mAccountIndex);
+        outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
     }
 
     @Override
@@ -2108,7 +2111,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 // update accounts list
                 mAccounts.clear();
                 mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
-                mAccountIndex = mAccounts.contains(mAccount) ? mAccounts.indexOf(mAccount) : 0;
+                mAccountUuid = mAccount.getUuid();
                 mAccounts.remove(mAccount);
                 // set mail adapter as current list adapter
                 mFolders.clear();
