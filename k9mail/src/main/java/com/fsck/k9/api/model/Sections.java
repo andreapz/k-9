@@ -2,6 +2,8 @@
 package com.fsck.k9.api.model;
 
 import java.util.List;
+import java.util.Map;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -9,11 +11,11 @@ public class Sections {
 
     @SerializedName("fave")
     @Expose
-    private List<Fave> faves;
+    private Map<String, Boolean> faves;
 
     @SerializedName("visibility")
     @Expose
-    private List<Object> visibility = null;
+    private Map<String, Boolean> visibility = null;
 
 //    public Fave getFave() {
 //        return fave;
@@ -24,19 +26,19 @@ public class Sections {
 //    }
 
 
-    public List<Fave> getFaves() {
+    public Map<String, Boolean> getFaves() {
         return faves;
     }
 
-    public void setFaves(List<Fave> faves) {
+    public void setFaves(Map<String, Boolean> faves) {
         this.faves = faves;
     }
 
-    public List<Object> getVisibility() {
+    public Map<String, Boolean> getVisibility() {
         return visibility;
     }
 
-    public void setVisibility(List<Object> visibility) {
+    public void setVisibility(Map<String, Boolean> visibility) {
         this.visibility = visibility;
     }
 

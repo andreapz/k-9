@@ -158,25 +158,5 @@ public class NavDrawerMenuItem implements Serializable {
             return null;
         }
     }
-    public static List<NavDrawerMenuItem> getCustomNewsCategoriesList(String meObjectJsonString) {
-        try {
-            JSONObject meObjectJson = new JSONObject(meObjectJsonString);
-            JSONObject meJsonObject = meObjectJson.getJSONObject("me");
-            JSONObject tabJsonObject = meJsonObject.getJSONObject("news");
-            JSONArray menuJsonArray = tabJsonObject.getJSONArray("menu");
-            List<NavDrawerMenuItem> menuList = new ArrayList<>();
-            for (int i=0; i<menuJsonArray.length(); i++) {
-                JSONObject obj = menuJsonArray.getJSONObject(i);
-                NavDrawerMenuItem menuItem = getMenuItem(obj);
-                if(menuItem.customizable ){
-                    menuList.add(menuItem);
-                }
 
-            }
-            return menuList;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

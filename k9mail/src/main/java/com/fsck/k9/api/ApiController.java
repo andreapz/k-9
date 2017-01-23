@@ -197,6 +197,18 @@ public class ApiController {
                 .retry(RETRY_COUNT);
     }
 
+    private Observable<UserLogin> postSectionVisibility(String sectionId, boolean isSelected) {
+        if(mMainConfig == null) {
+            return null;
+        }
+        return apiClient()
+                .postSectionVisibility(mMainConfig.getEndpoints().getSectionVisibility().getUrl(),
+                        sectionId,isSelected)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .retry(RETRY_COUNT);
+    }
+
     private Observable<UserLogin> getMe() {
         if(mMainConfig == null) {
             return null;
@@ -299,6 +311,14 @@ public class ApiController {
 
         if(postUserLogin != null) {
             postUserLogin.subscribe(new SubscriberUserLogin());
+        }
+    }
+
+    public void sectionVisibility(String sectionId, boolean isSelected){
+        Observable<UserLogin> postSectionVisibility = postSectionVisibility(sectionId, isSelected);
+
+        if(postSectionVisibility != null) {
+            postSectionVisibility.subscribe(new SubscriberUserLogin());
         }
     }
 

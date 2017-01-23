@@ -303,7 +303,9 @@ public class NewsFragment extends Fragment {
         public void setShareable(boolean value) {
             Log.d("TiscaliWebView","[SHAREABLE]:"+value);
             mIsShareable = value;
-            getActivity().invalidateOptionsMenu();
+            if(getActivity() != null){
+                getActivity().invalidateOptionsMenu();
+            }
         }
 
         @JavascriptInterface

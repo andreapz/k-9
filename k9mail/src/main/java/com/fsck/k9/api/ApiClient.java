@@ -39,5 +39,11 @@ public interface ApiClient {
                                         @Field("username") String username,
                                         @Field("password") String password);
 
+    @FormUrlEncoded
+    @POST
+    Observable<UserLogin> postSectionVisibility(@Url String url,
+                                        @Field("section") String sectionId,
+                                        @Field("value") boolean isSelected);
+
 
 }

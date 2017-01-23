@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.fsck.k9.R;
+import com.fsck.k9.api.model.TiscaliMenuItem;
 import com.fsck.k9.model.NavDrawerMenuItem;
 
 import java.util.List;
@@ -25,11 +26,11 @@ import java.util.List;
 public class CategoryNewsAdapter extends BaseAdapter {
     public Activity context;
     public LayoutInflater inflater;
-    List<NavDrawerMenuItem> mNewsCategory;
+    List<TiscaliMenuItem> mNewsCategory;
 
 
 
-    public CategoryNewsAdapter(Activity context, List<NavDrawerMenuItem> Categories,
+    public CategoryNewsAdapter(Activity context, List<TiscaliMenuItem> Categories,
                                boolean Dialogue) {
         super();
         this.context = context;
@@ -65,7 +66,7 @@ public class CategoryNewsAdapter extends BaseAdapter {
         return position;
     }
 
-    public List<NavDrawerMenuItem> getSelectedItmes() {
+    public List<TiscaliMenuItem> getSelectedItmes() {
         return mNewsCategory;
     }
 
@@ -101,7 +102,7 @@ public class CategoryNewsAdapter extends BaseAdapter {
 
         holder.news_category.setText(mNewsCategory.get(pos).getTitle());
         final ViewHolder final_Holder = holder;
-        if(mNewsCategory.get(pos).isVisible()){
+        if((Boolean) mNewsCategory.get(pos).getVisibility()){
             holder.news_button.setChecked(true);
 
         }else{
@@ -114,7 +115,7 @@ public class CategoryNewsAdapter extends BaseAdapter {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-                mNewsCategory.get(pos).setVisible(isChecked);
+                mNewsCategory.get(pos).setVisibility(isChecked);
 
             }
         });
