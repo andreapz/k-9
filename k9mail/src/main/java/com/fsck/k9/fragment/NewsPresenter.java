@@ -154,9 +154,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if(!mStarted) {
-            return;
-        }
         outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
         outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
     }
@@ -180,12 +177,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mNewsViewFragment = NewsFragment.newInstance(home);
             ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
-        } else {
-//            if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
-//                FragmentTransaction ft = fragmentManager.beginTransaction();
-//                ft.add(R.id.news_view_container, mNewsViewFragment);
-//                ft.commit();
-//            }
         }
 
         if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
@@ -369,16 +360,19 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void detailPageLoad(String url) {
-        mCurrentPage=url;
-        NewsFragment fragment = NewsFragment.newInstance(url);
-        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-        ft.replace(R.id.news_detail_container, fragment);
-        mNewsDetailFragment = fragment;
-        ft.commit();
+        mCurrentPage = url;
+        if(mNewsDetailFragment == null) {
+            NewsFragment fragment = NewsFragment.newInstance(url);
+            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+            ft.replace(R.id.news_detail_container, fragment);
+            mNewsDetailFragment = fragment;
+            ft.commit();
+        }
+
         mDisplayMode = DisplayMode.NEWS_DETAIL;
         mViewSwitcher.showSecondView();
 
-        if(mNewsDetailFragment!= null){
+        if(mNewsDetailFragment != null){
             mNewsDetailFragment.getTitle();
             mNewsDetailFragment.getSharable();
         }
@@ -818,7 +812,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
         mMeJson = json;
 
-        if(!isInitialized) {
+        if(!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
             mIsHomePage = true;
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
@@ -828,9 +822,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void setStartInstanceState(Bundle savedInstanceState) {
-        if(!mStarted) {
-            return;
-        }
         mSavedInstanceState = savedInstanceState;
     }
 

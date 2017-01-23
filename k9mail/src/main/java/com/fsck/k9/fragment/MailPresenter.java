@@ -45,7 +45,6 @@ import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
@@ -156,7 +155,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
 
     private Bundle mSavedInstanceState;
-    private List<Account> mAccounts = new ArrayList<>();
 
     /**
      * {@code true} when the message list was displayed once. This is used in
@@ -170,13 +168,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final String MAIL_DISPLAY_MODE = MAIL_PREFIX + "DisplayMode";
     private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED = MAIL_PREFIX + "MessageListWasDisplayed";
     private static final String MAIL_FIRST_BACKSTACK_ID = MAIL_PREFIX + "FirstBackstackId";
-    private static final String MAIL_ACCOUNT_INDEX = MAIL_PREFIX + "AccountIndex";
+    private static final String MAIL_ACCOUNT_UUID = MAIL_PREFIX + "AccountUuid";
 
     private MailAdapter mMailAdapter;
     private AccountsAdapter mAccountsAdapter;
     List<FolderInfoHolder> mFolders = new ArrayList<>();
     private MailPresenterHandler mHandler = new MailPresenterHandler();
-    private int mAccountIndex = 0;
+    private String mAccountUuid;
 
     private ActivityListener mMessagingListener = new ActivityListener() {
         @Override
@@ -440,20 +438,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         initializeActionBar();
 
-        mAccounts.clear();
-        mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
-        if(mSavedInstanceState != null) {
-            mAccountIndex = mSavedInstanceState.getInt(MAIL_ACCOUNT_INDEX);
-        }
-
-        if(!mAccounts.isEmpty()) {
-            mAccount = mAccounts.get(mAccountIndex);
-            mAccounts.remove(mAccount);
-        }
-
         if (!decodeExtras()) {
             Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
         }
+
+        if(mSavedInstanceState != null) {
+            mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
+        } else {
+            String[] accountUuids = mSearch.getAccountUuids();
+            mAccountUuid = accountUuids[0];
+        }
+
+        mAccount = Preferences.getPreferences(mContext).getAccount(mAccountUuid);
 
         findFragments();
         initializeDisplayMode(mSavedInstanceState);
@@ -1112,14 +1108,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if(!mStarted) {
-            return;
-        }
-
         outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
         outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
-        outState.putInt(MAIL_ACCOUNT_INDEX, mAccountIndex);
+        outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
     }
 
     @Override
@@ -1903,7 +1895,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         builder.create().show();
     }
 
-    public class MailAdapter extends BaseNavDrawerMenuAdapter {
+    public class MailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        private static final int HEADER = 0;
+        private static final int FOLDER = 1;
+
+        List<FolderInfoHolder> mItems = new ArrayList<>();
+
+        class HeaderMenu extends FolderInfoHolder {
+
+        }
 
         MailAdapterClickListener mClickListener = new MailAdapterClickListener() {
             @Override
@@ -1923,6 +1924,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         };
 
+        public void updateData() {
+            mItems.clear();
+            // header
+            mItems.add(new HeaderMenu());
+            mItems.addAll(mFolders);
+        }
+
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
 
@@ -1932,7 +1940,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 case HEADER:
                     view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
                     return new HeaderViewHolder(view);
-                case ITEM:
+                case FOLDER:
                     view = inflater.inflate(R.layout.folder_holder, parent, false);
                     return new FolderViewHolder(view);
             }
@@ -2032,47 +2040,23 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         @Override
-        public int getChildrenCount(int position) {
-            return 0;
-        }
-
-        @Override
-        public int getItemDepth(int position) {
-            return 0;
-        }
-
-        @Override
-        public boolean isItemExpanded(int position) {
-            return false;
-        }
-
-        @Override
         public int getItemViewType(int position) {
-            // without header
-//        return ITEM;
-            // with header
-            return position == 0 ? HEADER : ITEM;
+            return position == 0 ? HEADER : FOLDER;
         }
 
         private FolderInfoHolder getItem(int position) {
-            // without header
-//        return mFolders.get(position);
-            // with header
-            return mFolders.get(position - 1);
+            return mItems.get(position);
         }
 
         @Override
         public int getItemCount() {
-            // without header
-//        return mFolders.size();
-            // with header
-            return mFolders.size() + 1;
+            return mItems.size();
         }
 
         public int getFolderIndex(String folder) {
             FolderInfoHolder searchHolder = new FolderInfoHolder();
             searchHolder.name = folder;
-            return  mFolders.indexOf(searchHolder);
+            return  mItems.indexOf(searchHolder);
         }
 
         public FolderInfoHolder getFolder(String folder) {
@@ -2080,7 +2064,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
             int index = getFolderIndex(folder);
             if (index >= 0) {
-                holder = mFolders.get(index);
+                holder = mItems.get(index);
                 if (holder != null) {
                     return holder;
                 }
@@ -2093,9 +2077,27 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         private static final int HEADER = 0;
         private static final int ACCOUNT = 1;
-        private static final int ADD_ACCOUNT = 2;
+        private static final int ADD_ACCOUNT_POSITION = 1;
 
-        private int mAddAccountPosition;
+        List<Account> mItems = new ArrayList<>();
+
+        class HeaderMenu extends Account {
+
+            protected HeaderMenu(Context context) {
+                super(context);
+            }
+        }
+
+        class AddAccountItem extends Account {
+
+            protected AddAccountItem(Context context) {
+                super(context);
+            }
+        }
+
+        public AccountsAdapter() {
+            updateData();
+        }
 
         AccountsAdapterClickListener mClickListener = new AccountsAdapterClickListener(){
             @Override
@@ -2109,11 +2111,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 super.onAccountClick(account);
                 // update current account
                 mAccount = account;
+                mAccountUuid = mAccount.getUuid();
                 // update accounts list
-                mAccounts.clear();
-                mAccounts.addAll(Preferences.getPreferences(mContext).getAccounts());
-                mAccountIndex = mAccounts.contains(mAccount) ? mAccounts.indexOf(mAccount) : 0;
-                mAccounts.remove(mAccount);
+                updateData();
                 // set mail adapter as current list adapter
                 mFolders.clear();
                 mListener.setDrawerListAdapter(mMailAdapter);
@@ -2135,6 +2135,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         };
 
+        public void updateData() {
+            mItems.clear();
+            // header
+            mItems.add(new HeaderMenu(mContext));
+            // add account
+            mItems.add(new AddAccountItem(mContext));
+            mItems.addAll(Preferences.getPreferences(mContext).getAccounts());
+            if(mAccount != null) {
+                mItems.remove(mAccount);
+            }
+        }
+
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
 
@@ -2145,9 +2157,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
                     return new HeaderViewHolder(view);
                 case ACCOUNT:
-                    view = inflater.inflate(R.layout.account_holder, parent, false);
-                    return new AccountViewHolder(view);
-                case ADD_ACCOUNT:
                     view = inflater.inflate(R.layout.account_holder, parent, false);
                     return new AccountViewHolder(view);
             }
@@ -2180,7 +2189,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             } else if (holder instanceof AccountViewHolder) {
                 AccountViewHolder accountViewHolder = (AccountViewHolder) holder;
 
-                if(position == mAddAccountPosition) {
+                if(position == ADD_ACCOUNT_POSITION) {
                     // icon
                     accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_add_white_24dp);
                     accountViewHolder.mAccountNameTv.setText(R.string.add_account_action);
@@ -2213,41 +2222,17 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         @Override
         public int getItemCount() {
-            if(mAccounts == null) {
-                return 2;
-            }
-            // without header. One for add new account item
-//          mAddAccountPosition = 0;
-//        return mAccounts.size() + 1;
-            // with header
-            mAddAccountPosition = 1;
-            return mAccounts.size() + 2;
+            return mItems.size();
         }
 
         private Account getItem(int position) {
-            // without header. One for add new account item
-//        return mAccounts.get(position - 1);
-            // with header
-            return mAccounts.get(position - 2);
+            return mItems.get(position);
         }
 
 
         @Override
         public int getItemViewType(int position) {
-            // without header. One for add new account item
-//          return position == 0 ? ADD_ACCOUNT : ACCOUNT;
-            // with header
-            switch (position) {
-                // header
-                case 0:
-                    return HEADER;
-                // add account account
-                case 1:
-                    return ADD_ACCOUNT;
-                default:
-                    // account
-                    return ACCOUNT;
-            }
+            return position == 0 ? HEADER : ACCOUNT;
         }
     }
 
@@ -2260,6 +2245,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                         mFolders.clear();
                     }
                     mFolders.addAll(newFolders);
+                    mMailAdapter.updateData();
                     mHandler.dataChanged();
                 }
             });

@@ -17,9 +17,7 @@
 package com.fsck.k9.activity;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -29,34 +27,24 @@ import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ListView;
+
 import com.fsck.k9.Account;
 import com.fsck.k9.ApplicationComponent;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
-import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.activity.setup.Prefs;
-import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.CategoryNewsAdapter;
+import com.fsck.k9.activity.setup.AccountSetupNames;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
@@ -110,6 +98,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
     public static final String EXTRA_STARTUP = "startup";
+    public static final String EXTRA_ACCOUNT = "account";
     private static final int ACTIVITY_REQUEST_PICK_SETTINGS_FILE = 100;
     private static final int DIALOG_NO_FILE_MANAGER = 40;
 
@@ -196,11 +185,12 @@ public class NavigationDrawerActivity extends K9Activity
         context.startActivity(intent);
     }
 
-    public static void listMessage(Context context) {
+    public static void listMessage(Context context, String accounUUid) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_STARTUP, false);
+        intent.putExtra(EXTRA_ACCOUNT, accounUUid);
         context.startActivity(intent);
     }
 
@@ -221,7 +211,13 @@ public class NavigationDrawerActivity extends K9Activity
             return;
         }
 
-        Intent mailIntent = getMailIntent(accounts.get(0));
+        String accountUUid = intent.getStringExtra(EXTRA_ACCOUNT);
+        Intent mailIntent;
+        if(accountUUid != null) {
+            mailIntent = getMailIntent(pref.getAccount(accountUUid));
+        } else {
+            mailIntent = getMailIntent(accounts.get(0));
+        }
 
         if(mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
@@ -273,27 +269,26 @@ public class NavigationDrawerActivity extends K9Activity
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
+
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         DEFAULT_SELECTED_TAB = pref.getStorage().getInt(DEFAULT_TAB_KEY, DEFAULT_SELECTED_TAB);
 
         mSelectedTab = NONE_TAB_SELECTED;
 
-        // init values
         if (savedInstanceState == null) {
             int tempSelectedTab = DEFAULT_SELECTED_TAB;
-            View menuItem = mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId());
-            menuItem.performClick();
+            // open mail when coming from registration/change of password/account selection
+            if(!intent.getBooleanExtra(EXTRA_STARTUP, true)) {
+                tempSelectedTab = MAIL_TAB_SELECTED;
+            }
+            mBottomNav.findViewById(mBottomNav.getMenu()
+                    .getItem(tempSelectedTab).getItemId()).performClick();
         } else {
-            int tempSelectedTab = savedInstanceState.getInt(SELECTED_TAB);
-            // selected item not automatically saved after rotation
-            setSelectedTab(tempSelectedTab);
+            mMailPresenter.setStartInstanceState(savedInstanceState);
+            mNewsPresenter.setStartInstanceState(savedInstanceState);
+            setSelectedTab(savedInstanceState.getInt(SELECTED_TAB));
         }
-
-
-        mMailPresenter.setStartInstanceState(savedInstanceState);
-        mNewsPresenter.setStartInstanceState(savedInstanceState);
-
 
         mBottomNav.bringToFront();
     }

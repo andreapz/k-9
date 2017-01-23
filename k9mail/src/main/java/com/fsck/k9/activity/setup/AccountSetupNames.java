@@ -87,7 +87,7 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
         }
         mAccount.setName(mName.getText().toString());
         mAccount.save(Preferences.getPreferences(this));
-        NavigationDrawerActivity.listMessage(this);
+        NavigationDrawerActivity.listMessage(this, mAccount.getUuid());
 //        Accounts.listAccounts(this);
         finish();
     }
