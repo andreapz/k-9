@@ -25,4 +25,5 @@ public interface INavigationDrawerActivityListener {
     void setDrawerEnable(boolean isEnabled);
 
     ApiController getApiController();
+    void showInformations();
 }

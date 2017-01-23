@@ -723,7 +723,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        showInformations();
+                        if(mContext instanceof INavigationDrawerActivityListener) {
+                            ((INavigationDrawerActivityListener) mContext).showInformations();
+                        }
                         break;
                 }
             }
@@ -762,35 +764,5 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         customize.show();
     }
 
-    public void showInformations() {
 
-
-        final Dialog customize= new Dialog(mListener.getActivity(),android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_informations);
-        customize.setCancelable(true);
-
-        WebView view = (WebView) customize
-                .findViewById(R.id.webview);
-
-        view.getSettings().setJavaScriptEnabled(true);
-        MainConfig mainConfig = null ;
-        if(mListener.getApiController() != null){
-            mainConfig = mListener.getApiController().getMainConfig();
-        }
-        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
-            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
-        }
-        view.setWebViewClient(new WebViewClient());
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-                customize.dismiss();
-            }
-        });
-
-        customize.show();
-    }
 }
