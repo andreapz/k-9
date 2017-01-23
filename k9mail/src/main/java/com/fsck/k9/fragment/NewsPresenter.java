@@ -306,29 +306,34 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     @Override
-    public void enableActionBarProgress(boolean enable) {
-        if(enable){
-            mListener.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(mActionBarProgress!=null){
-                        mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+    public void enableActionBarProgress(final boolean enable) {
+        Observable.empty().observeOn(AndroidSchedulers.mainThread()).subscribe(
+                new Subscriber<Object>() {
+                    @Override
+                    public void onCompleted() {
+                        if(mActionBarProgress!=null){
+                            if(enable){
+                                mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+                            }else{
+                                mActionBarProgress.setVisibility(ProgressBar.GONE);
+                            }
+
+                        }
+
                     }
 
-                }
-            });
+                    @Override
+                    public void onError(Throwable e) {
 
-        }else{
-            mListener.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(mActionBarProgress!=null){
-                        mActionBarProgress.setVisibility(ProgressBar.GONE);
                     }
 
+                    @Override
+                    public void onNext(Object o) {
+
+                    }
                 }
-            });
-        }
+        );
+
     }
 
 
