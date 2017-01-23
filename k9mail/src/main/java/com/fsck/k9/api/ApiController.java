@@ -376,6 +376,7 @@ public class ApiController {
         public void onNext(UserLogin userLogin) {
             Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
             mUserLogin = userLogin;
+            refreshListeners();
         }
     }
 

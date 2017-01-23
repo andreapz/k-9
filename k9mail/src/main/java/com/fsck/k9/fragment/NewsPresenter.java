@@ -818,6 +818,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         mNewsAdapter.updateData();
+        if( mDisplayMode == DisplayMode.NEWS_VIEW){
+            mNewsViewFragment.refreshUrl();
+        }else{
+            mNewsDetailFragment.refreshUrl();
+        }
     }
 
     @Override
