@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -23,10 +24,14 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -34,7 +39,6 @@ import com.fsck.k9.K9;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.CategoryNewsAdapter;
 import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.MainConfig;
@@ -45,6 +49,10 @@ import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
 import com.fsck.k9.view.holder.ItemViewHolder;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -449,6 +457,108 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
     }
 
+    public class CategoryNewsAdapter extends BaseAdapter {
+        public Activity context;
+        public LayoutInflater inflater;
+        List<TiscaliMenuItem> mNewsCategory;
+
+
+
+        public CategoryNewsAdapter( List<TiscaliMenuItem> Categories) {
+            super();
+            this.context = mContext;
+            this.inflater = (LayoutInflater) context
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            this.mNewsCategory = Categories;
+
+
+        }
+
+        @Override
+        public int getCount() {
+            // TODO Auto-generated method stub
+            return mNewsCategory.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            // TODO Auto-generated method stub
+            return mNewsCategory.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            // TODO Auto-generated method stub
+            return position;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            // TODO Auto-generated method stub
+            return position;
+        }
+
+        public List<TiscaliMenuItem> getSelectedItmes() {
+            return mNewsCategory;
+        }
+
+        public class ViewHolder {
+            public CheckBox news_button;
+            public TextView news_category;
+            public RelativeLayout rl_news;
+        }
+
+        @Override
+        public View getView( int position, View convertView, ViewGroup parent) {
+            // TODO Auto-generated method stub
+            final int pos = position;
+            ViewHolder holder;
+
+
+            if (convertView == null) {
+                holder = new ViewHolder();
+                convertView = inflater.inflate(
+                        R.layout.listview_news_dialogue_row, null);
+
+                holder.news_button = (CheckBox) convertView
+                        .findViewById(R.id.toggle_news);
+                holder.news_category =  (TextView) convertView
+                        .findViewById(R.id.category_news);
+                holder.rl_news = (RelativeLayout) convertView
+                        .findViewById(R.id.row_news);
+                holder.news_button.setTag(position);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.news_category.setText(mNewsCategory.get(pos).getTitle());
+            final ViewHolder final_Holder = holder;
+            if((Boolean) mNewsCategory.get(pos).getVisibility()){
+                holder.news_button.setChecked(true);
+
+            }else{
+                holder.news_button.setChecked(false);
+            }
+
+
+            holder.news_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+            {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+                {
+                    mNewsCategory.get(pos).setVisibility(isChecked);
+
+                }
+            });
+
+
+
+            return convertView;
+        }
+
+    }
 
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
 
@@ -596,7 +706,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            showDialogCustomize(NavDrawerMenuItem.getCustomNewsCategoriesList(mMeJson));
+                            showDialogCustomize(getCustomizableItems());
                         }
                     });
                 }
@@ -708,6 +818,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         mNewsAdapter.updateData();
+        if( mDisplayMode == DisplayMode.NEWS_VIEW){
+            mNewsViewFragment.refreshUrl();
+        }else{
+            mNewsDetailFragment.refreshUrl();
+        }
     }
 
     @Override
@@ -734,7 +849,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
 
-    public void showDialogCustomize(List<NavDrawerMenuItem> data) {
+    public void showDialogCustomize(List<TiscaliMenuItem> data) {
         mListener.closeDrawer();
 
         final Dialog customize=new Dialog(mListener.getActivity(),android.R.style.Theme_Black_NoTitleBar_Fullscreen);
@@ -745,8 +860,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                 .findViewById(R.id.list_catagory);
 
         final CategoryNewsAdapter adapter;
-        adapter = new CategoryNewsAdapter(mListener.getActivity(),
-                data, true);
+        adapter = new CategoryNewsAdapter(data);
 
         listInterests.setAdapter(adapter);
 
@@ -755,7 +869,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
             @Override
             public void onClick(View v) {
-                List<NavDrawerMenuItem> selected = adapter.getSelectedItmes();
+                if(mListener != null){
+                    List<TiscaliMenuItem> selected = adapter.getSelectedItmes();
+                    for (TiscaliMenuItem element : selected) {
+                        mListener.getApiController().sectionVisibility(element.getSectionId(),(Boolean)element.getVisibility());
+                    }
+                }
 
                 customize.dismiss();
             }
@@ -764,5 +883,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         customize.show();
     }
 
+    public  List<TiscaliMenuItem> getCustomizableItems() {
+        List<TiscaliMenuItem> visibilityItems = new ArrayList<>();
+        for (TiscaliMenuItem item : mMenuItems) {
+            if(item.getVisibility() != null){
+                visibilityItems.add(item);
+            }
+        }
+        return visibilityItems;
 
+    }
 }

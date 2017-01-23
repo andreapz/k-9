@@ -234,10 +234,12 @@ public class NewsFragment extends Fragment {
 
     private void loadUrl(String url) {
         Log.d("TiscaliWebView","[URL]:"+url+" @"+this);
+        if(mWebView != null && mFragmentListener != null) {
+            mWebView.loadUrl(url, mExtraHeaders);
+            mFragmentListener.enableActionBarProgress(true);
+            mFragmentListener.setCurrentUrl(url);
+        }
 
-        mWebView.loadUrl(url, mExtraHeaders);
-        mFragmentListener.enableActionBarProgress(true);
-        mFragmentListener.setCurrentUrl(url);
     }
 
     private NewsFragmentListener getFragmentListner() {
@@ -261,7 +263,12 @@ public class NewsFragment extends Fragment {
         mUrl = newUrl;
         loadUrl(newUrl);
     }
+    public void refreshUrl() {
+        if(mWebView != null ) {
+            mWebView.reload();
+        }
 
+    }
     public boolean canGoBack() {
         return mWebView.canGoBack();
     }
@@ -317,7 +324,9 @@ public class NewsFragment extends Fragment {
         public void setShareable(boolean value) {
             Log.d("TiscaliWebView","[SHAREABLE]:"+value);
             mIsShareable = value;
-            getActivity().invalidateOptionsMenu();
+            if(getActivity() != null){
+                getActivity().invalidateOptionsMenu();
+            }
         }
 
         @JavascriptInterface

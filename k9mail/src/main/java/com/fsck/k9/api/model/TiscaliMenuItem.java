@@ -1,10 +1,16 @@
 
 package com.fsck.k9.api.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.fsck.k9.model.NavDrawerMenuItem;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class TiscaliMenuItem {
 
@@ -123,4 +129,6 @@ public class TiscaliMenuItem {
     public String toString() {
         return getSectionId();
     }
+
+
 }
