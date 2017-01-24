@@ -262,7 +262,6 @@ public class NewsFragment extends Fragment {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    // Do something after 5s = 5000ms
                     Log.d("Reload TiscaliWebView","[URL]:"+mUrl+" @"+this);
                     if(mUrl != null ) {
                         loadUrl(mUrl);
