@@ -22,8 +22,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -885,9 +883,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         mNewsAdapter.updateData();
-        if( mDisplayMode == DisplayMode.NEWS_VIEW){
+        if(mDisplayMode == DisplayMode.NEWS_VIEW){
             mNewsViewFragment.refreshUrl();
-        }else{
+        } else {
             mNewsDetailFragment.refreshUrl();
         }
     }

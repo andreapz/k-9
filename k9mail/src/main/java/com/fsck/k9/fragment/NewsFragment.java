@@ -178,9 +178,7 @@ public class NewsFragment extends Fragment {
                     if(listener != null) {
                         String value = listener.getMeJSON();
                         try {
-
                             String valueEncoded = URLEncoder.encode(value, "UTF-8").replace("%","\\x");
-
                             view.loadUrl(JAVASCRIPT_TISCALI_APP_SET_PAGE_STATUS.replace("%D", valueEncoded));
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
