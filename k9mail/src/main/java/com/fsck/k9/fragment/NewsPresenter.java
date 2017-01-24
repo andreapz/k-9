@@ -22,8 +22,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -42,20 +40,15 @@ import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
 import com.fsck.k9.api.model.UserLogin;
 import com.fsck.k9.error.RetrofitException;
-import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
 import com.fsck.k9.view.holder.ItemViewHolder;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -891,6 +884,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         mNewsAdapter.updateData();
+
         if( mDisplayMode == DisplayMode.NEWS_VIEW){
             if(mNewsViewFragment != null){
                 mNewsViewFragment.refreshUrl();
