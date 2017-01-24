@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 
 import com.fsck.k9.R;
+import com.fsck.k9.api.model.Me;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
@@ -26,7 +27,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-
 /**
  * Created by thomascastangia on 02/01/17.
  */
@@ -40,7 +40,7 @@ public class NewsFragment extends Fragment {
     public static final String PLATFORM_ANDROID = "android";
     public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
     public static final String CURRENT_URL = "CURRENT_URL";
-    private static final int WEBVIEW_TIME_RELOAD = 60000;
+
 
 
     private static final String JAVASCRIPT_PREFIX = "javascript:";
@@ -226,7 +226,6 @@ public class NewsFragment extends Fragment {
 
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
         if (mMenu == null) {
-            // getActivity().getMenuInflater().inflate(R.menu.news_menu_option, menu);
             mMenu = menu;
         }
 
@@ -246,17 +245,17 @@ public class NewsFragment extends Fragment {
             mWebView.loadUrl(url, mExtraHeaders);
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
+
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    // Do something after 5s = 5000ms
                     Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
                     if (mUrl != null) {
                         loadUrl(mUrl);
                     }
                 }
-            }, WEBVIEW_TIME_RELOAD);
+            }, mFragmentListener.getMe().getNews().getRefreshTimeout() * 1000);
         }
     }
 
@@ -321,6 +320,8 @@ public class NewsFragment extends Fragment {
         boolean isHomePage();
 
         String getMeJSON();
+
+        Me getMe();
 
         void setPageTitle(String title);
 
