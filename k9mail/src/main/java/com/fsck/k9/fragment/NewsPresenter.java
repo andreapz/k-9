@@ -44,15 +44,11 @@ import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
-import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
 import com.fsck.k9.view.holder.ItemViewHolder;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
