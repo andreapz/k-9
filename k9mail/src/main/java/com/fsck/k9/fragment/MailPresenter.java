@@ -1,39 +1,13 @@
 package com.fsck.k9.fragment;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentManager.OnBackStackChangedListener;
-import android.app.FragmentTransaction;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
-import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
@@ -75,14 +49,40 @@ import com.fsck.k9.view.holder.AccountViewHolder;
 import com.fsck.k9.view.holder.FolderViewHolder;
 import com.fsck.k9.view.holder.HeaderViewHolder;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentManager.OnBackStackChangedListener;
+import android.app.FragmentTransaction;
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
 /**
@@ -158,15 +158,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * {@code true} when the message list was displayed once. This is used in
-     * {@link # onBackPressed()} to decide whether to go from the message view to the message list or
-     * finish the activity.
+     * {@link # onBackPressed()} to decide whether to go from the message view to the message list
+     * or finish the activity.
      */
     private boolean mMessageListWasDisplayed = false;
     private ViewSwitcher mViewSwitcher;
 
     private static final String MAIL_PREFIX = "MAIL";
     private static final String MAIL_DISPLAY_MODE = MAIL_PREFIX + "DisplayMode";
-    private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED = MAIL_PREFIX + "MessageListWasDisplayed";
+    private static final String MAIL_MESSAGE_LIST_WAS_DISPLAYED =
+            MAIL_PREFIX + "MessageListWasDisplayed";
     private static final String MAIL_FIRST_BACKSTACK_ID = MAIL_PREFIX + "FirstBackstackId";
     private static final String MAIL_ACCOUNT_UUID = MAIL_PREFIX + "AccountUuid";
 
@@ -185,7 +186,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void listFoldersStarted(Account account) {
             if (account.equals(mAccount)) {
-//                mHandler.progress(true);
+                // mHandler.progress(true);
             }
             super.listFoldersStarted(account);
         }
@@ -193,7 +194,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void listFoldersFailed(Account account, String message) {
             if (account.equals(mAccount)) {
-//                mHandler.progress(false);
+                // mHandler.progress(false);
             }
             super.listFoldersFailed(account, message);
         }
@@ -201,7 +202,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void listFoldersFinished(Account account) {
             if (account.equals(mAccount)) {
-//                mHandler.progress(false);
+                // mHandler.progress(false);
                 MessagingController.getInstance(mContext).refreshListener(this);
                 mHandler.dataChanged();
             }
@@ -226,7 +227,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                         holder.populate(mContext, folder, mAccount, -1);
 
                     }
-                    if (folder.isInTopGroup() || TiscaliUtility.isFolderInTopGroup(mContext, folder.getName())) {
+                    if (folder.isInTopGroup()
+                            || TiscaliUtility.isFolderInTopGroup(mContext, folder.getName())) {
                         topFolders.add(holder);
                     } else {
                         newFolders.add(holder);
@@ -244,7 +246,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public void synchronizeMailboxStarted(Account account, String folder) {
             super.synchronizeMailboxStarted(account, folder);
             if (account.equals(mAccount)) {
-//                mHandler.progress(true);
+                // mHandler.progress(true);
                 mHandler.folderLoading(folder, true);
                 mHandler.dataChanged();
             }
@@ -252,10 +254,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         @Override
-        public void synchronizeMailboxFinished(Account account, String folder, int totalMessagesInMailbox, int numNewMessages) {
-            super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox, numNewMessages);
+        public void synchronizeMailboxFinished(Account account, String folder,
+                int totalMessagesInMailbox, int numNewMessages) {
+            super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox,
+                    numNewMessages);
             if (account.equals(mAccount)) {
-//                mHandler.progress(false);
+                // mHandler.progress(false);
                 mHandler.folderLoading(folder, false);
 
                 refreshFolder(account, folder);
@@ -298,13 +302,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 return;
             }
 
-//            mHandler.progress(false);
+            // mHandler.progress(false);
 
             mHandler.folderLoading(folder, false);
 
-            //   String mess = truncateStatus(message);
+            // String mess = truncateStatus(message);
 
-            //   mHandler.folderStatus(folder, mess);
+            // mHandler.folderStatus(folder, mess);
             FolderInfoHolder holder = mMailAdapter.getFolder(folder);
 
             if (holder != null) {
@@ -342,7 +346,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         @Override
-        public void folderStatusChanged(Account account, String folderName, int unreadMessageCount) {
+        public void folderStatusChanged(Account account, String folderName,
+                int unreadMessageCount) {
             if (account.equals(mAccount)) {
                 refreshFolder(account, folderName);
                 informUserOfStatus();
@@ -395,9 +400,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     public enum DisplayMode {
-        MESSAGE_LIST,
-        MESSAGE_VIEW,
-        SPLIT_VIEW
+        MESSAGE_LIST, MESSAGE_VIEW, SPLIT_VIEW
     }
 
     @Inject
@@ -412,8 +415,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void onRefresh(final boolean forceRemote) {
-        if(mAccount != null) {
-            MessagingController.getInstance(mContext).listFolders(mAccount, forceRemote, mMessagingListener);
+        if (mAccount != null) {
+            MessagingController.getInstance(mContext).listFolders(mAccount, forceRemote,
+                    mMessagingListener);
         }
     }
 
@@ -429,20 +433,24 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else {
             mInflater.inflate(R.layout.message_list, container, true);
             mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
-            mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
-            mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
-            mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
-            mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
+            mViewSwitcher.setFirstInAnimation(
+                    AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
+            mViewSwitcher.setFirstOutAnimation(
+                    AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
+            mViewSwitcher.setSecondInAnimation(
+                    AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
+            mViewSwitcher.setSecondOutAnimation(
+                    AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
 
         initializeActionBar();
 
         if (!decodeExtras()) {
-            Toast.makeText(mContext,"RETURN FRAGMENT",Toast.LENGTH_LONG);
+            Toast.makeText(mContext, "RETURN FRAGMENT", Toast.LENGTH_LONG);
         }
 
-        if(mSavedInstanceState != null) {
+        if (mSavedInstanceState != null) {
             mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
         } else {
             String[] accountUuids = mSearch.getAccountUuids();
@@ -456,7 +464,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         initializeLayout();
         initializeFragments();
         displayViews();
-        //setupGestureDetector(this);
+        // setupGestureDetector(this);
 
         mMailAdapter = new MailAdapter();
         mListener.setDrawerListAdapter(mMailAdapter);
@@ -469,7 +477,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mSearch = search;
         mMessageReference = null;
 
-        if(updateDataWithNewSearch()) {
+        if (updateDataWithNewSearch()) {
             updateFragments();
             displayViews();
         }
@@ -486,11 +494,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void resetView() {
-//        if (mFirstBackStackId >= 0) {
-//            getFragmentManager().popBackStackImmediate(mFirstBackStackId,
-//                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-//            mFirstBackStackId = -1;
-//        }
+        // if (mFirstBackStackId >= 0) {
+        // getFragmentManager().popBackStackImmediate(mFirstBackStackId,
+        // FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        // mFirstBackStackId = -1;
+        // }
         removeMessageListFragment();
         removeMessageViewFragment();
 
@@ -509,14 +517,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private void findFragments() {
         FragmentManager fragmentManager = mContext.getFragmentManager();
-        mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
-                R.id.message_list_container);
-        mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
-                R.id.message_view_container);
+        mMessageListFragment =
+                (MessageListFragment) fragmentManager.findFragmentById(R.id.message_list_container);
+        mMessageViewFragment =
+                (MessageViewFragment) fragmentManager.findFragmentById(R.id.message_view_container);
     }
 
     private void removeMessageListFragment() {
-        if(mMessageListFragment != null) {
+        if (mMessageListFragment != null) {
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.remove(mMessageListFragment);
             mMessageListFragment = null;
@@ -545,8 +553,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         // Check if the fragment wasn't restarted and has a MessageReference in the arguments. If
         // so, open the referenced message.
-        if (!hasMessageListFragment && mMessageViewFragment == null &&
-                mMessageReference != null) {
+        if (!hasMessageListFragment && mMessageViewFragment == null && mMessageReference != null) {
             openMessage(mMessageReference);
         }
     }
@@ -554,14 +561,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     /**
      * Set the initial display mode (message list, message view, or split view).
      *
-     * <p><strong>Note:</strong>
-     * This method has to be called after {@link #findFragments()} because the result depends on
-     * the availability of a {@link MessageViewFragment} instance.
+     * <p>
+     * <strong>Note:</strong> This method has to be called after {@link #findFragments()} because
+     * the result depends on the availability of a {@link MessageViewFragment} instance.
      * </p>
      *
-     * @param savedInstanceState
-     *         The saved instance state that was passed to the activity as argument to
-     *         {@link # onCreateView(Bundle)}. May be {@code null}.
+     * @param savedInstanceState The saved instance state that was passed to the activity as
+     *        argument to {@link # onCreateView(Bundle)}. May be {@code null}.
      */
     private void initializeDisplayMode(Bundle savedInstanceState) {
         if (useSplitView()) {
@@ -588,20 +594,21 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private void initializeLayout() {
         mMessageViewContainer = (ViewGroup) mContext.findViewById(R.id.message_view_container);
 
-        mMessageViewPlaceHolder = mInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
+        mMessageViewPlaceHolder =
+                mInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
     }
 
     private boolean useSplitView() {
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
         int orientation = mContext.getResources().getConfiguration().orientation;
 
-        return (splitViewMode == K9.SplitViewMode.ALWAYS ||
-                (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE &&
-                        orientation == Configuration.ORIENTATION_LANDSCAPE));
+        return (splitViewMode == K9.SplitViewMode.ALWAYS
+                || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     private void initializeActionBar() {
-        mActionBar = ((AppCompatActivity)mContext).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actionbar_custom);
@@ -680,16 +687,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (Intent.ACTION_VIEW.equals(action)) {
             Uri uri = mIntent.getData();
-            if(uri != null) {
+            if (uri != null) {
                 List<String> segmentList = uri.getPathSegments();
 
                 String accountId = segmentList.get(0);
-                Collection<Account> accounts = Preferences.getPreferences(mContext).getAvailableAccounts();
+                Collection<Account> accounts =
+                        Preferences.getPreferences(mContext).getAvailableAccounts();
                 for (Account account : accounts) {
                     if (String.valueOf(account.getAccountNumber()).equals(accountId)) {
                         String folderName = segmentList.get(1);
                         String messageUid = segmentList.get(2);
-                        mMessageReference = new MessageReference(account.getUuid(), folderName, messageUid, null);
+                        mMessageReference = new MessageReference(account.getUuid(), folderName,
+                                messageUid, null);
                         break;
                     }
                 }
@@ -705,21 +714,28 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else if (mIntent.getStringExtra(SearchManager.QUERY) != null) {
             // check if this intent comes from the system search ( remote )
             if (Intent.ACTION_SEARCH.equals(action)) {
-                //Query was received from Search Dialog
+                // Query was received from Search Dialog
                 String query = mIntent.getStringExtra(SearchManager.QUERY).trim();
 
                 mSearch = new LocalSearch(mContext.getString(R.string.search_results));
                 mSearch.setManualSearch(true);
                 mNoThreading = true;
 
-                mSearch.or(new SearchSpecification.SearchCondition(SearchSpecification.SearchField.SENDER, SearchSpecification.Attribute.CONTAINS, query));
-                mSearch.or(new SearchSpecification.SearchCondition(SearchSpecification.SearchField.SUBJECT, SearchSpecification.Attribute.CONTAINS, query));
-                mSearch.or(new SearchSpecification.SearchCondition(SearchSpecification.SearchField.MESSAGE_CONTENTS, SearchSpecification.Attribute.CONTAINS, query));
+                mSearch.or(new SearchSpecification.SearchCondition(
+                        SearchSpecification.SearchField.SENDER,
+                        SearchSpecification.Attribute.CONTAINS, query));
+                mSearch.or(new SearchSpecification.SearchCondition(
+                        SearchSpecification.SearchField.SUBJECT,
+                        SearchSpecification.Attribute.CONTAINS, query));
+                mSearch.or(new SearchSpecification.SearchCondition(
+                        SearchSpecification.SearchField.MESSAGE_CONTENTS,
+                        SearchSpecification.Attribute.CONTAINS, query));
 
                 Bundle appData = mIntent.getBundleExtra(SearchManager.APP_DATA);
                 if (appData != null) {
                     mSearch.addAccountUuid(appData.getString(EXTRA_SEARCH_ACCOUNT));
-                    // searches started from a folder list activity will provide an account, but no folder
+                    // searches started from a folder list activity will provide an account, but no
+                    // folder
                     if (appData.getString(EXTRA_SEARCH_FOLDER) != null) {
                         mSearch.addAllowedFolder(appData.getString(EXTRA_SEARCH_FOLDER));
                     }
@@ -773,7 +789,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(mContext))) {
             Log.i(K9.LOG_TAG, "not opening MessageList of unavailable account");
-            //onAccountUnavailable();
+            // onAccountUnavailable();
             return false;
         }
 
@@ -861,14 +877,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     /**
      * Hide menu items not appropriate for the current context.
      *
-     * <p><strong>Note:</strong>
-     * Please adjust the comments in {@code res/menu/message_list_option.xml} if you change the
-     * visibility of a menu item in this method.
+     * <p>
+     * <strong>Note:</strong> Please adjust the comments in {@code res/menu/message_list_option.xml}
+     * if you change the visibility of a menu item in this method.
      * </p>
      *
-     * @param menu
-     *         The {@link Menu} instance that should be modified. May be {@code null}; in that case
-     *         the method does nothing and immediately returns.
+     * @param menu The {@link Menu} instance that should be modified. May be {@code null}; in that
+     *        case the method does nothing and immediately returns.
      */
     private boolean configureMenu(Menu menu) {
         if (menu == null) {
@@ -879,8 +894,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
          * Set visibility of menu items related to the message view
          */
 
-        if (mDisplayMode == DisplayMode.MESSAGE_LIST
-                || mMessageViewFragment == null
+        if (mDisplayMode == DisplayMode.MESSAGE_LIST || mMessageViewFragment == null
                 || !mMessageViewFragment.isInitialized()) {
             menu.findItem(R.id.next_message).setVisible(false);
             menu.findItem(R.id.previous_message).setVisible(false);
@@ -903,8 +917,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 menu.findItem(R.id.previous_message).setVisible(false);
             } else {
                 MessageReference ref = mMessageViewFragment.getMessageReference();
-                boolean initialized = (mMessageListFragment != null &&
-                        mMessageListFragment.isLoadFinished());
+                boolean initialized =
+                        (mMessageListFragment != null && mMessageListFragment.isLoadFinished());
                 boolean canDoPrev = (initialized && !mMessageListFragment.isFirst(ref));
                 boolean canDoNext = (initialized && !mMessageListFragment.isLast(ref));
 
@@ -958,10 +972,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 boolean canMessageBeMovedToSpam = mMessageViewFragment.canMessageBeMovedToSpam();
 
                 menu.findItem(R.id.move).setVisible(K9.isMessageViewMoveActionVisible());
-                menu.findItem(R.id.archive).setVisible(canMessageBeArchived &&
-                        K9.isMessageViewArchiveActionVisible());
-                menu.findItem(R.id.spam).setVisible(canMessageBeMovedToSpam &&
-                        K9.isMessageViewSpamActionVisible());
+                menu.findItem(R.id.archive)
+                        .setVisible(canMessageBeArchived && K9.isMessageViewArchiveActionVisible());
+                menu.findItem(R.id.spam)
+                        .setVisible(canMessageBeMovedToSpam && K9.isMessageViewSpamActionVisible());
 
                 menu.findItem(R.id.refile_move).setVisible(true);
                 menu.findItem(R.id.refile_archive).setVisible(canMessageBeArchived);
@@ -990,8 +1004,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         menu.findItem(R.id.search).setVisible(false);
         menu.findItem(R.id.search_remote).setVisible(false);
 
-        if (mDisplayMode == DisplayMode.MESSAGE_VIEW || mMessageListFragment == null ||
-                !mMessageListFragment.isInitialized()) {
+        if (mDisplayMode == DisplayMode.MESSAGE_VIEW || mMessageListFragment == null
+                || !mMessageListFragment.isInitialized()) {
             menu.findItem(R.id.check_mail).setVisible(false);
             menu.findItem(R.id.set_sort).setVisible(false);
             menu.findItem(R.id.select_all).setVisible(false);
@@ -1002,8 +1016,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
             menu.findItem(R.id.select_all).setVisible(true);
-            menu.findItem(R.id.mark_all_as_read).setVisible(
-                    mMessageListFragment.isMarkAllAsReadSupported());
+            menu.findItem(R.id.mark_all_as_read)
+                    .setVisible(mMessageListFragment.isMarkAllAsReadSupported());
 
             if (!mMessageListFragment.isSingleAccountMode()) {
                 menu.findItem(R.id.expunge).setVisible(false);
@@ -1011,16 +1025,17 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 menu.findItem(R.id.show_folder_list).setVisible(false);
             } else {
                 menu.findItem(R.id.send_messages).setVisible(mMessageListFragment.isOutbox());
-                menu.findItem(R.id.expunge).setVisible(mMessageListFragment.isRemoteFolder() &&
-                        mMessageListFragment.isAccountExpungeCapable());
+
+                menu.findItem(R.id.expunge).setVisible(mMessageListFragment.isRemoteFolder()
+                        && mMessageListFragment.isAccountExpungeCapable());
                 menu.findItem(R.id.show_folder_list).setVisible(true);
             }
 
             menu.findItem(R.id.check_mail).setVisible(mMessageListFragment.isCheckMailSupported());
 
             // If this is an explicit local search, show the option to search on the server
-            if (!mMessageListFragment.isRemoteSearch() &&
-                    mMessageListFragment.isRemoteSearchAllowed()) {
+            if (!mMessageListFragment.isRemoteSearch()
+                    && mMessageListFragment.isRemoteSearchAllowed()) {
                 menu.findItem(R.id.search_remote).setVisible(true);
             } else if (!mMessageListFragment.isManualSearch()) {
                 menu.findItem(R.id.search).setVisible(true);
@@ -1034,7 +1049,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void onUnmount(String providerId) {
             if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
-                ((Activity)mContext).runOnUiThread(new Runnable() {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         onAccountUnavailable();
@@ -1050,8 +1065,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     protected void onAccountUnavailable() {
-        Toast.makeText(mContext,"Account Unavaible Finish Activity", Toast.LENGTH_LONG);
-        ((Activity)mContext).finish();
+        Toast.makeText(mContext, "Account Unavaible Finish Activity", Toast.LENGTH_LONG);
+        ((Activity) mContext).finish();
         // TODO inform user about account unavailability using Toast
         Accounts.listAccounts(mContext);
     }
@@ -1059,7 +1074,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Override
     public void onPause() {
 
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
 
@@ -1072,13 +1087,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Override
     public void onResume() {
 
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
 
         if (!(this instanceof Search)) {
-            //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
-            //when returning from search results
+            // necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
+            // when returning from search results
             Search.setActive(false);
         }
 
@@ -1098,7 +1113,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onDetach() {
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
         removeMessageListFragment();
@@ -1121,44 +1136,44 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     public void onActivityCreated(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            mMessageListWasDisplayed = savedInstanceState.getBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED);
+            mMessageListWasDisplayed =
+                    savedInstanceState.getBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED);
             mFirstBackStackId = savedInstanceState.getInt(MAIL_FIRST_BACKSTACK_ID);
         }
     }
 
-//    @Override
-//    public void onBackPressed() {
-//        if (mDisplayMode == MessageList.DisplayMode.MESSAGE_VIEW && mMessageListWasDisplayed) {
-//            showMessageList();
-//        } else {
-//            super.onBackPressed();
-//        }
-//    }
+    // @Override
+    // public void onBackPressed() {
+    // if (mDisplayMode == MessageList.DisplayMode.MESSAGE_VIEW && mMessageListWasDisplayed) {
+    // showMessageList();
+    // } else {
+    // super.onBackPressed();
+    // }
+    // }
 
     /**
      * Handle hotkeys
      *
      * <p>
      * This method is called by {@link # dispatchKeyEvent(KeyEvent)} before any view had the chance
-     * to consume this key event.
+     * to
      * </p>
+     * consume this key event.
      *
-     * @param keyCode
-     *         The value in {@code event.getKeyCode()}.
-     * @param event
-     *         Description of the key event.
+     * @param keyCode The value in {@code event.getKeyCode()}.
+     * @param event Description of the key event.
      *
      * @return {@code true} if this event was consumed.
      */
     public boolean onCustomKeyDown(final int keyCode, final KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_UP: {
-                if (mMessageViewFragment != null && mDisplayMode != DisplayMode.MESSAGE_LIST &&
-                        K9.useVolumeKeysForNavigationEnabled()) {
+                if (mMessageViewFragment != null && mDisplayMode != DisplayMode.MESSAGE_LIST
+                        && K9.useVolumeKeysForNavigationEnabled()) {
                     showPreviousMessage();
                     return true;
-                } else if (mDisplayMode != DisplayMode.MESSAGE_VIEW &&
-                        K9.useVolumeKeysForListNavigationEnabled()) {
+                } else if (mDisplayMode != DisplayMode.MESSAGE_VIEW
+                        && K9.useVolumeKeysForListNavigationEnabled()) {
                     mMessageListFragment.onMoveUp();
                     return true;
                 }
@@ -1166,12 +1181,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 break;
             }
             case KeyEvent.KEYCODE_VOLUME_DOWN: {
-                if (mMessageViewFragment != null && mDisplayMode != DisplayMode.MESSAGE_LIST &&
-                        K9.useVolumeKeysForNavigationEnabled()) {
+                if (mMessageViewFragment != null && mDisplayMode != DisplayMode.MESSAGE_LIST
+                        && K9.useVolumeKeysForNavigationEnabled()) {
                     showNextMessage();
                     return true;
-                } else if (mDisplayMode != DisplayMode.MESSAGE_VIEW &&
-                        K9.useVolumeKeysForListNavigationEnabled()) {
+                } else if (mDisplayMode != DisplayMode.MESSAGE_VIEW
+                        && K9.useVolumeKeysForListNavigationEnabled()) {
                     mMessageListFragment.onMoveDown();
                     return true;
                 }
@@ -1281,13 +1296,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 }
                 return true;
             }
-            /* FIXME
-            case KeyEvent.KEYCODE_Z: {
-                mMessageViewFragment.zoom(event);
-                return true;
-            }*/
+            /*
+             * FIXME case KeyEvent.KEYCODE_Z: { mMessageViewFragment.zoom(event); return true; }
+             */
             case KeyEvent.KEYCODE_H: {
-                Toast toast = Toast.makeText(mContext, mContext.getString(R.string.message_list_help_key), Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(mContext,
+                        mContext.getString(R.string.message_list_help_key), Toast.LENGTH_LONG);
                 toast.show();
                 return true;
             }
@@ -1309,19 +1323,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return false;
     }
 
-//    @Override
+    // @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         // Swallow these events too to avoid the audible notification of a volume change
         if (K9.useVolumeKeysForListNavigationEnabled()) {
-            if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP) || (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP)
+                    || (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
                 if (K9.DEBUG)
                     Log.v(K9.LOG_TAG, "Swallowed key up.");
                 return true;
             }
         }
-        Toast.makeText(mContext,"onKeyUp fragment",Toast.LENGTH_LONG);
+        Toast.makeText(mContext, "onKeyUp fragment", Toast.LENGTH_LONG);
         return true;
-//        return super.onKeyUp(keyCode, event);
+        // return super.onKeyUp(keyCode, event);
     }
 
     private boolean showNextMessage() {
@@ -1358,18 +1373,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
 
         mContext.getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
-        mMenuButtonCheckMail= menu.findItem(R.id.check_mail);
+        mMenuButtonCheckMail = menu.findItem(R.id.check_mail);
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if(!mStarted) {
+        if (!mStarted) {
             return false;
         }
         return configureMenu(menu);
@@ -1377,7 +1392,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(!mStarted) {
+        if (!mStarted) {
             return false;
         }
 
@@ -1511,7 +1526,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (!mSingleFolderMode) {
             // None of the options after this point are "safe" for search results
-            //TODO: This is not true for "unread" and "starred" searches in regular folders
+            // TODO: This is not true for "unread" and "starred" searches in regular folders
             return false;
         }
 
@@ -1525,45 +1540,44 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 return true;
             }
             default: {
-                return true; //super.onOptionsItemSelected(item);
+                return true; // super.onOptionsItemSelected(item);
             }
         }
     }
 
     private void onToggleTheme() {
         Toast.makeText(mContext, "TOGGLE THEME NOT WORKING", Toast.LENGTH_LONG);
-//        if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
-//            K9.setK9MessageViewThemeSetting(K9.Theme.LIGHT);
-//        } else {
-//            K9.setK9MessageViewThemeSetting(K9.Theme.DARK);
-//        }
-//
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Context appContext = mContext.getApplicationContext();
-//                Preferences prefs = Preferences.getPreferences(appContext);
-//                StorageEditor editor = prefs.getStorage().edit();
-//                K9.save(editor);
-//                editor.commit();
-//            }
-//        }).start();
+        // if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
+        // K9.setK9MessageViewThemeSetting(K9.Theme.LIGHT);
+        // } else {
+        // K9.setK9MessageViewThemeSetting(K9.Theme.DARK);
+        // }
+        //
+        // new Thread(new Runnable() {
+        // @Override
+        // public void run() {
+        // Context appContext = mContext.getApplicationContext();
+        // Preferences prefs = Preferences.getPreferences(appContext);
+        // StorageEditor editor = prefs.getStorage().edit();
+        // K9.save(editor);
+        // editor.commit();
+        // }
+        // }).start();
 
-//        recreate();
+        // recreate();
     }
 
-    //    @Override
-//    public boolean onSearchRequested() {
-//        return mMessageListFragment.onSearchRequested();
-//    }
+    // @Override
+    // public boolean onSearchRequested() {
+    // return mMessageListFragment.onSearchRequested();
+    // }
 
     @Override
     public void onSwitchComplete(int displayedChild) {
         if (displayedChild == 0) {
             removeMessageViewFragment();
             setActionBarToggle();
-        }
-        else {
+        } else {
             setActionBarUp();
         }
     }
@@ -1571,19 +1585,19 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Override
     public void updateMenu() {
         Toast.makeText(mContext, "invalidateOptionsMenu", Toast.LENGTH_LONG);
-//        invalidateOptionsMenu();
+        // invalidateOptionsMenu();
     }
 
     @Override
     public void setActionBarUp() {
-        if(mContext instanceof INavigationDrawerActivityListener) {
+        if (mContext instanceof INavigationDrawerActivityListener) {
             ((INavigationDrawerActivityListener) mContext).setDrawerEnable(false);
         }
     }
 
     @Override
     public void setActionBarToggle() {
-        if(mContext instanceof INavigationDrawerActivityListener) {
+        if (mContext instanceof INavigationDrawerActivityListener) {
             ((INavigationDrawerActivityListener) mContext).setDrawerEnable(true);
         }
     }
@@ -1629,10 +1643,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mActionBarSubject.setMessageHeader(header);
     }
 
-//    @Override
-//    public void setProgress(boolean enable) {
-//        setProgressBarIndeterminateVisibility(enable);
-//    }
+    // @Override
+    // public void setProgress(boolean enable) {
+    // setProgressBarIndeterminateVisibility(enable);
+    // }
 
     @Override
     public void displayMessageSubject(String subject) {
@@ -1643,8 +1657,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setProgress(boolean b) {
-        Toast.makeText(mContext,"setProgressBarIndeterminateVisibility not working", Toast.LENGTH_LONG);
-//        setProgressBarIndeterminateVisibility(enable);
+        Toast.makeText(mContext, "setProgressBarIndeterminateVisibility not working",
+                Toast.LENGTH_LONG);
+        // setProgressBarIndeterminateVisibility(enable);
     }
 
     @Override
@@ -1652,8 +1667,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (mMenuButtonCheckMail != null && mMenuButtonCheckMail.isVisible()) {
             mActionBarProgress.setVisibility(ProgressBar.GONE);
             if (enable) {
-                mMenuButtonCheckMail
-                        .setActionView(mActionButtonIndeterminateProgress);
+                mMenuButtonCheckMail.setActionView(mActionButtonIndeterminateProgress);
             } else {
                 mMenuButtonCheckMail.setActionView(null);
             }
@@ -1703,7 +1717,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Override
     public void setMessageListProgress(int progress) {
         Toast.makeText(mContext, "setProgress NOT WORKING", Toast.LENGTH_LONG);
-//        setProgress(progress);
+        // setProgress(progress);
     }
 
     @Override
@@ -1750,7 +1764,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void showMoreFromSameSender(String senderAddress) {
         LocalSearch tmpSearch = new LocalSearch("From " + senderAddress);
         tmpSearch.addAccountUuids(mSearch.getAccountUuids());
-        tmpSearch.and(SearchSpecification.SearchField.SENDER, senderAddress, SearchSpecification.Attribute.CONTAINS);
+        tmpSearch.and(SearchSpecification.SearchField.SENDER, senderAddress,
+                SearchSpecification.Attribute.CONTAINS);
 
         MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false);
 
@@ -1800,18 +1815,19 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public boolean startSearch(Account account, String folderName) {
-        // If this search was started from a MessageList of a single folder, pass along that folder info
+        // If this search was started from a MessageList of a single folder, pass along that folder
+        // info
         // so that we can enable remote search.
         if (account != null && folderName != null) {
             final Bundle appData = new Bundle();
             appData.putString(EXTRA_SEARCH_ACCOUNT, account.getUuid());
             appData.putString(EXTRA_SEARCH_FOLDER, folderName);
-//            startSearch(null, false, appData, false);
+            // startSearch(null, false, appData, false);
         } else {
             // TODO Handle the case where we're searching from within a search result.
-//            startSearch(null, false, null, false);
+            // startSearch(null, false, null, false);
         }
-        Toast.makeText(mContext,"startSearch not working", Toast.LENGTH_LONG);
+        Toast.makeText(mContext, "startSearch not working", Toast.LENGTH_LONG);
         return true;
     }
 
@@ -1821,7 +1837,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         LocalSearch tmpSearch = new LocalSearch();
         tmpSearch.addAccountUuid(account.getUuid());
-        tmpSearch.and(SearchSpecification.SearchField.THREAD_ID, String.valueOf(threadRootId), SearchSpecification.Attribute.EQUALS);
+        tmpSearch.and(SearchSpecification.SearchField.THREAD_ID, String.valueOf(threadRootId),
+                SearchSpecification.Attribute.EQUALS);
 
         MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, true, false);
         addMessageListFragment(fragment, true);
@@ -1835,13 +1852,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void goBack() {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        FragmentManager fragmentManager = mContext.getFragmentManager();
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             showMessageList();
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else if (mMessageListFragment.isManualSearch()) {
-            ((Activity)mContext).finish();
+            mContext.finish();
         } else if (!mSingleFolderMode) {
             onAccounts();
         } else {
@@ -1850,13 +1867,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void createFlaggedSearch(Account account, FolderInfoHolder folder) {
-        String searchTitle = mContext.getString(R.string.search_title,
-                mContext.getString(R.string.message_list_title, account.getDescription(),
-                        folder.displayName),
+        String searchTitle = mContext.getString(
+                R.string.search_title, mContext.getString(R.string.message_list_title,
+                        account.getDescription(), folder.displayName),
                 mContext.getString(R.string.flagged_modifier));
 
         LocalSearch search = new LocalSearch(searchTitle);
-        search.and(SearchSpecification.SearchField.FLAGGED, "1", SearchSpecification.Attribute.EQUALS);
+        search.and(SearchSpecification.SearchField.FLAGGED, "1",
+                SearchSpecification.Attribute.EQUALS);
         search.addAllowedFolder(folder.name);
         search.addAccountUuid(account.getUuid());
         showFolder(search);
@@ -1864,13 +1882,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void createUnreadSearch(Account account, FolderInfoHolder folder) {
-        String searchTitle = mContext.getString(R.string.search_title,
-                mContext.getString(R.string.message_list_title, account.getDescription(),
-                        folder.displayName),
+        String searchTitle = mContext.getString(
+                R.string.search_title, mContext.getString(R.string.message_list_title,
+                        account.getDescription(), folder.displayName),
                 mContext.getString(R.string.unread_modifier));
 
         LocalSearch search = new LocalSearch(searchTitle);
-        search.and(SearchSpecification.SearchField.READ, "1", SearchSpecification.Attribute.NOT_EQUALS);
+        search.and(SearchSpecification.SearchField.READ, "1",
+                SearchSpecification.Attribute.NOT_EQUALS);
 
         search.addAllowedFolder(folder.name);
         search.addAccountUuid(account.getUuid());
@@ -1898,7 +1917,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                         break;
                     // informations
                     case 3:
-                        if(mContext instanceof INavigationDrawerActivityListener) {
+                        if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
                         }
                         break;
@@ -1913,15 +1932,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         builder.setTitle(R.string.account_delete_dlg_title);
         builder.setMessage(mContext.getString(R.string.account_delete_dlg_instructions_fmt,
                 mAccount.getDescription()));
-        builder.setPositiveButton(R.string.okay_action,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        boolean isMainAccount = Preferences.getPreferences(mContext).getAccounts().get(0).equals(mAccount) ? true : false;
-                        deleteAccount(isMainAccount);
-                        refreshView();
-                    }
-                });
+        builder.setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                boolean isMainAccount =
+                        Preferences.getPreferences(mContext).getAccounts().get(0).equals(mAccount)
+                                ? true : false;
+                deleteAccount(isMainAccount);
+                refreshView();
+            }
+        });
         builder.setNegativeButton(R.string.cancel_action, null);
         builder.create().show();
     }
@@ -1929,8 +1949,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private void deleteAccount(boolean isMainAccount) {
         try {
             // delete from db
-            if(isMainAccount) {
-               for(Account account : Preferences.getPreferences(mContext).getAccounts()){
+            if (isMainAccount) {
+                for (Account account : Preferences.getPreferences(mContext).getAccounts()) {
                     account.getLocalStore().delete();
                 }
             } else {
@@ -1940,18 +1960,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             // Ignore, this may lead to localStores on sd-cards that
             // are currently not inserted to be left
         }
-        if(isMainAccount) {
-            for(Account account : Preferences.getPreferences(mContext).getAccounts()){
-                MessagingController.getInstance(mContext)
-                        .deleteAccount(account);
-                Preferences.getPreferences(mContext)
-                        .deleteAccount(account);
+        if (isMainAccount) {
+            for (Account account : Preferences.getPreferences(mContext).getAccounts()) {
+                MessagingController.getInstance(mContext).deleteAccount(account);
+                Preferences.getPreferences(mContext).deleteAccount(account);
             }
         } else {
-            MessagingController.getInstance(mContext)
-                    .deleteAccount(mAccount);
-            Preferences.getPreferences(mContext)
-                    .deleteAccount(mAccount);
+            MessagingController.getInstance(mContext).deleteAccount(mAccount);
+            Preferences.getPreferences(mContext).deleteAccount(mAccount);
         }
         K9.setServicesEnabled(mContext);
     }
@@ -2000,7 +2016,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
 
             View view;
-            LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) parent.getContext()
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             switch (type) {
                 case HEADER:
                     view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
@@ -2013,13 +2030,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-            if(holder instanceof HeaderViewHolder) {
+            if (holder instanceof HeaderViewHolder) {
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
-                if(mAccount != null) {
+                if (mAccount != null) {
                     headerViewHolder.mAccountTv.setText(mAccount.getEmail());
                     headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
                 }
-                headerViewHolder.mExpandMenuIconIv.setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+                headerViewHolder.mExpandMenuIconIv
+                        .setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
 
                 headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -2042,34 +2060,36 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 mailViewHolder.mFolderIconIv.setImageResource(R.drawable.ic_email_white_24dp);
 
                 // Title
-                if(folder.displayName != null) {
+                if (folder.displayName != null) {
                     mailViewHolder.mFolderNameTv.setText(folder.displayName);
                 }
 
                 // unread messages
-                if(folder.unreadMessageCount == -1) {
+                if (folder.unreadMessageCount == -1) {
                     folder.unreadMessageCount = 0;
                     try {
-                        folder.unreadMessageCount  = folder.folder.getUnreadMessageCount();
+                        folder.unreadMessageCount = folder.folder.getUnreadMessageCount();
                     } catch (Exception e) {
-                        Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for " + mAccount.getDescription() + ":"
-                                + folder.name);
+                        Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for "
+                                + mAccount.getDescription() + ":" + folder.name);
                     }
                 }
-                mailViewHolder.mNewMessageCountTv.setText(String.format("%d", folder.unreadMessageCount));
+                mailViewHolder.mNewMessageCountTv
+                        .setText(String.format("%d", folder.unreadMessageCount));
                 // new messages icon gone
                 mailViewHolder.mNewMessageCountIconIv.setVisibility(View.GONE);
-//                mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
-//                        mAccount.generateColorChip(false, false, false, false, false).drawable());
+                // mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
+                // mAccount.generateColorChip(false, false, false, false, false).drawable());
 
-                mailViewHolder.mNewMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if(folder.unreadMessageCount > 0) {
-                            createUnreadSearch(mAccount, folder);
-                        }
-                    }
-                });
+                mailViewHolder.mNewMessageCountWrapperV
+                        .setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (folder.unreadMessageCount > 0) {
+                                    createUnreadSearch(mAccount, folder);
+                                }
+                            }
+                        });
 
                 // flagged messages
                 if (folder.flaggedMessageCount == -1) {
@@ -2077,24 +2097,26 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     try {
                         folder.flaggedMessageCount = folder.folder.getFlaggedMessageCount();
                     } catch (Exception e) {
-                        Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for " + mAccount.getDescription() + ":"
-                                + folder.name);
+                        Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for "
+                                + mAccount.getDescription() + ":" + folder.name);
                     }
 
                 }
-                mailViewHolder.mFlaggedMessageCountTv.setText(String.format("%d", folder.flaggedMessageCount));
+                mailViewHolder.mFlaggedMessageCountTv
+                        .setText(String.format("%d", folder.flaggedMessageCount));
                 mailViewHolder.mFlaggedMessageCountIconIv.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false,true).drawable());
-                mailViewHolder.mFlaggedMessageCountWrapperV.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (folder.flaggedMessageCount > 0) {
-                            createFlaggedSearch(mAccount, folder);
-                        }
-                    }
-                });
+                        mAccount.generateColorChip(false, false, false, false, true).drawable());
+                mailViewHolder.mFlaggedMessageCountWrapperV
+                        .setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (folder.flaggedMessageCount > 0) {
+                                    createFlaggedSearch(mAccount, folder);
+                                }
+                            }
+                        });
 
-                //click listener
+                // click listener
                 mailViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -2121,7 +2143,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public int getFolderIndex(String folder) {
             FolderInfoHolder searchHolder = new FolderInfoHolder();
             searchHolder.name = folder;
-            return  mItems.indexOf(searchHolder);
+            return mItems.indexOf(searchHolder);
         }
 
         public FolderInfoHolder getFolder(String folder) {
@@ -2164,7 +2186,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             updateData();
         }
 
-        AccountsAdapterClickListener mClickListener = new AccountsAdapterClickListener(){
+        AccountsAdapterClickListener mClickListener = new AccountsAdapterClickListener() {
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
@@ -2207,7 +2229,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             // add account
             mItems.add(new AddAccountItem(mContext));
             mItems.addAll(Preferences.getPreferences(mContext).getAccounts());
-            if(mAccount != null) {
+            if (mAccount != null) {
                 mItems.remove(mAccount);
             }
         }
@@ -2216,7 +2238,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, final int type) {
 
             View view;
-            LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) parent.getContext()
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             switch (type) {
                 case HEADER:
                     view = inflater.inflate(R.layout.nav_drawer_menu_header, parent, false);
@@ -2230,13 +2253,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if(holder instanceof HeaderViewHolder) {
+            if (holder instanceof HeaderViewHolder) {
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
-                if(mAccount != null) {
+                if (mAccount != null) {
                     headerViewHolder.mAccountTv.setText(mAccount.getEmail());
                     headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
                 }
-                headerViewHolder.mExpandMenuIconIv.setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+                headerViewHolder.mExpandMenuIconIv
+                        .setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
 
                 headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -2254,7 +2278,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             } else if (holder instanceof AccountViewHolder) {
                 AccountViewHolder accountViewHolder = (AccountViewHolder) holder;
 
-                if(position == ADD_ACCOUNT_POSITION) {
+                if (position == ADD_ACCOUNT_POSITION) {
                     // icon
                     accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_add_white_24dp);
                     accountViewHolder.mAccountNameTv.setText(R.string.add_account_action);
@@ -2268,13 +2292,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 } else {
                     final Account account = getItem(position);
                     // icon
-                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_email_white_24dp);
+                    accountViewHolder.mAccountIconIv
+                            .setImageResource(R.drawable.ic_email_white_24dp);
 
                     // Name
-                    if(mAccount.getEmail() != null) {
+                    if (mAccount.getEmail() != null) {
                         accountViewHolder.mAccountNameTv.setText(account.getEmail());
                     }
-                    //click listener
+                    // click listener
                     accountViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -2306,7 +2331,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public void newFolders(final List<FolderInfoHolder> newFolders) {
             mContext.runOnUiThread(new Runnable() {
                 public void run() {
-                    if(!mFolders.isEmpty()) {
+                    if (!mFolders.isEmpty()) {
                         mFolders.clear();
                     }
                     mFolders.addAll(newFolders);
@@ -2329,8 +2354,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public void accountSizeChanged(final long oldSize, final long newSize) {
             mContext.runOnUiThread(new Runnable() {
                 public void run() {
-                    String toastText = mContext.getString(R.string.account_size_changed, mAccount.getDescription(),
-                            SizeFormatter.formatSize(mContext, oldSize), SizeFormatter.formatSize(mContext, newSize));
+                    String toastText = mContext.getString(R.string.account_size_changed,
+                            mAccount.getDescription(), SizeFormatter.formatSize(mContext, oldSize),
+                            SizeFormatter.formatSize(mContext, newSize));
 
                     Toast toast = Toast.makeText(mContext, toastText, Toast.LENGTH_LONG);
                     toast.show();
@@ -2352,24 +2378,24 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             });
         }
 
-//        public void progress(final boolean progress) {
-//            // Make sure we don't try this before the menu is initialized
-//            // this could happen while the activity is initialized.
-//            if (mRefreshMenuItem == null) {
-//                return;
-//            }
-//
-//            runOnUiThread(new Runnable() {
-//                public void run() {
-//                    if (progress) {
-//                        mRefreshMenuItem.setActionView(mActionBarProgressView);
-//                    } else {
-//                        mRefreshMenuItem.setActionView(null);
-//                    }
-//                }
-//            });
-//
-//        }
+        // public void progress(final boolean progress) {
+        // // Make sure we don't try this before the menu is initialized
+        // // this could happen while the activity is initialized.
+        // if (mRefreshMenuItem == null) {
+        // return;
+        // }
+        //
+        // runOnUiThread(new Runnable() {
+        // public void run() {
+        // if (progress) {
+        // mRefreshMenuItem.setActionView(mActionBarProgressView);
+        // } else {
+        // mRefreshMenuItem.setActionView(null);
+        // }
+        // }
+        // });
+        //
+        // }
 
         public void dataChanged() {
             mContext.runOnUiThread(new Runnable() {
