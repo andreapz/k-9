@@ -209,6 +209,18 @@ public class ApiController {
                 .retry(RETRY_COUNT);
     }
 
+    private Observable<UserLogin> postSectionFave(String sectionId, boolean isSelected) {
+        if(mMainConfig == null) {
+            return null;
+        }
+        return apiClient()
+                .postSectionFave(mMainConfig.getEndpoints().getSectionFave().getUrl(),
+                        sectionId,isSelected)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .retry(RETRY_COUNT);
+    }
+
     private Observable<UserLogin> getMe() {
         if(mMainConfig == null) {
             return null;
@@ -322,6 +334,14 @@ public class ApiController {
         }
     }
 
+    public void sectionFave(Subscriber<UserLogin> subscriber, String sectionId, boolean isSelected){
+        Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
+
+        if(postSectionFave != null) {
+            postSectionFave.subscribe(subscriber);
+        }
+    }
+
     class SubscriberUserLogin extends Subscriber<UserLogin> {
 
         @Override
@@ -376,6 +396,7 @@ public class ApiController {
         public void onNext(UserLogin userLogin) {
             Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
             mUserLogin = userLogin;
+            refreshListeners();
         }
     }
 

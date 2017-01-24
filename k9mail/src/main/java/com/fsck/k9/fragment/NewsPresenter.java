@@ -33,6 +33,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.fsck.k9.K9;
@@ -41,9 +42,10 @@ import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
+import com.fsck.k9.api.model.UserLogin;
+import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
@@ -88,6 +90,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private NewsFragment mNewsViewFragment;
     private NewsFragment mNewsDetailFragment;
     private DisplayMode mDisplayMode;
+    private TabMode mTabMode;
     private String mCurrentPage;
     private String mMeJson;
     private boolean mIsHomePage;
@@ -103,7 +106,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         NEWS_DETAIL,
         SPLIT_VIEW
     }
-
+    public enum TabMode {
+        NEWS_TAB,
+        VIDEO_TAB,
+        PRMOTIONS_TAB
+    }
     @Inject
     public NewsPresenter(INavigationDrawerActivityListener listener, Intent intent) {
         mListener = listener;
@@ -302,29 +309,34 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     @Override
-    public void enableActionBarProgress(boolean enable) {
-        if(enable){
-            mListener.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(mActionBarProgress!=null){
-                        mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+    public void enableActionBarProgress(final boolean enable) {
+        Observable.empty().observeOn(AndroidSchedulers.mainThread()).subscribe(
+                new Subscriber<Object>() {
+                    @Override
+                    public void onCompleted() {
+                        if(mActionBarProgress!=null){
+                            if(enable){
+                                mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+                            }else{
+                                mActionBarProgress.setVisibility(ProgressBar.GONE);
+                            }
+
+                        }
+
                     }
 
-                }
-            });
+                    @Override
+                    public void onError(Throwable e) {
 
-        }else{
-            mListener.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(mActionBarProgress!=null){
-                        mActionBarProgress.setVisibility(ProgressBar.GONE);
                     }
 
+                    @Override
+                    public void onNext(Object o) {
+
+                    }
                 }
-            });
-        }
+        );
+
     }
 
 
@@ -352,6 +364,59 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     @Override
     public void setPageTitle(String title) {
         setActionBarTitle(title);
+    }
+
+    @Override
+    public void setFavoriteSection(final String sectionId, final boolean value) {
+
+        mListener.getApiController().sectionFave(new Subscriber<UserLogin>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if(e instanceof RetrofitException) {
+                    RetrofitException re = (RetrofitException) e;
+                    Log.i("APITEST","ERROR: "+re.getMessage());
+                    if(mIsHomePage && mNewsViewFragment!= null){
+                        mNewsViewFragment.refreshUrl();
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onNext(UserLogin userLogin) {
+                Toast.makeText(mContext,"ok favorite",Toast.LENGTH_LONG);
+                String msgDialog = null;
+                String sectionName = null;
+                for(int i = 0; i< mMenuItems.size();i++){
+                    if(mMenuItems.get(i).getSectionId().compareTo(sectionId)==0){
+                        sectionName = mMenuItems.get(i).getTitle();
+                    }
+                }
+                if(value){
+                    msgDialog = mContext.getResources().getString(R.string.dialog_fave_positive_msg,sectionName);
+                }else{
+                    msgDialog = mContext.getResources().getString(R.string.dialog_fave_negative_msg,sectionName);
+                }
+                new AlertDialog.Builder(mContext)
+                        .setMessage(msgDialog)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //nop
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                if( mDisplayMode == DisplayMode.NEWS_VIEW){
+                    mNewsViewFragment.refreshUrl();
+                }
+            }
+        },sectionId, value);
     }
 
     @Override
@@ -407,9 +472,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             case R.id.menu_item_share: {
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL");
-                i.putExtra(Intent.EXTRA_TEXT, mCurrentPage);
-                mContext.startActivity(Intent.createChooser(i, "Share URL"));
+                i.putExtra(Intent.EXTRA_SUBJECT, mContext.getResources().getString(R.string.webview_contextmenu_link_share_action));
+                i.putExtra(Intent.EXTRA_TEXT, mContext.getResources().getString(R.string.webview_contextmenu_link_share_text)+mCurrentPage);
+                mContext.startActivity(Intent.createChooser(i,  mContext.getResources().getString(R.string.webview_contextmenu_link_share_action)));
                 return true;
             }
 
@@ -804,8 +869,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             isInitialized = true;
             mMenuItems.clear();
         }
+//        if(mTabMode == TabMode.NEWS_TAB){
+            mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+//        }else if(mTabMode == TabMode.VIDEO_TAB){
+//            mMenuItems.addAll(me.getVideo().getTiscaliMenuItem());
+//        }else{
+//            mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
+//        }
 
-        mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
         mMeJson = json;
 
         if(!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
@@ -814,6 +885,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         mNewsAdapter.updateData();
+        if( mDisplayMode == DisplayMode.NEWS_VIEW){
+            mNewsViewFragment.refreshUrl();
+        }else{
+            mNewsDetailFragment.refreshUrl();
+        }
     }
 
     @Override
@@ -829,7 +905,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        showInformations();
+                        if(mContext instanceof INavigationDrawerActivityListener) {
+                            ((INavigationDrawerActivityListener) mContext).showInformations();
+                        }
                         break;
                 }
             }
@@ -872,37 +950,6 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         customize.show();
     }
 
-    public void showInformations() {
-
-
-        final Dialog customize= new Dialog(mListener.getActivity(),android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_informations);
-        customize.setCancelable(true);
-
-        WebView view = (WebView) customize
-                .findViewById(R.id.webview);
-
-        view.getSettings().setJavaScriptEnabled(true);
-        MainConfig mainConfig = null ;
-        if(mListener.getApiController() != null){
-            mainConfig = mListener.getApiController().getMainConfig();
-        }
-        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
-            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
-        }
-        view.setWebViewClient(new WebViewClient());
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-                customize.dismiss();
-            }
-        });
-
-        customize.show();
-    }
     public  List<TiscaliMenuItem> getCustomizableItems() {
         List<TiscaliMenuItem> visibilityItems = new ArrayList<>();
         for (TiscaliMenuItem item : mMenuItems) {
@@ -913,5 +960,4 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         return visibilityItems;
 
     }
-
 }

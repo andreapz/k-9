@@ -45,6 +45,7 @@ import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.NavigationDrawerActivity;
 import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
@@ -53,7 +54,6 @@ import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.AccountsAdapterClickListener;
-import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.MailAdapterClickListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
@@ -1884,15 +1884,80 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
+                    // account settings
                     case 0:
                         AccountSettings.actionSettings(mListener.getActivity(), account);
                         break;
+                    // global settings
                     case 1:
                         Prefs.actionPrefs(mListener.getActivity());
+                        break;
+                    // delete account
+                    case 2:
+                        showDeleteAccountDialog();
+                        break;
+                    // informations
+                    case 3:
+                        if(mContext instanceof INavigationDrawerActivityListener) {
+                            ((INavigationDrawerActivityListener) mContext).showInformations();
+                        }
+                        break;
                 }
             }
         });
         builder.create().show();
+    }
+
+    private void showDeleteAccountDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(R.string.account_delete_dlg_title);
+        builder.setMessage(mContext.getString(R.string.account_delete_dlg_instructions_fmt,
+                mAccount.getDescription()));
+        builder.setPositiveButton(R.string.okay_action,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        boolean isMainAccount = Preferences.getPreferences(mContext).getAccounts().get(0).equals(mAccount) ? true : false;
+                        deleteAccount(isMainAccount);
+                        refreshView();
+                    }
+                });
+        builder.setNegativeButton(R.string.cancel_action, null);
+        builder.create().show();
+    }
+
+    private void deleteAccount(boolean isMainAccount) {
+        try {
+            // delete from db
+            if(isMainAccount) {
+               for(Account account : Preferences.getPreferences(mContext).getAccounts()){
+                    account.getLocalStore().delete();
+                }
+            } else {
+                mAccount.getLocalStore().delete();
+            }
+        } catch (Exception e) {
+            // Ignore, this may lead to localStores on sd-cards that
+            // are currently not inserted to be left
+        }
+        if(isMainAccount) {
+            for(Account account : Preferences.getPreferences(mContext).getAccounts()){
+                MessagingController.getInstance(mContext)
+                        .deleteAccount(account);
+                Preferences.getPreferences(mContext)
+                        .deleteAccount(account);
+            }
+        } else {
+            MessagingController.getInstance(mContext)
+                    .deleteAccount(mAccount);
+            Preferences.getPreferences(mContext)
+                    .deleteAccount(mAccount);
+        }
+        K9.setServicesEnabled(mContext);
+    }
+
+    private void refreshView() {
+        NavigationDrawerActivity.listMessage(mContext, null);
     }
 
     public class MailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

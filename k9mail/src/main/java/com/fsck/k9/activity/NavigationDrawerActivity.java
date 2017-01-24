@@ -17,6 +17,7 @@
 package com.fsck.k9.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,6 +35,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.fsck.k9.Account;
@@ -42,9 +46,9 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.activity.setup.AccountSetupNames;
 import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
@@ -545,11 +549,23 @@ public class NavigationDrawerActivity extends K9Activity
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        if(mNewsPresenter != null) {
-            return mNewsPresenter.onOptionsItemSelected(item);
-        }
-        if(mMailPresenter != null) {
-            return mMailPresenter.onOptionsItemSelected(item);
+        switch(mSelectedTab) {
+            case MAIL_TAB_SELECTED:
+                if(mMailPresenter != null) {
+                    return mMailPresenter.onOptionsItemSelected(item);
+                }
+                break;
+            case NEWS_TAB_SELECTED:
+                if(mNewsPresenter != null) {
+                    return mNewsPresenter.onOptionsItemSelected(item);
+                }
+                break;
+            case VIDEO_TAB_SELECTED:
+                // TODO
+                break;
+            case OFFERS_TAB_SELECTED:
+                // TODO
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -606,6 +622,7 @@ public class NavigationDrawerActivity extends K9Activity
     private void onOffersTabClicked() {
         if(mSelectedTab != OFFERS_TAB_SELECTED) {
             mSelectedTab = OFFERS_TAB_SELECTED;
+
         }
     }
 
@@ -699,6 +716,39 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public ApiController getApiController() {
         return mApiController;
+    }
+
+    @Override
+    public void showInformations() {
+
+
+        final Dialog customize= new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        customize.setContentView(R.layout.dialog_informations);
+        customize.setCancelable(true);
+
+        WebView view = (WebView) customize
+                .findViewById(R.id.webview);
+
+        view.getSettings().setJavaScriptEnabled(true);
+        MainConfig mainConfig = null ;
+        if(getApiController() != null){
+            mainConfig = getApiController().getMainConfig();
+        }
+        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
+            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
+        }
+        view.setWebViewClient(new WebViewClient());
+        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                customize.dismiss();
+            }
+        });
+
+        customize.show();
     }
 
 }
