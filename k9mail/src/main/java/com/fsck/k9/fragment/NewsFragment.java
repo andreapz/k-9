@@ -257,6 +257,7 @@ public class NewsFragment extends Fragment {
             mWebView.loadUrl(url, mExtraHeaders);
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
+
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -267,7 +268,7 @@ public class NewsFragment extends Fragment {
                         loadUrl(mUrl);
                     }
                 }
-            }, mFragmentListener.getMe().getNews().getRefreshTimeout());
+            }, mFragmentListener.getMe().getNews().getRefreshTimeout()*1000 );
         }
 
 
