@@ -549,11 +549,23 @@ public class NavigationDrawerActivity extends K9Activity
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        if(mNewsPresenter != null) {
-            return mNewsPresenter.onOptionsItemSelected(item);
-        }
-        if(mMailPresenter != null) {
-            return mMailPresenter.onOptionsItemSelected(item);
+        switch(mSelectedTab) {
+            case MAIL_TAB_SELECTED:
+                if(mMailPresenter != null) {
+                    return mMailPresenter.onOptionsItemSelected(item);
+                }
+                break;
+            case NEWS_TAB_SELECTED:
+                if(mNewsPresenter != null) {
+                    return mNewsPresenter.onOptionsItemSelected(item);
+                }
+                break;
+            case VIDEO_TAB_SELECTED:
+                // TODO
+                break;
+            case OFFERS_TAB_SELECTED:
+                // TODO
+                break;
         }
 
         return super.onOptionsItemSelected(item);
