@@ -606,6 +606,7 @@ public class NavigationDrawerActivity extends K9Activity
     private void onOffersTabClicked() {
         if(mSelectedTab != OFFERS_TAB_SELECTED) {
             mSelectedTab = OFFERS_TAB_SELECTED;
+
         }
     }
 

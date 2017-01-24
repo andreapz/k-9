@@ -825,6 +825,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
   <string name="close">Chiudi</string>
   <string name="webview_empty_message">Senza testo</string>
   <string name="webview_contextmenu_link_view_action">Apri collegamento</string>
+  <string name="webview_contextmenu_link_share_text">Questo è il link che volevo condividere con te\n</string>
   <string name="webview_contextmenu_link_share_action">Condividi collegamento</string>
   <string name="webview_contextmenu_link_copy_action">Copia collegamento negli appunti</string>
   <string name="webview_contextmenu_link_clipboard_label">Collegamento</string>

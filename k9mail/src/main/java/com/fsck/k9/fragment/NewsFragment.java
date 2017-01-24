@@ -3,9 +3,11 @@ package com.fsck.k9.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,8 +25,11 @@ import com.fsck.k9.R;
 
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.HashMap;
+
 
 
 /**
@@ -40,6 +45,7 @@ public class NewsFragment extends Fragment {
     public static final String PLATFORM_ANDROID = "android";
     public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
     public static final String CURRENT_URL = "CURRENT_URL";
+    private static final int WEBVIEW_TIME_RELOAD = 60000;
 
 
     private static final String JAVASCRIPT_PREFIX = "javascript:";
@@ -60,6 +66,11 @@ public class NewsFragment extends Fragment {
 
     private static final String TISCALI_APP_GET_TITLE = "tiscaliApp.getTitle";
     private static final String TISCALI_APP = "TiscaliApp";
+
+    private static final String TISCALI_APP_FAVE_SEGMENT = "hookTiscaliApp";
+    private static final String TISCALI_APP_FAVE_SECTIONID_PARAMS = "section_id";
+    private static final String TISCALI_APP_FAVE_FAV_PARAMS = "fav";
+    private static final String TISCALI_APP_FAVE_FAVE_ACTION = "section_fave";
     private HashMap<String, String> mExtraHeaders;
 
     public WebView mWebView;
@@ -132,6 +143,17 @@ public class NewsFragment extends Fragment {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
                 Log.d("TiscaliWebViewClient", "[URL]:" + url+" @"+this);
+                if(mFragmentListener.isHomePage()){
+                    Uri uri = Uri.parse(url);
+                    String lastSegment = uri.getLastPathSegment();
+                    if(lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) ==0){
+                       String sessionId = uri.getQueryParameter(TISCALI_APP_FAVE_SECTIONID_PARAMS);
+                       String value = uri.getQueryParameter(TISCALI_APP_FAVE_FAV_PARAMS);
+                       mFragmentListener.setFavoriteSection(sessionId, Boolean.parseBoolean(value));
+                       return true;
+                    }
+                }
+
 
                 if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
                     mFragmentListener.detailPageLoad(url);
@@ -233,12 +255,25 @@ public class NewsFragment extends Fragment {
 
 
     private void loadUrl(String url) {
+
         Log.d("TiscaliWebView","[URL]:"+url+" @"+this);
         if(mWebView != null && mFragmentListener != null) {
             mWebView.loadUrl(url, mExtraHeaders);
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // Do something after 5s = 5000ms
+                    Log.d("Reload TiscaliWebView","[URL]:"+mUrl+" @"+this);
+                    if(mUrl != null ) {
+                        loadUrl(mUrl);
+                    }
+                }
+            }, WEBVIEW_TIME_RELOAD);
         }
+
 
     }
 
@@ -296,6 +331,7 @@ public class NewsFragment extends Fragment {
         boolean isHomePage();
         String getMeJSON();
         void setPageTitle(String title);
+        void setFavoriteSection(String sectionId, boolean value);
         void setActionBarToggle();
         void setCurrentUrl(String url);
         void setActionBarUp();

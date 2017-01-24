@@ -45,5 +45,11 @@ public interface ApiClient {
                                         @Field("section") String sectionId,
                                         @Field("value") boolean isSelected);
 
+    @FormUrlEncoded
+    @POST
+    Observable<UserLogin> postSectionFave(@Url String url,
+                                                @Field("section") String sectionId,
+                                                @Field("value") boolean isSelected);
+
 
 }
