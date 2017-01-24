@@ -91,6 +91,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private TabMode mTabMode;
     private String mCurrentPage;
     private String mMeJson;
+    private Me mMe;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
     private NewsPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
@@ -360,6 +361,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     @Override
+    public Me getMe() {
+        return mMe;
+    }
+    @Override
     public void setPageTitle(String title) {
         setActionBarTitle(title);
     }
@@ -410,9 +415,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                         })
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
-//                if( mDisplayMode == DisplayMode.NEWS_VIEW){
-//                    mNewsViewFragment.refreshUrl();
-//                }
+
 
             }
         },sectionId, value);
@@ -869,14 +872,15 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             mMenuItems.clear();
         }
 //        if(mTabMode == TabMode.NEWS_TAB){
-            mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+//            mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
 //        }else if(mTabMode == TabMode.VIDEO_TAB){
 //            mMenuItems.addAll(me.getVideo().getTiscaliMenuItem());
 //        }else{
 //            mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
 //        }
-
+        mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
         mMeJson = json;
+        mMe = me;
 
         if(!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
             mIsHomePage = true;
