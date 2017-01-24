@@ -417,9 +417,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                         })
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
-                if( mDisplayMode == DisplayMode.NEWS_VIEW){
-                    mNewsViewFragment.refreshUrl();
-                }
+//                if( mDisplayMode == DisplayMode.NEWS_VIEW){
+//                    mNewsViewFragment.refreshUrl();
+//                }
+
             }
         },sectionId, value);
     }
@@ -869,7 +870,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     @Override
     public void updateMe(Me me, String json) {
         boolean isInitialized = false;
-
+        Log.d("UpdateMe ","[ME]:"+json);
         if(mMenuItems.size() > 0) {
             isInitialized = true;
             mMenuItems.clear();
@@ -891,9 +892,15 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         mNewsAdapter.updateData();
         if( mDisplayMode == DisplayMode.NEWS_VIEW){
-            mNewsViewFragment.refreshUrl();
+            if(mNewsViewFragment != null){
+                mNewsViewFragment.refreshUrl();
+            }
+
         }else{
-            mNewsDetailFragment.refreshUrl();
+            if(mNewsViewFragment != null){
+                mNewsDetailFragment.refreshUrl();
+            }
+
         }
     }
 
