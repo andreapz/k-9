@@ -18,6 +18,7 @@ package com.fsck.k9.activity;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -57,6 +58,7 @@ import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.preferences.StorageEditor;
 import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 
 import java.io.IOException;
@@ -99,6 +101,9 @@ public class NavigationDrawerActivity extends K9Activity
         INavigationDrawerActivityListener,
         ApiController.ApiControllerInterface
 {
+
+    private static final String EXTRA_SEARCH = "search";
+    private static final String EXTRA_NO_THREADING = "no_threading";
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
     public static final String EXTRA_STARTUP = "startup";
@@ -198,6 +203,22 @@ public class NavigationDrawerActivity extends K9Activity
         context.startActivity(intent);
     }
 
+    public static Intent intentDisplaySearch(Context context, SearchSpecification search,
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
+        Intent intent = new Intent(context, NavigationDrawerActivity.class);
+        intent.putExtra(EXTRA_SEARCH, search);
+        intent.putExtra(EXTRA_NO_THREADING, noThreading);
+
+        if (clearTop) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        }
+        if (newTask) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+
+        return intent;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -217,7 +238,11 @@ public class NavigationDrawerActivity extends K9Activity
 
         String accountUUid = intent.getStringExtra(EXTRA_ACCOUNT);
         Intent mailIntent;
-        if(accountUUid != null) {
+        // mail search
+        if(intent.getStringExtra(SearchManager.QUERY) != null) {
+            mailIntent = intent;
+            intent.putExtra(EXTRA_STARTUP, false);
+        } else if(accountUUid != null) {
             mailIntent = getMailIntent(pref.getAccount(accountUUid));
         } else {
             mailIntent = getMailIntent(accounts.get(0));
@@ -295,6 +320,12 @@ public class NavigationDrawerActivity extends K9Activity
         }
 
         mBottomNav.bringToFront();
+
+        // open search results
+        if(intent.getStringExtra(SearchManager.QUERY) != null) {
+            mBottomNav.setVisibility(View.GONE);
+        }
+
     }
 
     private int getScreenWidth() {
@@ -354,7 +385,7 @@ public class NavigationDrawerActivity extends K9Activity
         LocalSearch search = new LocalSearch(account.getAutoExpandFolderName());
         search.addAllowedFolder(account.getAutoExpandFolderName());
         search.addAccountUuid(account.getUuid());
-        return MessageList.intentDisplaySearch(this, search, false, true, true);
+        return intentDisplaySearch(this, search, false, true, true);
     }
 
     private boolean useSplitView() {
@@ -401,6 +432,12 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (!(this instanceof Search)) {
+            //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
+            //when returning from search results
+            Search.setActive(false);
+        }
 
         if(mMailPresenter != null) {
             mMailPresenter.onResume();
@@ -659,13 +696,14 @@ public class NavigationDrawerActivity extends K9Activity
     public void onBackPressed() {
         if(mNewsPresenter!= null && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL){
             mNewsPresenter.goBackOnHistory();
-        }
-        else if(mMailPresenter != null
+        } else if(mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
                     && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
-        }
-        else {
+        } else if(mMailPresenter != null
+                && getIntent().getStringExtra(SearchManager.QUERY) != null) {
+            mMailPresenter.goBack();
+        } else {
             super.onBackPressed();
         }
     }
