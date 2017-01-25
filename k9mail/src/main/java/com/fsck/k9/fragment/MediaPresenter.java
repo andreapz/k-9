@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.bumptech.glide.Glide;
@@ -26,6 +25,7 @@ import com.fsck.k9.view.holder.ItemViewHolder;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -66,7 +66,7 @@ import rx.functions.Action1;
  */
 
 @Singleton
-public class MediaPresenter
+public abstract class MediaPresenter
         implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
         PresenterLifeCycle, ApiController.ApiControllerInterface {
 
@@ -85,7 +85,6 @@ public class MediaPresenter
     private NewsFragment mNewsViewFragment;
     private NewsFragment mNewsDetailFragment;
     private DisplayMode mDisplayMode;
-    private Type mType;
     private String mCurrentPage;
     private String mMeJson;
     private int mTimeoutRefresh = 1000;
@@ -105,7 +104,6 @@ public class MediaPresenter
         NEWS, VIDEO, OFFERS
     }
 
-    @Inject
     public MediaPresenter(INavigationDrawerActivityListener listener, Intent intent) {
         mListener = listener;
         mContext = listener.getActivity();
@@ -116,9 +114,7 @@ public class MediaPresenter
         mIntent = intent;
     }
 
-    public void setType(Type type) {
-        this.mType = type;
-    }
+    public abstract Type getType();
 
     @Nullable
     public void onCreateView() {
@@ -178,9 +174,12 @@ public class MediaPresenter
         FragmentManager fragmentManager = mContext.getFragmentManager();
 
         boolean hasNewsFragment = (mNewsViewFragment != null);
-        if (!hasNewsFragment) {
+        if (hasNewsFragment) {
+            mNewsViewFragment.setType(getType());
+            mNewsViewFragment.setUrl(home);
+        } else {
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            mNewsViewFragment = NewsFragment.newInstance(home);
+            mNewsViewFragment = NewsFragment.newInstance(home, getType());
             ft.add(R.id.news_view_container, mNewsViewFragment);
             ft.commit();
         }
@@ -234,23 +233,27 @@ public class MediaPresenter
         mViewSwitcher.showFirstView();
     }
 
+    private void removeFragment(Fragment fragment) {
+        FragmentManager manager = mContext.getFragmentManager();
+        FragmentTransaction ft = manager.beginTransaction();
+        ft.remove(fragment);
+        ft.commit();
+        manager.popBackStackImmediate();
+    }
+
     private void removeNewsFragment() {
         if (mNewsViewFragment != null) {
             mNewsViewFragment.mWebView.loadUrl("about:blank");
-            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-            ft.remove(mNewsViewFragment);
+            removeFragment(mNewsViewFragment);
             mNewsViewFragment = null;
-            ft.commit();
         }
     }
 
     private void removeDetailFragment() {
         if (mNewsDetailFragment != null) {
             mNewsDetailFragment.mWebView.loadUrl("about:blank");
-            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-            ft.remove(mNewsDetailFragment);
+            removeFragment(mNewsDetailFragment);
             mNewsDetailFragment = null;
-            ft.commit();
         }
     }
 
@@ -322,20 +325,14 @@ public class MediaPresenter
                             } else {
                                 mActionBarProgress.setVisibility(ProgressBar.GONE);
                             }
-
                         }
-
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-
-            }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-
-            }
+                    public void onNext(Object o) {}
                 });
 
     }
@@ -416,7 +413,7 @@ public class MediaPresenter
     public void detailPageLoad(String url) {
         mCurrentPage = url;
         if (mNewsDetailFragment == null) {
-            NewsFragment fragment = NewsFragment.newInstance(url);
+            NewsFragment fragment = NewsFragment.newInstance(url, getType());
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.news_detail_container, fragment);
             mNewsDetailFragment = fragment;
@@ -849,9 +846,9 @@ public class MediaPresenter
             mMenuItems.clear();
         }
 
-        if (Type.VIDEO == mType) {
+        if (Type.VIDEO == getType()) {
             mMenuItems.addAll(me.getVideo().getTiscaliMenuItem());
-        } else if (Type.OFFERS == mType) {
+        } else if (Type.OFFERS == getType()) {
             mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
         } else { // NEWS
             mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
