@@ -12,6 +12,7 @@ import android.app.Fragment;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -102,22 +103,25 @@ public class NewsFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
+        if (savedInstanceState == null) {
+            mType = getType(getArguments().getString(ARG_TYPE));
 
+        } else {
+            mType = getType(savedInstanceState.getString(ARG_TYPE));
+        }
         mFragmentListener = getFragmentListner();
 
         init();
 
         if (savedInstanceState == null) {
             mUrl = getArguments().getString(ARG_HOME);
-            mType = getType(getArguments().getString(ARG_TYPE));
             loadUrl(mUrl);
         } else {
             mUrl = savedInstanceState.getString(CURRENT_URL);
-            mType = getType(savedInstanceState.getString(ARG_TYPE));
             mWebView.restoreState(savedInstanceState);
         }
 
@@ -268,16 +272,16 @@ public class NewsFragment extends Fragment {
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
 
-//            final Handler handler = new Handler();
-//            handler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
-//                    if (mUrl != null) {
-//                        loadUrl(mUrl);
-//                    }
-//                }
-//            }, mFragmentListener.getRefreshTimeout());
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
+                    if (mUrl != null) {
+                        loadUrl(mUrl);
+                    }
+                }
+            }, mFragmentListener.getRefreshTimeout());
         }
     }
 

@@ -72,6 +72,7 @@ public abstract class MediaPresenter
 
     private static final int HOME_POSITION_ADAPTER = 1;
     private static final int HOME_POSITION_PRESENTER = 0;
+    public static final String DEFAULT_ACTIONBAR_TITLE = "Tiscali";
     private final Activity mContext;
     private static final String ARG_HOME = "HOME";
     private Intent mIntent;
@@ -266,6 +267,9 @@ public abstract class MediaPresenter
         View customView = mActionBar.getCustomView();
         mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
         mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
+
+        mActionBarTitle.setText(DEFAULT_ACTIONBAR_TITLE);
+
 
 
         mActionBar.setDisplayHomeAsUpEnabled(true);
