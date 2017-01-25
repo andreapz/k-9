@@ -1,13 +1,16 @@
 package com.fsck.k9.activity;
 
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.fragment.MailPresenter;
+import com.fsck.k9.fragment.MediaPresenter;
+import com.fsck.k9.fragment.NewsPresenter;
+import com.fsck.k9.fragment.OffersPresenter;
+import com.fsck.k9.fragment.VideoPresenter;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
-
-import com.fsck.k9.api.ApiController;
-import com.fsck.k9.fragment.MailPresenter;
-import com.fsck.k9.fragment.NewsPresenter;
 
 import dagger.Module;
 import dagger.Provides;
@@ -31,33 +34,54 @@ public class ActivityModule {
         return mActivity;
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
     LayoutInflater provideLayoutInflater() {
         System.out.println("Provide LayoutInflater");
         return mActivity.getLayoutInflater();
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
     MailPresenter provideMailPresenter() {
         return new MailPresenter((INavigationDrawerActivityListener) mActivity, mIntent);
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
     ApiController provideApiController() {
         return new ApiController(mActivity);
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
     NewsPresenter provideNewsPresenter() {
-        return new NewsPresenter((INavigationDrawerActivityListener) mActivity, mIntent);
+        return new NewsPresenter((INavigationDrawerActivityListener) mActivity, mIntent,
+                MediaPresenter.Type.NEWS);
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
+    VideoPresenter provideVideoPresenter() {
+        return new VideoPresenter((INavigationDrawerActivityListener) mActivity, mIntent,
+                MediaPresenter.Type.VIDEO);
+    }
+
+    @Provides
+    @ActivityScope
+    OffersPresenter provideOffersPresenter() {
+        return new OffersPresenter((INavigationDrawerActivityListener) mActivity, mIntent,
+                MediaPresenter.Type.OFFERS);
+    }
+
+    @Provides
+    @ActivityScope
     Context provideContext() {
         return mActivity;
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
     Intent provideIntent() {
         return mIntent;
     }

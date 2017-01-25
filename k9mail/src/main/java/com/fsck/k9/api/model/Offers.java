@@ -2,6 +2,7 @@
 package com.fsck.k9.api.model;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -12,7 +13,7 @@ public class Offers {
     private Webview webview;
     @SerializedName("menu")
     @Expose
-    private List<Menu__> menu = null;
+    private List<TiscaliMenuItem> tiscaliMenuItem = null;
 
     public Webview getWebview() {
         return webview;
@@ -22,12 +23,12 @@ public class Offers {
         this.webview = webview;
     }
 
-    public List<Menu__> getMenu() {
-        return menu;
+    public List<TiscaliMenuItem> getTiscaliMenuItem() {
+        return tiscaliMenuItem;
     }
 
-    public void setMenu(List<Menu__> menu) {
-        this.menu = menu;
+    public void setTiscaliMenuItem(List<TiscaliMenuItem> tiscaliMenuItem) {
+        this.tiscaliMenuItem = tiscaliMenuItem;
     }
 
 }

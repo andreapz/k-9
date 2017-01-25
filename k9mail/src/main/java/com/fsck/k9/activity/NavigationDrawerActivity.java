@@ -14,6 +14,35 @@
 
 package com.fsck.k9.activity;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.ApplicationComponent;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.R;
+import com.fsck.k9.activity.setup.AccountSetupBasics;
+import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.MainConfig;
+import com.fsck.k9.api.model.Me;
+import com.fsck.k9.fragment.MailPresenter;
+import com.fsck.k9.fragment.MediaPresenter;
+import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.fragment.NewsFragment;
+import com.fsck.k9.fragment.NewsPresenter;
+import com.fsck.k9.fragment.OffersPresenter;
+import com.fsck.k9.fragment.VideoPresenter;
+import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.preferences.StorageEditor;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchSpecification;
+import com.fsck.k9.ui.messageview.MessageViewFragment;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.SearchManager;
@@ -38,32 +67,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
-
-import com.fsck.k9.Account;
-import com.fsck.k9.ApplicationComponent;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
-import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.adapter.NavDrawerMenuAdapter;
-import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.MainConfig;
-import com.fsck.k9.api.model.Me;
-import com.fsck.k9.fragment.MailPresenter;
-import com.fsck.k9.fragment.MessageListFragment;
-import com.fsck.k9.fragment.NewsFragment;
-import com.fsck.k9.fragment.NewsPresenter;
-import com.fsck.k9.model.NavDrawerMenuItem;
-import com.fsck.k9.preferences.StorageEditor;
-import com.fsck.k9.search.LocalSearch;
-import com.fsck.k9.search.SearchSpecification;
-import com.fsck.k9.ui.messageview.MessageViewFragment;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import javax.inject.Inject;
 
 
 /**
@@ -150,43 +153,60 @@ public class NavigationDrawerActivity extends K9Activity
     ApiController mApiController;
     @Inject
     NewsPresenter mNewsPresenter;
+    @Inject
+    VideoPresenter mVideoPresenter;
+    @Inject
+    OffersPresenter mOffersPresenter;
 
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
-        @Override
-        public boolean onNavigationItemSelected(MenuItem item) {
+    private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener =
+            new BottomNavigationView.OnNavigationItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(MenuItem item) {
 
-            switch (mSelectedTab) {
-                case MAIL_TAB_SELECTED:
-                    if (item.getItemId() != R.id.menu_mail) {
-                        mMailPresenter.onDetach();
+                    switch (mSelectedTab) {
+                        case MAIL_TAB_SELECTED:
+                            if (item.getItemId() != R.id.menu_mail) {
+                                mMailPresenter.onDetach();
+                            }
+                            break;
+
+                        case NEWS_TAB_SELECTED:
+                            if (item.getItemId() != R.id.menu_news) {
+                                mNewsPresenter.onDetach();
+                            }
+                            break;
+
+                        case VIDEO_TAB_SELECTED:
+                            if (item.getItemId() != R.id.menu_video) {
+                                mVideoPresenter.onDetach();
+                            }
+                            break;
+
+                        case OFFERS_TAB_SELECTED:
+                            if (item.getItemId() != R.id.menu_offers) {
+                                mOffersPresenter.onDetach();
+                            }
+                            break;
                     }
-                    break;
 
-                case NEWS_TAB_SELECTED:
-                    if (item.getItemId() != R.id.menu_news) {
-                        mNewsPresenter.onDetach();
+                    switch (item.getItemId()) {
+                        case R.id.menu_mail:
+                            onMailTabClicked();
+                            break;
+                        case R.id.menu_news:
+                            onNewsTabClicked();
+                            break;
+                        case R.id.menu_video:
+                            onVideoTabClicked();
+                            break;
+                        case R.id.menu_offers:
+                            onOffersTabClicked();
+                            break;
                     }
-                    break;
-            }
-
-            switch (item.getItemId()) {
-                case R.id.menu_mail:
-                    onMailTabClicked();
-                    break;
-                case R.id.menu_news:
-                    onNewsTabClicked();
-                    break;
-                case R.id.menu_video:
-                    onVideoTabClicked();
-                    break;
-                case R.id.menu_offers:
-                    onOffersTabClicked();
-                    break;
-            }
-            return true;
-        }
-    };
+                    return true;
+                }
+            };
 
     private FrameLayout mViewContainer;
 
@@ -206,7 +226,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-                                             boolean noThreading, boolean newTask, boolean clearTop) {
+            boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -319,6 +339,8 @@ public class NavigationDrawerActivity extends K9Activity
         } else {
             mMailPresenter.setStartInstanceState(savedInstanceState);
             mNewsPresenter.setStartInstanceState(savedInstanceState);
+            mVideoPresenter.setStartInstanceState(savedInstanceState);
+            mOffersPresenter.setStartInstanceState(savedInstanceState);
             setSelectedTab(savedInstanceState.getInt(SELECTED_TAB));
         }
 
@@ -400,7 +422,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -411,9 +433,14 @@ public class NavigationDrawerActivity extends K9Activity
         if (mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
-
         if (mNewsPresenter != null) {
             mNewsPresenter.onSaveInstanceState(outState);
+        }
+        if (mVideoPresenter != null) {
+            mVideoPresenter.onSaveInstanceState(outState);
+        }
+        if (mOffersPresenter != null) {
+            mOffersPresenter.onSaveInstanceState(outState);
         }
     }
 
@@ -432,6 +459,12 @@ public class NavigationDrawerActivity extends K9Activity
         }
         if (mNewsPresenter != null) {
             mNewsPresenter.onSaveInstanceState(outState);
+        }
+        if (mVideoPresenter != null) {
+            mVideoPresenter.onSaveInstanceState(outState);
+        }
+        if (mOffersPresenter != null) {
+            mOffersPresenter.onSaveInstanceState(outState);
         }
     }
 
@@ -452,7 +485,12 @@ public class NavigationDrawerActivity extends K9Activity
         if (mNewsPresenter != null) {
             mNewsPresenter.onResume();
         }
-
+        if (mVideoPresenter != null) {
+            mVideoPresenter.onResume();
+        }
+        if (mOffersPresenter != null) {
+            mOffersPresenter.onResume();
+        }
         mApiController.addListener(this);
     }
 
@@ -466,7 +504,12 @@ public class NavigationDrawerActivity extends K9Activity
         if (mNewsPresenter != null) {
             mNewsPresenter.onPause();
         }
-
+        if (mVideoPresenter != null) {
+            mVideoPresenter.onPause();
+        }
+        if (mOffersPresenter != null) {
+            mOffersPresenter.onPause();
+        }
         mApiController.removeListener(this);
     }
 
@@ -561,6 +604,12 @@ public class NavigationDrawerActivity extends K9Activity
         if (mNewsPresenter != null) {
             mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
         }
+        if (mVideoPresenter != null) {
+            mVideoPresenter.onCreateOptionsMenu(menu, getMenuInflater());
+        }
+        if (mOffersPresenter != null) {
+            mOffersPresenter.onCreateOptionsMenu(menu, getMenuInflater());
+        }
         return true;
     }
 
@@ -575,6 +624,12 @@ public class NavigationDrawerActivity extends K9Activity
         }
         if (mNewsPresenter != null) {
             return mNewsPresenter.onPrepareOptionsMenu(menu);
+        }
+        if (mVideoPresenter != null) {
+            return mVideoPresenter.onPrepareOptionsMenu(menu);
+        }
+        if (mOffersPresenter != null) {
+            return mOffersPresenter.onPrepareOptionsMenu(menu);
         }
 
         // menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
@@ -600,10 +655,14 @@ public class NavigationDrawerActivity extends K9Activity
                 }
                 break;
             case VIDEO_TAB_SELECTED:
-                // TODO
+                if (mVideoPresenter != null) {
+                    return mVideoPresenter.onOptionsItemSelected(item);
+                }
                 break;
             case OFFERS_TAB_SELECTED:
-                // TODO
+                if (mOffersPresenter != null) {
+                    return mOffersPresenter.onOptionsItemSelected(item);
+                }
                 break;
         }
 
@@ -654,6 +713,8 @@ public class NavigationDrawerActivity extends K9Activity
     private void onVideoTabClicked() {
         if (mSelectedTab != VIDEO_TAB_SELECTED) {
             mSelectedTab = VIDEO_TAB_SELECTED;
+            mVideoPresenter.onCreateView();
+            mVideoPresenter.onResume();
         }
         // setAdapterBasedOnSelectedTab(mSelectedTab);
     }
@@ -661,7 +722,8 @@ public class NavigationDrawerActivity extends K9Activity
     private void onOffersTabClicked() {
         if (mSelectedTab != OFFERS_TAB_SELECTED) {
             mSelectedTab = OFFERS_TAB_SELECTED;
-
+            mOffersPresenter.onCreateView();
+            mOffersPresenter.onResume();
         }
     }
 
@@ -672,10 +734,19 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     @Override
-    public NewsFragment.NewsFragmentListener getNewsFragmentListner() {
+    public NewsFragment.NewsFragmentListener getNewsFragmentListner(MediaPresenter.Type type) {
         if (mNewsPresenter == null) {
             forceBuildDaggerComponent();
         }
+
+        if (MediaPresenter.Type.VIDEO == type) {
+            return mVideoPresenter;
+        }
+
+        if (MediaPresenter.Type.OFFERS == type) {
+            return mOffersPresenter;
+        }
+
         return mNewsPresenter;
     }
 
@@ -698,11 +769,17 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public void onBackPressed() {
         if (mNewsPresenter != null
-                && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL) {
+                && mNewsPresenter.getDisplayMode() == MediaPresenter.DisplayMode.NEWS_DETAIL) {
             mNewsPresenter.goBackOnHistory();
+        } else if (mVideoPresenter != null
+                && mVideoPresenter.getDisplayMode() == MediaPresenter.DisplayMode.NEWS_DETAIL) {
+            mVideoPresenter.goBackOnHistory();
+        } else if (mOffersPresenter != null
+                && mOffersPresenter.getDisplayMode() == MediaPresenter.DisplayMode.NEWS_DETAIL) {
+            mOffersPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                && mMailPresenter.getMessageListWasDisplayed())) {
+                        && mMailPresenter.getMessageListWasDisplayed())) {
             mMailPresenter.showMessageList();
         } else if (mMailPresenter != null
                 && getIntent().getStringExtra(SearchManager.QUERY) != null) {

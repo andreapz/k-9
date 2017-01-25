@@ -2,6 +2,7 @@
 package com.fsck.k9.api.model;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -9,14 +10,13 @@ public class Video {
 
     @SerializedName("menu")
     @Expose
-    private List<Menu_> menu = null;
+    private List<TiscaliMenuItem> tiscaliMenuItem = null;
 
-    public List<Menu_> getMenu() {
-        return menu;
+    public List<TiscaliMenuItem> getTiscaliMenuItem() {
+        return tiscaliMenuItem;
     }
 
-    public void setMenu(List<Menu_> menu) {
-        this.menu = menu;
+    public void setTiscaliMenuItem(List<TiscaliMenuItem> tiscaliMenuItem) {
+        this.tiscaliMenuItem = tiscaliMenuItem;
     }
-
 }

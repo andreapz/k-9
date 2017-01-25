@@ -12,7 +12,6 @@ import android.app.Fragment;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,6 +35,7 @@ public class NewsFragment extends Fragment {
     private static final String JAVASCRIPT_TISCALI_APP_GET_TITLE =
             "javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)";
     private static final String ARG_HOME = "HOME";
+    private static final String ARG_TYPE = "TYPE";
     public static final String PLATFORM_ANDROID = "android";
     public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
     public static final String CURRENT_URL = "CURRENT_URL";
@@ -71,14 +71,24 @@ public class NewsFragment extends Fragment {
     private String mIdSection;
     private boolean mIsResizable = false;
     private Menu mMenu;
+    private MediaPresenter.Type mType;
 
-    public static NewsFragment newInstance(String home) {
+    public static NewsFragment newInstance(String home, MediaPresenter.Type type) {
 
         NewsFragment fragment = new NewsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_HOME, home);
+        args.putString(ARG_TYPE, type.name());
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public void setType(MediaPresenter.Type type) {
+        this.mType = type;
+    }
+
+    public void setUrl(String url) {
+        this.mUrl = url;
     }
 
     @Override
@@ -92,7 +102,7 @@ public class NewsFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
@@ -103,13 +113,25 @@ public class NewsFragment extends Fragment {
 
         if (savedInstanceState == null) {
             mUrl = getArguments().getString(ARG_HOME);
+            mType = getType(getArguments().getString(ARG_TYPE));
             loadUrl(mUrl);
         } else {
             mUrl = savedInstanceState.getString(CURRENT_URL);
+            mType = getType(savedInstanceState.getString(ARG_TYPE));
             mWebView.restoreState(savedInstanceState);
         }
 
         return v;
+    }
+
+    private MediaPresenter.Type getType(String type) {
+        if (MediaPresenter.Type.VIDEO.name().equals(type)) {
+            return MediaPresenter.Type.VIDEO;
+        }
+        if (MediaPresenter.Type.OFFERS.name().equals(type)) {
+            return MediaPresenter.Type.OFFERS;
+        }
+        return MediaPresenter.Type.NEWS;
     }
 
     public void init() {
@@ -176,6 +198,7 @@ public class NewsFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(CURRENT_URL, mUrl);
+        outState.putString(ARG_TYPE, mType.name());
         mWebView.saveState(outState);
     }
 
@@ -190,9 +213,13 @@ public class NewsFragment extends Fragment {
         settings.setLoadsImagesAutomatically(true);
         settings.setDomStorageEnabled(true);
         settings.setLoadWithOverviewMode(true);
-
         settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+        if (Build.VERSION.SDK_INT >= 19) {
+            mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        } else {
+            mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
 
         // Todo check if version compliant
         mWebView.addJavascriptInterface(new JsTiscaliAppObject(), TISCALI_APP);
@@ -241,16 +268,16 @@ public class NewsFragment extends Fragment {
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
 
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
-                    if (mUrl != null) {
-                        loadUrl(mUrl);
-                    }
-                }
-            }, mFragmentListener.getRefreshTimeout());
+//            final Handler handler = new Handler();
+//            handler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
+//                    if (mUrl != null) {
+//                        loadUrl(mUrl);
+//                    }
+//                }
+//            }, mFragmentListener.getRefreshTimeout());
         }
     }
 
@@ -260,7 +287,7 @@ public class NewsFragment extends Fragment {
 
         if (getActivity() instanceof NewsFragmentGetListener) {
             try {
-                listener = ((NewsFragmentGetListener) getActivity()).getNewsFragmentListner();
+                listener = ((NewsFragmentGetListener) getActivity()).getNewsFragmentListner(mType);
             } catch (ClassCastException e) {
                 throw new ClassCastException(
                         getActivity().getClass() + " must implement NewsFragmentListener");
@@ -278,7 +305,7 @@ public class NewsFragment extends Fragment {
 
     public void refreshUrl() {
         if (mWebView != null) {
-            mWebView.reload();
+            loadUrl(mUrl);
         }
 
     }
@@ -333,7 +360,7 @@ public class NewsFragment extends Fragment {
 
     public interface NewsFragmentGetListener {
 
-        NewsFragmentListener getNewsFragmentListner();
+        NewsFragmentListener getNewsFragmentListner(MediaPresenter.Type type);
     }
 
     class JsTiscaliAppObject {
