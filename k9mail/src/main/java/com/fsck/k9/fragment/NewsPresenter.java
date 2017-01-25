@@ -840,6 +840,7 @@ public class NewsPresenter
         Log.d("UpdateMe ", "[ME]:" + json);
 
         if (mMenuItems.size() > 0) {
+            // Me already present
             isInitialized = true;
             mMenuItems.clear();
         }
@@ -854,11 +855,11 @@ public class NewsPresenter
         }
 
         mNewsAdapter.updateData();
+
         if (mDisplayMode == DisplayMode.NEWS_VIEW) {
             if (mNewsViewFragment != null) {
                 mNewsViewFragment.refreshUrl();
             }
-
         } else {
             if (mNewsViewFragment != null) {
                 mNewsDetailFragment.refreshUrl();
