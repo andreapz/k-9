@@ -268,7 +268,7 @@ public abstract class MediaPresenter
         mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
         mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
 
-        mActionBarTitle.setText(DEFAULT_ACTIONBAR_TITLE);
+        // mActionBarTitle.setText(DEFAULT_ACTIONBAR_TITLE);
 
 
 
@@ -281,7 +281,8 @@ public abstract class MediaPresenter
                     @Override
                     public void onCompleted() {
                         if (mActionBarTitle != null) {
-                            mActionBarTitle.setText(title);
+                            String titleEncode = title.replaceAll("%20", " ");
+                            mActionBarTitle.setText(titleEncode);
                         }
 
                     }

@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -143,7 +144,21 @@ public class NewsFragment extends Fragment {
         mExtraHeaders.put(HEADER_X_TISCALI_APP, PLATFORM_ANDROID);
         updateWebViewSettings();
 
-        mWebView.setWebChromeClient(new WebChromeClient());
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                super.onReceivedTitle(view, title);
+                if (!TextUtils.isEmpty(title)) {
+                    if (title.contains(" ")) {
+                        title = title.substring(0, title.indexOf(" "));
+                    }
+                    String titleEncode = title.replaceAll("%20", " ");
+                    if (mFragmentListener != null) {
+                        mFragmentListener.setPageTitle(title);
+                    }
+                }
+            }
+        });
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -194,6 +209,7 @@ public class NewsFragment extends Fragment {
                         }
                     }
                 }
+
             }
         });
     }
