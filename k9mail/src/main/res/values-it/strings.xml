@@ -270,17 +270,9 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="global_settings_confirm_action_spam">Spam</string>
     <string name="global_settings_confirm_menu_discard">Scarta messaggio</string>
     <string name="global_settings_confirm_action_delete_notif">Elimina (da notifica)</string>
-    <
-    <
-    <
-    <
-    <
-    <
-    < HEAD
-    <string name="global_settings_privacy_hide_useragent">Rimuovi lo User-Agent di K-9 dalle intestazioni dei messaggi</string>
-    =======
+
     <string name="global_settings_privacy_hide_useragent">Rimuovi lo User-Agent di Tiscali.it dalle intestazioni dei messaggi</string>
-    >>>>>>> 29e155e3b3446d1e7dba0b83ab61ed7c3bba12ee
+
     <string name="global_settings_privacy_hide_timezone">Usa UTC come fuso orario nelle intestazioni dei messaggi</string>
     <string name="global_settings_notification_hide_subject_title">Nascondi l\'oggetto nelle notifiche</string>
     <string name="global_settings_notification_hide_subject_never">Mai</string>
