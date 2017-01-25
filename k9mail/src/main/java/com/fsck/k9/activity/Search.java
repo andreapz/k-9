@@ -6,12 +6,12 @@ import android.content.Intent;
 
 import com.fsck.k9.fragment.MailPresenter;
 
-public class Search extends MailPresenter {
+public class Search extends NavigationDrawerActivity {
     protected static boolean isActive = false;
 
-    public Search(INavigationDrawerActivityListener listner, Intent intent) {
-        super(listner, intent);
-    }
+//    public Search(INavigationDrawerActivityListener listner, Intent intent) {
+//        super(listner, intent);
+//    }
 
     public static boolean isActive() {
         return isActive;
@@ -21,19 +21,17 @@ public class Search extends MailPresenter {
         isActive = val;
     }
 
+    @Override
+    public void onStart() {
+        setActive(true);
+        super.onStart();
+    }
 
-
-//    @Override
-//    public void onStart() {
-//        setActive(true);
-//        super.onStart();
-//    }
-//
-//    @Override
-//    public void onStop() {
-//        setActive(false);
-//        super.onStop();
-//    }
+    @Override
+    public void onStop() {
+        setActive(false);
+        super.onStop();
+    }
 
 
 
