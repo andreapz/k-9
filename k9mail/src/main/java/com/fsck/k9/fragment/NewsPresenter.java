@@ -1,5 +1,30 @@
 package com.fsck.k9.fragment;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.bumptech.glide.Glide;
+import com.fsck.k9.K9;
+import com.fsck.k9.R;
+import com.fsck.k9.activity.INavigationDrawerActivityListener;
+import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
+import com.fsck.k9.adapter.TiscaliMenuClickListener;
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.Me;
+import com.fsck.k9.api.model.TiscaliMenuItem;
+import com.fsck.k9.api.model.UserLogin;
+import com.fsck.k9.presenter.PresenterLifeCycle;
+import com.fsck.k9.view.ViewSwitcher;
+import com.fsck.k9.view.holder.HeaderViewHolder;
+import com.fsck.k9.view.holder.ItemViewHolder;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.FragmentManager;
@@ -31,47 +56,20 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.bumptech.glide.Glide;
-import com.fsck.k9.K9;
-import com.fsck.k9.R;
-import com.fsck.k9.activity.INavigationDrawerActivityListener;
-import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
-import com.fsck.k9.adapter.TiscaliMenuClickListener;
-import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.Me;
-import com.fsck.k9.api.model.TiscaliMenuItem;
-import com.fsck.k9.api.model.UserLogin;
-import com.fsck.k9.error.RetrofitException;
-import com.fsck.k9.presenter.PresenterLifeCycle;
-import com.fsck.k9.view.ViewSwitcher;
-import com.fsck.k9.view.holder.HeaderViewHolder;
-import com.fsck.k9.view.holder.ItemViewHolder;
-
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 
 /**
  * Created by thomascastangia on 02/01/17.
  */
 
 @Singleton
-public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
-        ViewSwitcher.OnSwitchCompleteListener, PresenterLifeCycle,
-        ApiController.ApiControllerInterface {
+public class NewsPresenter
+        implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
+        PresenterLifeCycle, ApiController.ApiControllerInterface {
 
     private static final int HOME_POSITION_ADAPTER = 1;
     private static final int HOME_POSITION_PRESENTER = 0;
@@ -101,15 +99,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     private boolean mStarted = false;
 
     public enum DisplayMode {
-        NEWS_VIEW,
-        NEWS_DETAIL,
-        SPLIT_VIEW
+        NEWS_VIEW, NEWS_DETAIL, SPLIT_VIEW
     }
     public enum TabMode {
-        NEWS_TAB,
-        VIDEO_TAB,
-        PRMOTIONS_TAB
+        NEWS_TAB, VIDEO_TAB, PRMOTIONS_TAB
     }
+
     @Inject
     public NewsPresenter(INavigationDrawerActivityListener listener, Intent intent) {
         mListener = listener;
@@ -128,10 +123,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         FrameLayout container = mListener.getContainer();
         mInflater.inflate(R.layout.fragment_news, container, true);
         mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container_news);
-        mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
-        mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
-        mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
-        mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
+        mViewSwitcher
+                .setFirstInAnimation(AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
+        mViewSwitcher.setFirstOutAnimation(
+                AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
+        mViewSwitcher.setSecondInAnimation(
+                AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
+        mViewSwitcher.setSecondOutAnimation(
+                AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
         mViewSwitcher.setOnSwitchCompleteListener(this);
 
         mIsHomePage = true;
@@ -144,11 +143,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         if (mSavedInstanceState != null) {
             mCurrentPage = mSavedInstanceState.getString(NEWS_STATE_CURRENT_URL);
-            if(mCurrentPage != null) {
+            if (mCurrentPage != null) {
                 initializeFragments(mCurrentPage);
             }
         } else {
-            if(mMenuItems.size() > 0) {
+            if (mMenuItems.size() > 0) {
                 initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
             }
         }
@@ -162,8 +161,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     private void findFragments() {
         FragmentManager fragmentManager = mContext.getFragmentManager();
-        mNewsViewFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
-        mNewsDetailFragment = (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
+        mNewsViewFragment =
+                (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
+        mNewsDetailFragment =
+                (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
     }
 
     /**
@@ -181,10 +182,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             ft.commit();
         }
 
-        if(mDisplayMode.equals(DisplayMode.NEWS_VIEW)){
+        if (mDisplayMode.equals(DisplayMode.NEWS_VIEW)) {
             setActionBarToggle();
             showNews();
-        }else{
+        } else {
             setActionBarUp();
             detailPageLoad(home);
         }
@@ -207,7 +208,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         if (savedInstanceState != null) {
             DisplayMode savedDisplayMode =
                     (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
-            if (savedDisplayMode != DisplayMode.SPLIT_VIEW &&  savedDisplayMode != null) {
+            if (savedDisplayMode != DisplayMode.SPLIT_VIEW && savedDisplayMode != null) {
                 mDisplayMode = savedDisplayMode;
 
                 return;
@@ -217,8 +218,8 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         mDisplayMode = DisplayMode.NEWS_VIEW;
     }
 
-    public void goBackOnHistory(){
-        if (mNewsDetailFragment!= null && mNewsDetailFragment.canGoBack()) {
+    public void goBackOnHistory() {
+        if (mNewsDetailFragment != null && mNewsDetailFragment.canGoBack()) {
             mNewsDetailFragment.goBackOnHistory();
         } else {
             showNews();
@@ -231,7 +232,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     private void removeNewsFragment() {
-        if(mNewsViewFragment != null) {
+        if (mNewsViewFragment != null) {
             mNewsViewFragment.mWebView.loadUrl("about:blank");
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.remove(mNewsViewFragment);
@@ -241,7 +242,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     private void removeDetailFragment() {
-        if(mNewsDetailFragment != null) {
+        if (mNewsDetailFragment != null) {
             mNewsDetailFragment.mWebView.loadUrl("about:blank");
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.remove(mNewsDetailFragment);
@@ -251,7 +252,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     private void initializeActionBar() {
-        mActionBar = ((AppCompatActivity)mContext).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actioncustombar_news);
@@ -265,11 +266,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     }
 
     public void setActionBarTitle(final String title) {
-        Observable.empty().observeOn(AndroidSchedulers.mainThread()).subscribe(
-                new Subscriber<Object>() {
+        Observable.empty().observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Object>() {
                     @Override
                     public void onCompleted() {
-                        if(mActionBarTitle!=null){
+                        if (mActionBarTitle != null) {
                             mActionBarTitle.setText(title);
                         }
 
@@ -278,14 +279,13 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     @Override
                     public void onError(Throwable e) {
 
-                    }
+            }
 
                     @Override
                     public void onNext(Object o) {
 
-                    }
-                }
-        );
+            }
+                });
 
     }
 
@@ -293,15 +293,15 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
         int orientation = mContext.getResources().getConfiguration().orientation;
 
-        return (splitViewMode == K9.SplitViewMode.ALWAYS ||
-                (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE &&
-                        orientation == Configuration.ORIENTATION_LANDSCAPE));
+        return (splitViewMode == K9.SplitViewMode.ALWAYS
+                || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
 
     public void openSection(String url, boolean isHome) {
         showNews();
-        if(mNewsViewFragment != null){
+        if (mNewsViewFragment != null) {
             mNewsViewFragment.updateUrl(url);
         }
         mIsHomePage = isHome;
@@ -309,14 +309,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void enableActionBarProgress(final boolean enable) {
-        Observable.empty().observeOn(AndroidSchedulers.mainThread()).subscribe(
-                new Subscriber<Object>() {
+        Observable.empty().observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Object>() {
                     @Override
                     public void onCompleted() {
-                        if(mActionBarProgress!=null){
-                            if(enable){
+                        if (mActionBarProgress != null) {
+                            if (enable) {
                                 mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
-                            }else{
+                            } else {
                                 mActionBarProgress.setVisibility(ProgressBar.GONE);
                             }
 
@@ -327,14 +327,13 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     @Override
                     public void onError(Throwable e) {
 
-                    }
+            }
 
                     @Override
                     public void onNext(Object o) {
 
-                    }
-                }
-        );
+            }
+                });
 
     }
 
@@ -347,9 +346,9 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public boolean isHomePage() {
-        if(mDisplayMode == DisplayMode.NEWS_DETAIL){
+        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
             return false;
-        }else{
+        } else {
             return mIsHomePage;
         }
 
@@ -364,6 +363,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     public Me getMe() {
         return mMe;
     }
+
     @Override
     public void setPageTitle(String title) {
         setActionBarTitle(title);
@@ -372,59 +372,49 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     @Override
     public void setFavoriteSection(final String sectionId, final boolean value) {
 
-        mListener.getApiController().sectionFave(new Subscriber<UserLogin>() {
+        mListener.getApiController().sectionFave(sectionId, value, new Action1<UserLogin>() {
             @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                if(e instanceof RetrofitException) {
-                    RetrofitException re = (RetrofitException) e;
-                    Log.i("APITEST","ERROR: "+re.getMessage());
-                    if(mIsHomePage && mNewsViewFragment!= null){
-                        mNewsViewFragment.refreshUrl();
-                    }
-
-                }
-
-            }
-
-            @Override
-            public void onNext(UserLogin userLogin) {
-                Toast.makeText(mContext,"ok favorite",Toast.LENGTH_LONG);
+            public void call(UserLogin userLogin) {
                 String msgDialog = null;
                 String sectionName = null;
-                for(int i = 0; i< mMenuItems.size();i++){
-                    if(mMenuItems.get(i).getSectionId().compareTo(sectionId)==0){
+                for (int i = 0; i < mMenuItems.size(); i++) {
+                    if (mMenuItems.get(i).getSectionId().compareTo(sectionId) == 0) {
                         sectionName = mMenuItems.get(i).getTitle();
                     }
                 }
-                if(value){
-                    msgDialog = mContext.getResources().getString(R.string.dialog_fave_positive_msg,sectionName);
-                }else{
-                    msgDialog = mContext.getResources().getString(R.string.dialog_fave_negative_msg,sectionName);
+                if (value) {
+                    msgDialog = mContext.getResources().getString(R.string.dialog_fave_positive_msg,
+                            sectionName);
+                } else {
+                    msgDialog = mContext.getResources().getString(R.string.dialog_fave_negative_msg,
+                            sectionName);
                 }
-                new AlertDialog.Builder(mContext)
-                        .setMessage(msgDialog)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                //nop
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+                new AlertDialog.Builder(mContext).setMessage(msgDialog)
+                        .setPositiveButton(android.R.string.yes,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // nop
+                                    }
+                                })
+                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+            }
+        }, new Action1<UserLogin>() {
+            @Override
+            public void call(UserLogin userLogin) {
 
+                if (mIsHomePage && mNewsViewFragment != null) {
+                    mNewsViewFragment.refreshUrl();
+                }
 
             }
-        },sectionId, value);
+        });
+
     }
 
     @Override
     public void detailPageLoad(String url) {
         mCurrentPage = url;
-        if(mNewsDetailFragment == null) {
+        if (mNewsDetailFragment == null) {
             NewsFragment fragment = NewsFragment.newInstance(url);
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.news_detail_container, fragment);
@@ -435,7 +425,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         mDisplayMode = DisplayMode.NEWS_DETAIL;
         mViewSwitcher.showSecondView();
 
-        if(mNewsDetailFragment != null){
+        if (mNewsDetailFragment != null) {
             mNewsDetailFragment.getTitle();
             mNewsDetailFragment.getSharable();
         }
@@ -450,14 +440,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         if (displayedChild == 0) {
             removeDetailFragment();
             setActionBarToggle();
-        }else{
+        } else {
             setActionBarUp();
         }
     }
 
     @Override
     public void goBack() {
-        FragmentManager fragmentManager = ((Activity)mContext).getFragmentManager();
+        FragmentManager fragmentManager = ((Activity) mContext).getFragmentManager();
         if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
             showNews();
 
@@ -474,28 +464,31 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             case R.id.menu_item_share: {
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_SUBJECT, mContext.getResources().getString(R.string.webview_contextmenu_link_share_action));
-                i.putExtra(Intent.EXTRA_TEXT, mContext.getResources().getString(R.string.webview_contextmenu_link_share_text)+mCurrentPage);
-                mContext.startActivity(Intent.createChooser(i,  mContext.getResources().getString(R.string.webview_contextmenu_link_share_action)));
+                i.putExtra(Intent.EXTRA_SUBJECT, mContext.getResources()
+                        .getString(R.string.webview_contextmenu_link_share_action));
+                i.putExtra(Intent.EXTRA_TEXT, mContext.getResources()
+                        .getString(R.string.webview_contextmenu_link_share_text) + mCurrentPage);
+                mContext.startActivity(Intent.createChooser(i, mContext.getResources()
+                        .getString(R.string.webview_contextmenu_link_share_action)));
                 return true;
             }
 
             default: {
                 return true;
             }
-         }
+        }
     }
 
     @Override
     public void setActionBarUp() {
-        if(mContext instanceof INavigationDrawerActivityListener) {
+        if (mContext instanceof INavigationDrawerActivityListener) {
             ((INavigationDrawerActivityListener) mContext).setDrawerEnable(false);
         }
     }
 
     @Override
     public void setActionBarToggle() {
-        if(mContext instanceof INavigationDrawerActivityListener) {
+        if (mContext instanceof INavigationDrawerActivityListener) {
             ((INavigationDrawerActivityListener) mContext).setDrawerEnable(true);
         }
     }
@@ -527,11 +520,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
 
 
-        public CategoryNewsAdapter( List<TiscaliMenuItem> Categories) {
+        public CategoryNewsAdapter(List<TiscaliMenuItem> Categories) {
             super();
             this.context = mContext;
-            this.inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            this.inflater =
+                    (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             this.mNewsCategory = Categories;
 
@@ -573,7 +566,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         }
 
         @Override
-        public View getView( int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent) {
             // TODO Auto-generated method stub
             final int pos = position;
             ViewHolder holder;
@@ -581,15 +574,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
             if (convertView == null) {
                 holder = new ViewHolder();
-                convertView = inflater.inflate(
-                        R.layout.listview_news_dialogue_row, null);
+                convertView = inflater.inflate(R.layout.listview_news_dialogue_row, null);
 
-                holder.news_button = (CheckBox) convertView
-                        .findViewById(R.id.toggle_news);
-                holder.news_category =  (TextView) convertView
-                        .findViewById(R.id.category_news);
-                holder.rl_news = (RelativeLayout) convertView
-                        .findViewById(R.id.row_news);
+                holder.news_button = (CheckBox) convertView.findViewById(R.id.toggle_news);
+                holder.news_category = (TextView) convertView.findViewById(R.id.category_news);
+                holder.rl_news = (RelativeLayout) convertView.findViewById(R.id.row_news);
                 holder.news_button.setTag(position);
                 convertView.setTag(holder);
             } else {
@@ -598,23 +587,22 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
             holder.news_category.setText(mNewsCategory.get(pos).getTitle());
             final ViewHolder final_Holder = holder;
-            if((Boolean) mNewsCategory.get(pos).getVisibility()){
+            if ((Boolean) mNewsCategory.get(pos).getVisibility()) {
                 holder.news_button.setChecked(true);
 
-            }else{
+            } else {
                 holder.news_button.setChecked(false);
             }
 
 
-            holder.news_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-            {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-                {
-                    mNewsCategory.get(pos).setVisibility(isChecked);
+            holder.news_button
+                    .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            mNewsCategory.get(pos).setVisibility(isChecked);
 
-                }
-            });
+                        }
+                    });
 
 
 
@@ -625,7 +613,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
 
-        private static final int HOME_POSITION = 1 ;
+        private static final int HOME_POSITION = 1;
         // data set
         private List<TiscaliMenuItem> mItems = new ArrayList<>();
         private Map<TiscaliMenuItem, List<TiscaliMenuItem>> mTree = new HashMap<>();
@@ -637,18 +625,18 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             @Override
             public void onSettingsClick() {
                 super.onSettingsClick();
-               showDialogInformations();
+                showDialogInformations();
             }
+
             @Override
             public void onMenuClick(TiscaliMenuItem item) {
                 super.onMenuClick(item);
                 mListener.closeDrawer();
-                openSection(item.getUrl(),item.equals(mItems.get(HOME_POSITION_ADAPTER)));
+                openSection(item.getUrl(), item.equals(mItems.get(HOME_POSITION_ADAPTER)));
             }
         };
 
-        public NewsAdapter() {
-        }
+        public NewsAdapter() {}
 
         public void updateData() {
             mItems.clear();
@@ -671,14 +659,14 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             List<TiscaliMenuItem> children = mTree.get(node);
             int count = (children == null) ? 0 : children.size();
 
-            if(children != null) {
+            if (children != null) {
                 for (TiscaliMenuItem child : children) {
                     count += removeSubTree(root, child);
                 }
                 mTree.remove(node);
             }
 
-            if(!root.equals(node)) {
+            if (!root.equals(node)) {
                 mDepth.remove(node);
                 mItems.remove(node);
                 Log.i("NEWS-ADAPTER", "REMOVE:" + node.getSectionId());
@@ -737,7 +725,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-            if(holder instanceof HeaderViewHolder) {
+            if (holder instanceof HeaderViewHolder) {
                 // TODO
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
                 headerViewHolder.mAccountTv.setVisibility(View.VISIBLE);
@@ -753,17 +741,15 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                 final TiscaliMenuItem item = getItem(position);
                 ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
 
-                //Icon
-                if(item.getIco() != null) {
+                // Icon
+                if (item.getIco() != null) {
                     itemViewHolder.mItemIconIv.setVisibility(View.VISIBLE);
-                    Glide.with(mContext)
-                            .load(item.getIco())
-                            .into(itemViewHolder.mItemIconIv);
+                    Glide.with(mContext).load(item.getIco()).into(itemViewHolder.mItemIconIv);
 
                 } else {
                     itemViewHolder.mItemIconIv.setVisibility(View.GONE);
                 }
-                if(position == HOME_POSITION){
+                if (position == HOME_POSITION) {
                     itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
                     itemViewHolder.mItemActionTv.setText("personalizza");
                     itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
@@ -774,18 +760,22 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     });
                 }
                 // add additionally left margin depending on depth
-                if(itemViewHolder.mItemContainerRl.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-                    ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl.getLayoutParams();
-                    int marginLeft = (int) (getItemDepth(position) * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
+                if (itemViewHolder.mItemContainerRl
+                        .getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                    ViewGroup.MarginLayoutParams p =
+                            (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl
+                                    .getLayoutParams();
+                    int marginLeft = (int) (getItemDepth(position)
+                            * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
                     p.setMargins(marginLeft, 0, 0, 0);
                     itemViewHolder.mItemContainerRl.requestLayout();
                 }
 
                 // toggle icon for expandable items
-                if(hasChildren(position)) {
+                if (hasChildren(position)) {
                     itemViewHolder.mItemToggleIv.setVisibility(View.VISIBLE);
                     // expandable item opened
-                    if(isItemExpanded(position)) {
+                    if (isItemExpanded(position)) {
                         itemViewHolder.mItemToggleIv.setImageResource(getCollapseIconResource());
                     } else {
                         itemViewHolder.mItemToggleIv.setImageResource(getExpandIconResource());
@@ -794,27 +784,27 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
                     itemViewHolder.mItemToggleIv.setVisibility(View.GONE);
                 }
 
-                if(item.getTitle() != null) {
+                if (item.getTitle() != null) {
                     itemViewHolder.mItemTitleTv.setText(item.getTitle());
                 }
 
-                //click listener
+                // click listener
                 itemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(hasChildren(position)) {
+                        if (hasChildren(position)) {
                             TiscaliMenuItem item = mItems.get(position);
-                            if(mTree.containsKey(item)) {
-                                //isExpanded
+                            if (mTree.containsKey(item)) {
+                                // isExpanded
                                 removeSubTree(item, item);
                             } else {
-                                //isCollapsed
+                                // isCollapsed
                                 addSubTree(item, item.getSections(), position);
                             }
                             notifyDataSetChanged();
-                            openSection(item.getUrl(),item.equals(mItems.get(HOME_POSITION_ADAPTER)));
-                        }
-                        else {
+                            openSection(item.getUrl(),
+                                    item.equals(mItems.get(HOME_POSITION_ADAPTER)));
+                        } else {
                             mClickListener.onMenuClick(item);
                         }
                     }
@@ -822,7 +812,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             }
         }
 
-        class MenuHeader extends TiscaliMenuItem{
+        class MenuHeader extends TiscaliMenuItem {
             @Override
             public String getSectionId() {
                 return "HEADER";
@@ -838,7 +828,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void onResume() {
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
         mListener.getApiController().addListener(this);
@@ -846,7 +836,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void onPause() {
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
         mListener.getApiController().removeListener(this);
@@ -855,7 +845,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
     @Override
     public void onDetach() {
-        if(!mStarted) {
+        if (!mStarted) {
             return;
         }
         removeNewsFragment();
@@ -866,36 +856,36 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     @Override
     public void updateMe(Me me, String json) {
         boolean isInitialized = false;
-        Log.d("UpdateMe ","[ME]:"+json);
-        if(mMenuItems.size() > 0) {
+        Log.d("UpdateMe ", "[ME]:" + json);
+        if (mMenuItems.size() > 0) {
             isInitialized = true;
             mMenuItems.clear();
         }
-//        if(mTabMode == TabMode.NEWS_TAB){
-//            mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
-//        }else if(mTabMode == TabMode.VIDEO_TAB){
-//            mMenuItems.addAll(me.getVideo().getTiscaliMenuItem());
-//        }else{
-//            mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
-//        }
+        // if(mTabMode == TabMode.NEWS_TAB){
+        // mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+        // }else if(mTabMode == TabMode.VIDEO_TAB){
+        // mMenuItems.addAll(me.getVideo().getTiscaliMenuItem());
+        // }else{
+        // mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
+        // }
         mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
         mMeJson = json;
         mMe = me;
 
-        if(!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
+        if (!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
             mIsHomePage = true;
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
 
         mNewsAdapter.updateData();
 
-        if( mDisplayMode == DisplayMode.NEWS_VIEW){
-            if(mNewsViewFragment != null){
+        if (mDisplayMode == DisplayMode.NEWS_VIEW) {
+            if (mNewsViewFragment != null) {
                 mNewsViewFragment.refreshUrl();
             }
 
-        }else{
-            if(mNewsViewFragment != null){
+        } else {
+            if (mNewsViewFragment != null) {
                 mNewsDetailFragment.refreshUrl();
             }
 
@@ -915,7 +905,7 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        if(mContext instanceof INavigationDrawerActivityListener) {
+                        if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
                         }
                         break;
@@ -929,12 +919,12 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
     public void showDialogCustomize(List<TiscaliMenuItem> data) {
         mListener.closeDrawer();
 
-        final Dialog customize=new Dialog(mListener.getActivity(),android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        final Dialog customize = new Dialog(mListener.getActivity(),
+                android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         customize.setContentView(R.layout.dialog_custom_news);
         customize.setCancelable(false);
 
-        ListView listInterests = (ListView) customize
-                .findViewById(R.id.list_catagory);
+        ListView listInterests = (ListView) customize.findViewById(R.id.list_catagory);
 
         final CategoryNewsAdapter adapter;
         adapter = new CategoryNewsAdapter(data);
@@ -946,10 +936,11 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
 
             @Override
             public void onClick(View v) {
-                if(mListener != null){
+                if (mListener != null) {
                     List<TiscaliMenuItem> selected = adapter.getSelectedItmes();
                     for (TiscaliMenuItem element : selected) {
-                        mListener.getApiController().sectionVisibility(element.getSectionId(),(Boolean)element.getVisibility());
+                        mListener.getApiController().sectionVisibility(element.getSectionId(),
+                                (Boolean) element.getVisibility());
                     }
                 }
 
@@ -960,10 +951,10 @@ public class NewsPresenter  implements NewsFragment.NewsFragmentListener,
         customize.show();
     }
 
-    public  List<TiscaliMenuItem> getCustomizableItems() {
+    public List<TiscaliMenuItem> getCustomizableItems() {
         List<TiscaliMenuItem> visibilityItems = new ArrayList<>();
         for (TiscaliMenuItem item : mMenuItems) {
-            if(item.getVisibility() != null){
+            if (item.getVisibility() != null) {
                 visibilityItems.add(item);
             }
         }

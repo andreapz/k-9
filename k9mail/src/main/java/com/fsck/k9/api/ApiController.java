@@ -35,6 +35,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -334,14 +335,35 @@ public class ApiController {
         }
     }
 
-    public void sectionFave(Subscriber<UserLogin> subscriber, String sectionId, boolean isSelected){
+    public void sectionFave( String sectionId, boolean isSelected, Action1<UserLogin> success, Action1<UserLogin> error){
         Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
 
         if(postSectionFave != null) {
-            postSectionFave.subscribe(subscriber);
+            postSectionFave.subscribe(new SubscriberMe(success, error));
         }
     }
 
+    class SubscriberMe extends SubscriberUserLogin {
+        private Action1 <UserLogin> mSucces;
+        private Action1 <UserLogin> mError;
+
+        public SubscriberMe(Action1<UserLogin> mSucces, Action1<UserLogin> mError) {
+            this.mSucces = mSucces;
+            this.mError = mError;
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            super.onError(e);
+            mError.call(null);
+        }
+
+        @Override
+        public void onNext(UserLogin userLogin) {
+            super.onNext(userLogin);
+            mSucces.call(userLogin);
+        }
+    }
     class SubscriberUserLogin extends Subscriber<UserLogin> {
 
         @Override
