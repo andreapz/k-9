@@ -995,7 +995,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         }
 
-
         /*
          * Set visibility of menu items related to the message list
          */
@@ -1041,7 +1040,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 menu.findItem(R.id.search).setVisible(true);
             }
         }
-
         return true;
     }
 

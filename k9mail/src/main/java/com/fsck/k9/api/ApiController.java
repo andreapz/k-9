@@ -425,8 +425,7 @@ public class ApiController {
     public void sendMe(ApiControllerInterface listener) {
         String json = mStorage.getString(mMainConfig.getEndpoints().getUserMe().getUrl(), "");
         if (json.length() == 0) {
-            json = mStorage.getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(),
-                    "");
+            json = mStorage.getString(RESPONSE_ME, "");
         }
 
         if (mUserLogin != null && mUserLogin.getMe() != null) {
