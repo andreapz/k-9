@@ -1,7 +1,6 @@
 package com.fsck.k9.fragment;
 
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,6 @@ import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
 import com.fsck.k9.api.model.UserLogin;
-import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.presenter.PresenterLifeCycle;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.holder.HeaderViewHolder;
@@ -57,11 +55,11 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 
 /**
  * Created by thomascastangia on 02/01/17.
@@ -90,7 +88,7 @@ public class NewsPresenter
     private TabMode mTabMode;
     private String mCurrentPage;
     private String mMeJson;
-    private Me mMe;
+    private int mTimeoutRefresh = 1000;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
     private NewsPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
@@ -360,8 +358,8 @@ public class NewsPresenter
     }
 
     @Override
-    public Me getMe() {
-        return mMe;
+    public int getRefreshTimeout() {
+        return mTimeoutRefresh;
     }
 
     @Override
@@ -372,28 +370,9 @@ public class NewsPresenter
     @Override
     public void setFavoriteSection(final String sectionId, final boolean value) {
 
-        mListener.getApiController().sectionFave(new Subscriber<UserLogin>() {
+        mListener.getApiController().sectionFave(sectionId, value, new Action1<UserLogin>() {
             @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                if (e instanceof RetrofitException) {
-                    RetrofitException re = (RetrofitException) e;
-                    Log.i("APITEST", "ERROR: " + re.getMessage());
-                    if (mIsHomePage && mNewsViewFragment != null) {
-                        mNewsViewFragment.refreshUrl();
-                    }
-
-                }
-
-            }
-
-            @Override
-            public void onNext(UserLogin userLogin) {
-                Toast.makeText(mContext, "ok favorite", Toast.LENGTH_LONG);
+            public void call(UserLogin userLogin) {
                 String msgDialog = null;
                 String sectionName = null;
                 for (int i = 0; i < mMenuItems.size(); i++) {
@@ -416,12 +395,17 @@ public class NewsPresenter
                                     }
                                 })
                         .setIcon(android.R.drawable.ic_dialog_alert).show();
+            }
+        }, new Action1<UserLogin>() {
+            @Override
+            public void call(UserLogin userLogin) {
 
-                if (mDisplayMode == DisplayMode.NEWS_VIEW) {
+                if (mIsHomePage && mNewsViewFragment != null) {
                     mNewsViewFragment.refreshUrl();
                 }
+
             }
-        }, sectionId, value);
+        });
     }
 
     @Override
@@ -511,20 +495,6 @@ public class NewsPresenter
         mCurrentPage = url;
     }
 
-    private String getJsonString(InputStream inputStream) {
-        try {
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            String jsonString = new String(buffer, "UTF-8");
-            return jsonString;
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
 
     public class CategoryNewsAdapter extends BaseAdapter {
         public Activity context;
@@ -576,6 +546,7 @@ public class NewsPresenter
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
+
             // TODO Auto-generated method stub
             ViewHolder holder;
 
@@ -583,6 +554,7 @@ public class NewsPresenter
             if (convertView == null) {
                 holder = new ViewHolder();
                 convertView = inflater.inflate(R.layout.listview_news_dialogue_row, null);
+
                 holder.news_button = (CheckBox) convertView.findViewById(R.id.toggle_news);
                 holder.news_category = (TextView) convertView.findViewById(R.id.category_news);
                 holder.rl_news = (RelativeLayout) convertView.findViewById(R.id.row_news);
@@ -594,6 +566,7 @@ public class NewsPresenter
 
             holder.news_category.setText(mNewsCategory.get(position).getTitle());
             final ViewHolder final_Holder = holder;
+
             if ((Boolean) mNewsCategory.get(position).getVisibility()) {
                 holder.news_button.setChecked(true);
             } else {
@@ -604,6 +577,7 @@ public class NewsPresenter
                     .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
                             TiscaliMenuItem item = mNewsCategory.get(position);
                             item.setVisibility(isChecked);
                             if (mListener != null) {
@@ -612,6 +586,7 @@ public class NewsPresenter
                             }
                         }
                     });
+
 
             return convertView;
         }
@@ -862,14 +837,16 @@ public class NewsPresenter
     @Override
     public void updateMe(Me me, String json) {
         boolean isInitialized = false;
+        Log.d("UpdateMe ", "[ME]:" + json);
+
         if (mMenuItems.size() > 0) {
             isInitialized = true;
             mMenuItems.clear();
         }
 
         mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+        mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
-        mMe = me;
 
         if (!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
             mIsHomePage = true;
@@ -878,9 +855,14 @@ public class NewsPresenter
 
         mNewsAdapter.updateData();
         if (mDisplayMode == DisplayMode.NEWS_VIEW) {
-            mNewsViewFragment.refreshUrl();
+            if (mNewsViewFragment != null) {
+                mNewsViewFragment.refreshUrl();
+            }
+
         } else {
-            mNewsDetailFragment.refreshUrl();
+            if (mNewsViewFragment != null) {
+                mNewsDetailFragment.refreshUrl();
+            }
         }
     }
 

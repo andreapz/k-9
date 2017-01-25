@@ -14,33 +14,9 @@
 
 package com.fsck.k9.activity;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import com.fsck.k9.Account;
-import com.fsck.k9.ApplicationComponent;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
-import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.adapter.NavDrawerMenuAdapter;
-import com.fsck.k9.api.ApiController;
-import com.fsck.k9.api.model.MainConfig;
-import com.fsck.k9.api.model.Me;
-import com.fsck.k9.fragment.MailPresenter;
-import com.fsck.k9.fragment.MessageListFragment;
-import com.fsck.k9.fragment.NewsFragment;
-import com.fsck.k9.fragment.NewsPresenter;
-import com.fsck.k9.model.NavDrawerMenuItem;
-import com.fsck.k9.preferences.StorageEditor;
-import com.fsck.k9.search.LocalSearch;
-import com.fsck.k9.ui.messageview.MessageViewFragment;
-
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -62,6 +38,33 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.ApplicationComponent;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.R;
+import com.fsck.k9.activity.setup.AccountSetupBasics;
+import com.fsck.k9.adapter.NavDrawerMenuAdapter;
+import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.MainConfig;
+import com.fsck.k9.api.model.Me;
+import com.fsck.k9.fragment.MailPresenter;
+import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.fragment.NewsFragment;
+import com.fsck.k9.fragment.NewsPresenter;
+import com.fsck.k9.model.NavDrawerMenuItem;
+import com.fsck.k9.preferences.StorageEditor;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchSpecification;
+import com.fsck.k9.ui.messageview.MessageViewFragment;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.inject.Inject;
+
 
 /**
  * This example illustrates a common usage of the DrawerLayout widget in the Android support
@@ -97,6 +100,9 @@ public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
         MessageViewFragment.MessageViewFragmentGetListener, NewsFragment.NewsFragmentGetListener,
         INavigationDrawerActivityListener, ApiController.ApiControllerInterface {
+
+    private static final String EXTRA_SEARCH = "search";
+    private static final String EXTRA_NO_THREADING = "no_threading";
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
     public static final String EXTRA_STARTUP = "startup";
@@ -146,42 +152,41 @@ public class NavigationDrawerActivity extends K9Activity
     NewsPresenter mNewsPresenter;
 
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener =
-            new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(MenuItem item) {
+    private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(MenuItem item) {
 
-                    switch (mSelectedTab) {
-                        case MAIL_TAB_SELECTED:
-                            if (item.getItemId() != R.id.menu_mail) {
-                                mMailPresenter.onDetach();
-                            }
-                            break;
-
-                        case NEWS_TAB_SELECTED:
-                            if (item.getItemId() != R.id.menu_news) {
-                                mNewsPresenter.onDetach();
-                            }
-                            break;
+            switch (mSelectedTab) {
+                case MAIL_TAB_SELECTED:
+                    if (item.getItemId() != R.id.menu_mail) {
+                        mMailPresenter.onDetach();
                     }
+                    break;
 
-                    switch (item.getItemId()) {
-                        case R.id.menu_mail:
-                            onMailTabClicked();
-                            break;
-                        case R.id.menu_news:
-                            onNewsTabClicked();
-                            break;
-                        case R.id.menu_video:
-                            onVideoTabClicked();
-                            break;
-                        case R.id.menu_offers:
-                            onOffersTabClicked();
-                            break;
+                case NEWS_TAB_SELECTED:
+                    if (item.getItemId() != R.id.menu_news) {
+                        mNewsPresenter.onDetach();
                     }
-                    return true;
-                }
-            };
+                    break;
+            }
+
+            switch (item.getItemId()) {
+                case R.id.menu_mail:
+                    onMailTabClicked();
+                    break;
+                case R.id.menu_news:
+                    onNewsTabClicked();
+                    break;
+                case R.id.menu_video:
+                    onVideoTabClicked();
+                    break;
+                case R.id.menu_offers:
+                    onOffersTabClicked();
+                    break;
+            }
+            return true;
+        }
+    };
 
     private FrameLayout mViewContainer;
 
@@ -198,6 +203,22 @@ public class NavigationDrawerActivity extends K9Activity
         intent.putExtra(EXTRA_STARTUP, false);
         intent.putExtra(EXTRA_ACCOUNT, accounUUid);
         context.startActivity(intent);
+    }
+
+    public static Intent intentDisplaySearch(Context context, SearchSpecification search,
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
+        Intent intent = new Intent(context, NavigationDrawerActivity.class);
+        intent.putExtra(EXTRA_SEARCH, search);
+        intent.putExtra(EXTRA_NO_THREADING, noThreading);
+
+        if (clearTop) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        }
+        if (newTask) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+
+        return intent;
     }
 
     @Override
@@ -219,7 +240,11 @@ public class NavigationDrawerActivity extends K9Activity
 
         String accountUUid = intent.getStringExtra(EXTRA_ACCOUNT);
         Intent mailIntent;
-        if (accountUUid != null) {
+        // mail search
+        if (intent.getStringExtra(SearchManager.QUERY) != null) {
+            mailIntent = intent;
+            intent.putExtra(EXTRA_STARTUP, false);
+        } else if (accountUUid != null) {
             mailIntent = getMailIntent(pref.getAccount(accountUUid));
         } else {
             mailIntent = getMailIntent(accounts.get(0));
@@ -260,7 +285,7 @@ public class NavigationDrawerActivity extends K9Activity
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
         mDrawerToggle = new ActionBarDrawerToggle( // R.drawable.ic_menu_black_24dp, /* nav drawer
-                                                   // image to replace 'Up' caret */
+                // image to replace 'Up' caret */
                 this, /* host Activity */
                 mDrawerLayout, /* DrawerLayout object */
                 R.string.drawer_open, /* "open drawer" description for accessibility */
@@ -298,6 +323,12 @@ public class NavigationDrawerActivity extends K9Activity
         }
 
         mBottomNav.bringToFront();
+
+        // open search results
+        if (intent.getStringExtra(SearchManager.QUERY) != null) {
+            mBottomNav.setVisibility(View.GONE);
+        }
+
     }
 
     private int getScreenWidth() {
@@ -360,7 +391,7 @@ public class NavigationDrawerActivity extends K9Activity
         LocalSearch search = new LocalSearch(account.getAutoExpandFolderName());
         search.addAllowedFolder(account.getAutoExpandFolderName());
         search.addAccountUuid(account.getUuid());
-        return MessageList.intentDisplaySearch(this, search, false, true, true);
+        return intentDisplaySearch(this, search, false, true, true);
     }
 
     private boolean useSplitView() {
@@ -369,7 +400,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -407,6 +438,13 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (!(this instanceof Search)) {
+            // necessary b/c no guarantee Search.onStop will be called before
+            // MessageList.onResume
+            // when returning from search results
+            Search.setActive(false);
+        }
 
         if (mMailPresenter != null) {
             mMailPresenter.onResume();
@@ -664,8 +702,11 @@ public class NavigationDrawerActivity extends K9Activity
             mNewsPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                        && mMailPresenter.getMessageListWasDisplayed())) {
+                && mMailPresenter.getMessageListWasDisplayed())) {
             mMailPresenter.showMessageList();
+        } else if (mMailPresenter != null
+                && getIntent().getStringExtra(SearchManager.QUERY) != null) {
+            mMailPresenter.goBack();
         } else {
             super.onBackPressed();
         }

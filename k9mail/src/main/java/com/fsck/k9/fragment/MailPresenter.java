@@ -20,7 +20,6 @@ import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.NavigationDrawerActivity;
-import com.fsck.k9.activity.Search;
 import com.fsck.k9.activity.TiscaliUtility;
 import com.fsck.k9.activity.compose.MessageActions;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
@@ -560,7 +559,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * Set the initial display mode (message list, message view, or split view).
-     *
+     * <p>
      * <p>
      * <strong>Note:</strong> This method has to be called after {@link #findFragments()} because
      * the result depends on the availability of a {@link MessageViewFragment} instance.
@@ -714,6 +713,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else if (mIntent.getStringExtra(SearchManager.QUERY) != null) {
             // check if this intent comes from the system search ( remote )
             if (Intent.ACTION_SEARCH.equals(action)) {
+                // hide toggle
+                setActionBarUp();
+
                 // Query was received from Search Dialog
                 String query = mIntent.getStringExtra(SearchManager.QUERY).trim();
 
@@ -876,7 +878,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * Hide menu items not appropriate for the current context.
-     *
+     * <p>
      * <p>
      * <strong>Note:</strong> Please adjust the comments in {@code res/menu/message_list_option.xml}
      * if you change the visibility of a menu item in this method.
@@ -1024,7 +1026,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 menu.findItem(R.id.show_folder_list).setVisible(false);
             } else {
                 menu.findItem(R.id.send_messages).setVisible(mMessageListFragment.isOutbox());
-
                 menu.findItem(R.id.expunge).setVisible(mMessageListFragment.isRemoteFolder()
                         && mMessageListFragment.isAccountExpungeCapable());
                 menu.findItem(R.id.show_folder_list).setVisible(true);
@@ -1047,12 +1048,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void onUnmount(String providerId) {
             if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
-                ((Activity) mContext).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onAccountUnavailable();
-                    }
-                });
+
+                mContext.
+
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                onAccountUnavailable();
+                            }
+                        }
+
+                );
             }
         }
 
@@ -1064,7 +1071,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     protected void onAccountUnavailable() {
         Toast.makeText(mContext, "Account Unavaible Finish Activity", Toast.LENGTH_LONG);
-        ((Activity) mContext).finish();
+        mContext.finish();
         // TODO inform user about account unavailability using Toast
         Accounts.listAccounts(mContext);
     }
@@ -1087,12 +1094,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (!mStarted) {
             return;
-        }
-
-        if (!(this instanceof Search)) {
-            // necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
-            // when returning from search results
-            Search.setActive(false);
         }
 
         if (mAccount != null && !mAccount.isAvailable(mContext)) {
@@ -1151,7 +1152,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * Handle hotkeys
-     *
+     * <p>
      * <p>
      * This method is called by {@link # dispatchKeyEvent(KeyEvent)} before any view had the chance
      * to
@@ -1160,7 +1161,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      *
      * @param keyCode The value in {@code event.getKeyCode()}.
      * @param event Description of the key event.
-     *
      * @return {@code true} if this event was consumed.
      */
     public boolean onCustomKeyDown(final int keyCode, final KeyEvent event) {
@@ -1704,7 +1704,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setMessageListSubTitle(String subTitle) {
-        setActionBarSubTitle(subTitle);
+        if (subTitle != null) {
+            mActionBarSubTitle.setVisibility(View.VISIBLE);
+            setActionBarSubTitle(subTitle);
+        } else {
+            mActionBarSubTitle.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -1820,10 +1825,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             final Bundle appData = new Bundle();
             appData.putString(EXTRA_SEARCH_ACCOUNT, account.getUuid());
             appData.putString(EXTRA_SEARCH_FOLDER, folderName);
-            // startSearch(null, false, appData, false);
+            mContext.startSearch(null, false, appData, false);
         } else {
             // TODO Handle the case where we're searching from within a search result.
-            // startSearch(null, false, null, false);
+            mContext.startSearch(null, false, null, false);
         }
         Toast.makeText(mContext, "startSearch not working", Toast.LENGTH_LONG);
         return true;

@@ -6,7 +6,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 
 import com.fsck.k9.R;
-import com.fsck.k9.api.model.Me;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
@@ -42,7 +41,6 @@ public class NewsFragment extends Fragment {
     public static final String CURRENT_URL = "CURRENT_URL";
 
 
-
     private static final String JAVASCRIPT_PREFIX = "javascript:";
     private static final String JAVASCRIPT_TISCALI_APP_PREFIX = "window.TiscaliApp";
 
@@ -74,7 +72,6 @@ public class NewsFragment extends Fragment {
     private boolean mIsResizable = false;
     private Menu mMenu;
 
-
     public static NewsFragment newInstance(String home) {
 
         NewsFragment fragment = new NewsFragment();
@@ -90,8 +87,6 @@ public class NewsFragment extends Fragment {
 
         // This fragments adds options to the action bar
         setHasOptionsMenu(true);
-
-
     }
 
     @SuppressLint("JavascriptInterface")
@@ -255,7 +250,7 @@ public class NewsFragment extends Fragment {
                         loadUrl(mUrl);
                     }
                 }
-            }, mFragmentListener.getMe().getNews().getRefreshTimeout() * 1000);
+            }, mFragmentListener.getRefreshTimeout());
         }
     }
 
@@ -321,7 +316,7 @@ public class NewsFragment extends Fragment {
 
         String getMeJSON();
 
-        Me getMe();
+        int getRefreshTimeout();
 
         void setPageTitle(String title);
 
