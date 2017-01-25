@@ -559,7 +559,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * Set the initial display mode (message list, message view, or split view).
-     *
+     * <p>
      * <p>
      * <strong>Note:</strong> This method has to be called after {@link #findFragments()} because
      * the result depends on the availability of a {@link MessageViewFragment} instance.
@@ -713,7 +713,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         } else if (mIntent.getStringExtra(SearchManager.QUERY) != null) {
             // check if this intent comes from the system search ( remote )
             if (Intent.ACTION_SEARCH.equals(action)) {
-
                 // hide toggle
                 setActionBarUp();
 
@@ -879,7 +878,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * Hide menu items not appropriate for the current context.
-     *
+     * <p>
      * <p>
      * <strong>Note:</strong> Please adjust the comments in {@code res/menu/message_list_option.xml}
      * if you change the visibility of a menu item in this method.
@@ -998,7 +997,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         }
 
-
         /*
          * Set visibility of menu items related to the message list
          */
@@ -1043,7 +1041,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 menu.findItem(R.id.search).setVisible(true);
             }
         }
-
         return true;
     }
 
@@ -1051,12 +1048,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         @Override
         public void onUnmount(String providerId) {
             if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
-                (mContext).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onAccountUnavailable();
-                    }
-                });
+
+                mContext.
+
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                onAccountUnavailable();
+                            }
+                        }
+
+                );
             }
         }
 
@@ -1149,15 +1152,15 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     /**
      * Handle hotkeys
-     *
+     * <p>
      * <p>
      * This method is called by {@link # dispatchKeyEvent(KeyEvent)} before any view had the chance
-     * to consume this key event.
+     * to
      * </p>
+     * consume this key event.
      *
      * @param keyCode The value in {@code event.getKeyCode()}.
      * @param event Description of the key event.
-     *
      * @return {@code true} if this event was consumed.
      */
     public boolean onCustomKeyDown(final int keyCode, final KeyEvent event) {

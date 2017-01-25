@@ -26,12 +26,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-
-
 /**
  * Created by thomascastangia on 02/01/17.
  */
-
 
 
 public class NewsFragment extends Fragment {
@@ -42,7 +39,6 @@ public class NewsFragment extends Fragment {
     public static final String PLATFORM_ANDROID = "android";
     public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
     public static final String CURRENT_URL = "CURRENT_URL";
-
 
 
     private static final String JAVASCRIPT_PREFIX = "javascript:";
@@ -76,8 +72,6 @@ public class NewsFragment extends Fragment {
     private boolean mIsResizable = false;
     private Menu mMenu;
 
-
-
     public static NewsFragment newInstance(String home) {
 
         NewsFragment fragment = new NewsFragment();
@@ -93,9 +87,6 @@ public class NewsFragment extends Fragment {
 
         // This fragments adds options to the action bar
         setHasOptionsMenu(true);
-
-
-
     }
 
     @SuppressLint("JavascriptInterface")
@@ -116,7 +107,6 @@ public class NewsFragment extends Fragment {
         } else {
             mUrl = savedInstanceState.getString(CURRENT_URL);
             mWebView.restoreState(savedInstanceState);
-
         }
 
         return v;
@@ -218,7 +208,6 @@ public class NewsFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()) {
             case android.R.id.home: {
                 mFragmentListener.goBack();
@@ -263,8 +252,6 @@ public class NewsFragment extends Fragment {
                 }
             }, mFragmentListener.getRefreshTimeout());
         }
-
-
     }
 
     private NewsFragmentListener getFragmentListner() {
@@ -345,6 +332,7 @@ public class NewsFragment extends Fragment {
     }
 
     public interface NewsFragmentGetListener {
+
         NewsFragmentListener getNewsFragmentListner();
     }
 

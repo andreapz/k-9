@@ -1,5 +1,6 @@
 package com.fsck.k9.fragment;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +100,7 @@ public class NewsPresenter
     public enum DisplayMode {
         NEWS_VIEW, NEWS_DETAIL, SPLIT_VIEW
     }
+
     public enum TabMode {
         NEWS_TAB, VIDEO_TAB, PRMOTIONS_TAB
     }
@@ -167,7 +169,6 @@ public class NewsPresenter
 
     /**
      * Create fragment instances if necessary.
-     *
      */
     private void initializeFragments(String home) {
         FragmentManager fragmentManager = mContext.getFragmentManager();
@@ -336,7 +337,6 @@ public class NewsPresenter
     }
 
 
-
     @Override
     public boolean isDetailStatus() {
         return mDisplayMode == DisplayMode.NEWS_DETAIL;
@@ -361,7 +361,6 @@ public class NewsPresenter
     public int getRefreshTimeout() {
         return mTimeoutRefresh;
     }
-
 
     @Override
     public void setPageTitle(String title) {
@@ -407,7 +406,6 @@ public class NewsPresenter
 
             }
         });
-
     }
 
     @Override
@@ -503,8 +501,6 @@ public class NewsPresenter
         public LayoutInflater inflater;
         List<TiscaliMenuItem> mNewsCategory;
 
-
-
         public CategoryNewsAdapter(List<TiscaliMenuItem> Categories) {
             super();
             this.context = mContext;
@@ -512,8 +508,6 @@ public class NewsPresenter
                     (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             this.mNewsCategory = Categories;
-
-
         }
 
         @Override
@@ -551,9 +545,9 @@ public class NewsPresenter
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
+
             // TODO Auto-generated method stub
-            final int pos = position;
             ViewHolder holder;
 
 
@@ -570,30 +564,32 @@ public class NewsPresenter
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.news_category.setText(mNewsCategory.get(pos).getTitle());
+            holder.news_category.setText(mNewsCategory.get(position).getTitle());
             final ViewHolder final_Holder = holder;
-            if ((Boolean) mNewsCategory.get(pos).getVisibility()) {
-                holder.news_button.setChecked(true);
 
+            if ((Boolean) mNewsCategory.get(position).getVisibility()) {
+                holder.news_button.setChecked(true);
             } else {
                 holder.news_button.setChecked(false);
             }
-
 
             holder.news_button
                     .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            mNewsCategory.get(pos).setVisibility(isChecked);
 
+                            TiscaliMenuItem item = mNewsCategory.get(position);
+                            item.setVisibility(isChecked);
+                            if (mListener != null) {
+                                mListener.getApiController().sectionVisibility(item.getSectionId(),
+                                        (Boolean) item.getVisibility());
+                            }
                         }
                     });
 
 
-
             return convertView;
         }
-
     }
 
     public class NewsAdapter extends BaseNavDrawerMenuAdapter {
@@ -842,17 +838,13 @@ public class NewsPresenter
     public void updateMe(Me me, String json) {
         boolean isInitialized = false;
         Log.d("UpdateMe ", "[ME]:" + json);
+
         if (mMenuItems.size() > 0) {
+            // Me already present
             isInitialized = true;
             mMenuItems.clear();
         }
-        // if(mTabMode == TabMode.NEWS_TAB){
-        // mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
-        // }else if(mTabMode == TabMode.VIDEO_TAB){
-        // mMenuItems.addAll(me.getVideo().getTiscaliMenuItem());
-        // }else{
-        // mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
-        // }
+
         mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
         mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
@@ -868,12 +860,10 @@ public class NewsPresenter
             if (mNewsViewFragment != null) {
                 mNewsViewFragment.refreshUrl();
             }
-
         } else {
             if (mNewsViewFragment != null) {
                 mNewsDetailFragment.refreshUrl();
             }
-
         }
     }
 
@@ -911,8 +901,7 @@ public class NewsPresenter
 
         ListView listInterests = (ListView) customize.findViewById(R.id.list_catagory);
 
-        final CategoryNewsAdapter adapter;
-        adapter = new CategoryNewsAdapter(data);
+        final CategoryNewsAdapter adapter = new CategoryNewsAdapter(data);
 
         listInterests.setAdapter(adapter);
 
@@ -921,14 +910,6 @@ public class NewsPresenter
 
             @Override
             public void onClick(View v) {
-                if (mListener != null) {
-                    List<TiscaliMenuItem> selected = adapter.getSelectedItmes();
-                    for (TiscaliMenuItem element : selected) {
-                        mListener.getApiController().sectionVisibility(element.getSectionId(),
-                                (Boolean) element.getVisibility());
-                    }
-                }
-
                 customize.dismiss();
             }
         });

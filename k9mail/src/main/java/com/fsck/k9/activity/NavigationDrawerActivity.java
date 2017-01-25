@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2014 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.fsck.k9.activity;
@@ -67,40 +65,41 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+
 /**
- * This example illustrates a common usage of the DrawerLayout widget
- * in the Android support library.
+ * This example illustrates a common usage of the DrawerLayout widget in the Android support
+ * library.
  * <p/>
- * <p>When a navigation (left) drawer is present, the host activity should detect presses of
- * the action bar's Up affordance as a signal to open and close the navigation drawer. The
- * ActionBarDrawerToggle facilitates this behavior.
- * Items within the drawer should fall into one of two categories:</p>
+ * <p>
+ * When a navigation (left) drawer is present, the host activity should detect presses of the action
+ * bar's Up affordance as a signal to open and close the navigation drawer. The
+ * ActionBarDrawerToggle facilitates this behavior. Items within the drawer should fall into one of
+ * two categories:
+ * </p>
  * <p/>
  * <ul>
- * <li><strong>View switches</strong>. A view switch follows the same basic policies as
- * list or tab navigation in that a view switch does not create navigation history.
- * This pattern should only be used at the root activity of a task, leaving some form
- * of Up navigation active for activities further down the navigation hierarchy.</li>
- * <li><strong>Selective Up</strong>. The drawer allows the user to choose an alternate
- * parent for Up navigation. This allows a user to jump across an app's navigation
- * hierarchy at will. The application should treat this as it treats Up navigation from
- * a different task, replacing the current task stack using TaskStackBuilder or similar.
- * This is the only form of navigation drawer that should be used outside of the root
- * activity of a task.</li>
+ * <li><strong>View switches</strong>. A view switch follows the same basic policies as list or tab
+ * navigation in that a view switch does not create navigation history. This pattern should only be
+ * used at the root activity of a task, leaving some form of Up navigation active for activities
+ * further down the navigation hierarchy.</li>
+ * <li><strong>Selective Up</strong>. The drawer allows the user to choose an alternate parent for
+ * Up navigation. This allows a user to jump across an app's navigation hierarchy at will. The
+ * application should treat this as it treats Up navigation from a different task, replacing the
+ * current task stack using TaskStackBuilder or similar. This is the only form of navigation drawer
+ * that should be used outside of the root activity of a task.</li>
  * </ul>
  * <p/>
- * <p>Right side drawers should be used for actions, not navigation. This follows the pattern
- * established by the Action Bar that navigation should be to the left and actions to the right.
- * An action should be an operation performed on the current contents of the window,
- * for example enabling or disabling a data overlay on top of the current content.</p>
+ * <p>
+ * Right side drawers should be used for actions, not navigation. This follows the pattern
+ * established by the Action Bar that navigation should be to the left and actions to the right. An
+ * action should be an operation performed on the current contents of the window, for example
+ * enabling or disabling a data overlay on top of the current content.
+ * </p>
  */
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
-        MessageViewFragment.MessageViewFragmentGetListener,
-        NewsFragment.NewsFragmentGetListener,
-        INavigationDrawerActivityListener,
-        ApiController.ApiControllerInterface
-{
+        MessageViewFragment.MessageViewFragmentGetListener, NewsFragment.NewsFragmentGetListener,
+        INavigationDrawerActivityListener, ApiController.ApiControllerInterface {
 
     private static final String EXTRA_SEARCH = "search";
     private static final String EXTRA_NO_THREADING = "no_threading";
@@ -145,9 +144,12 @@ public class NavigationDrawerActivity extends K9Activity
     List<NavDrawerMenuItem> mOffersTabMenuItems;
     List<NavDrawerMenuItem> mVideoTabMenuItems;
 
-    @Inject MailPresenter mMailPresenter;
-    @Inject ApiController mApiController;
-    @Inject NewsPresenter mNewsPresenter;
+    @Inject
+    MailPresenter mMailPresenter;
+    @Inject
+    ApiController mApiController;
+    @Inject
+    NewsPresenter mNewsPresenter;
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -156,13 +158,13 @@ public class NavigationDrawerActivity extends K9Activity
 
             switch (mSelectedTab) {
                 case MAIL_TAB_SELECTED:
-                    if(item.getItemId() != R.id.menu_mail) {
+                    if (item.getItemId() != R.id.menu_mail) {
                         mMailPresenter.onDetach();
                     }
                     break;
 
                 case NEWS_TAB_SELECTED:
-                    if(item.getItemId() != R.id.menu_news) {
+                    if (item.getItemId() != R.id.menu_news) {
                         mNewsPresenter.onDetach();
                     }
                     break;
@@ -196,8 +198,8 @@ public class NavigationDrawerActivity extends K9Activity
 
     public static void listMessage(Context context, String accounUUid) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_STARTUP, false);
         intent.putExtra(EXTRA_ACCOUNT, accounUUid);
         context.startActivity(intent);
@@ -239,16 +241,16 @@ public class NavigationDrawerActivity extends K9Activity
         String accountUUid = intent.getStringExtra(EXTRA_ACCOUNT);
         Intent mailIntent;
         // mail search
-        if(intent.getStringExtra(SearchManager.QUERY) != null) {
+        if (intent.getStringExtra(SearchManager.QUERY) != null) {
             mailIntent = intent;
             intent.putExtra(EXTRA_STARTUP, false);
-        } else if(accountUUid != null) {
+        } else if (accountUUid != null) {
             mailIntent = getMailIntent(pref.getAccount(accountUUid));
         } else {
             mailIntent = getMailIntent(accounts.get(0));
         }
 
-        if(mNewsPresenter == null) {
+        if (mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
 
@@ -272,7 +274,7 @@ public class NavigationDrawerActivity extends K9Activity
         initNavigationDrawerMenuData();
 
         // set a custom shadow that overlays the main content when the drawer opens
-//        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        // mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // improve performance by indicating the list if fixed size.
         mDrawerList.setHasFixedSize(true);
 
@@ -282,11 +284,12 @@ public class NavigationDrawerActivity extends K9Activity
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle( //R.drawable.ic_menu_black_24dp,  /* nav drawer image to replace 'Up' caret */
-                this,                  /* host Activity */
-                mDrawerLayout,         /* DrawerLayout object */
-                R.string.drawer_open,  /* "open drawer" description for accessibility */
-                R.string.drawer_close  /* "close drawer" description for accessibility */
+        mDrawerToggle = new ActionBarDrawerToggle( // R.drawable.ic_menu_black_24dp, /* nav drawer
+                // image to replace 'Up' caret */
+                this, /* host Activity */
+                mDrawerLayout, /* DrawerLayout object */
+                R.string.drawer_open, /* "open drawer" description for accessibility */
+                R.string.drawer_close /* "close drawer" description for accessibility */
         ) {
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(mTitle);
@@ -308,11 +311,11 @@ public class NavigationDrawerActivity extends K9Activity
         if (savedInstanceState == null) {
             int tempSelectedTab = DEFAULT_SELECTED_TAB;
             // open mail when coming from registration/change of password/account selection
-            if(!intent.getBooleanExtra(EXTRA_STARTUP, true)) {
+            if (!intent.getBooleanExtra(EXTRA_STARTUP, true)) {
                 tempSelectedTab = MAIL_TAB_SELECTED;
             }
-            mBottomNav.findViewById(mBottomNav.getMenu()
-                    .getItem(tempSelectedTab).getItemId()).performClick();
+            mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId())
+                    .performClick();
         } else {
             mMailPresenter.setStartInstanceState(savedInstanceState);
             mNewsPresenter.setStartInstanceState(savedInstanceState);
@@ -322,7 +325,7 @@ public class NavigationDrawerActivity extends K9Activity
         mBottomNav.bringToFront();
 
         // open search results
-        if(intent.getStringExtra(SearchManager.QUERY) != null) {
+        if (intent.getStringExtra(SearchManager.QUERY) != null) {
             mBottomNav.setVisibility(View.GONE);
         }
 
@@ -337,9 +340,9 @@ public class NavigationDrawerActivity extends K9Activity
 
     private int getActionBarSize() {
         TypedValue tv = new TypedValue();
-        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
-        {
-            return TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            return TypedValue.complexToDimensionPixelSize(tv.data,
+                    getResources().getDisplayMetrics());
         }
 
         return 0;
@@ -347,15 +350,22 @@ public class NavigationDrawerActivity extends K9Activity
 
     // get the drawer panel width
     // From Google docs:
-    // Side nav width: Equal to the screen width minus the height of the action bar. In the example shown above,
+    // Side nav width: Equal to the screen width minus the height of the action bar. In the example
+    // shown above,
     // the nav drawer is 56dp from the right edge of the screen.
     // Maximum width: The maximum width of the nav drawer is 280dp on mobile and 320dp on tablet.
-    // This is calculated by multiplying the standard increment by five (the standard increment is 56dp on mobile and 64dp on tablet).
+    // This is calculated by multiplying the standard increment by five (the standard increment is
+    // 56dp on mobile and 64dp on tablet).
     private int getNavigationDrawerWidth() {
-        return Math.min(getScreenWidth() - getActionBarSize(), 5*getActionBarSize());
+        return Math.min(getScreenWidth() - getActionBarSize(), 5 * getActionBarSize());
     }
 
 
+    /**
+     * Set the navigation drawer status
+     *
+     * @param isEnabled: if false will be disabled the ability to open the drawer
+     */
     public void setDrawerEnable(boolean isEnabled) {
         if (isEnabled) {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
@@ -363,8 +373,7 @@ public class NavigationDrawerActivity extends K9Activity
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.syncState();
-        }
-        else {
+        } else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(false);
@@ -374,11 +383,8 @@ public class NavigationDrawerActivity extends K9Activity
 
     private void buildDaggerComponent(Intent intent) {
         ApplicationComponent component = ((K9) getApplicationContext()).getComponent();
-        DaggerNavigationDrawerActivityComponent.builder()
-                .applicationComponent(component)
-                .activityModule(new ActivityModule(this, intent))
-                .build()
-                .inject(this);
+        DaggerNavigationDrawerActivityComponent.builder().applicationComponent(component)
+                .activityModule(new ActivityModule(this, intent)).build().inject(this);
     }
 
     private Intent getMailIntent(Account account) {
@@ -392,9 +398,9 @@ public class NavigationDrawerActivity extends K9Activity
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
         int orientation = getResources().getConfiguration().orientation;
 
-        return (splitViewMode == K9.SplitViewMode.ALWAYS ||
-                (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE &&
-                        orientation == Configuration.ORIENTATION_LANDSCAPE));
+        return (splitViewMode == K9.SplitViewMode.ALWAYS
+                || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -402,11 +408,11 @@ public class NavigationDrawerActivity extends K9Activity
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
 
-        if(mMailPresenter != null) {
+        if (mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
 
-        if(mNewsPresenter != null) {
+        if (mNewsPresenter != null) {
             mNewsPresenter.onSaveInstanceState(outState);
         }
     }
@@ -421,10 +427,10 @@ public class NavigationDrawerActivity extends K9Activity
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putInt(SELECTED_TAB, mSelectedTab);
 
-        if(mMailPresenter != null) {
+        if (mMailPresenter != null) {
             mMailPresenter.onSaveInstanceState(outState);
         }
-        if(mNewsPresenter != null) {
+        if (mNewsPresenter != null) {
             mNewsPresenter.onSaveInstanceState(outState);
         }
     }
@@ -434,35 +440,34 @@ public class NavigationDrawerActivity extends K9Activity
         super.onResume();
 
         if (!(this instanceof Search)) {
-            //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
-            //when returning from search results
+            // necessary b/c no guarantee Search.onStop will be called before
+            // MessageList.onResume
+            // when returning from search results
             Search.setActive(false);
         }
 
-        if(mMailPresenter != null) {
+        if (mMailPresenter != null) {
             mMailPresenter.onResume();
         }
-        if(mNewsPresenter != null) {
+        if (mNewsPresenter != null) {
             mNewsPresenter.onResume();
         }
 
         mApiController.addListener(this);
-
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        if(mMailPresenter != null) {
+        if (mMailPresenter != null) {
             mMailPresenter.onPause();
         }
-        if(mNewsPresenter != null) {
+        if (mNewsPresenter != null) {
             mNewsPresenter.onPause();
         }
 
         mApiController.removeListener(this);
-
     }
 
     private void onImport() {
@@ -481,15 +486,15 @@ public class NavigationDrawerActivity extends K9Activity
         }
     }
 
-//    private void setSelectedTab(int position) {
-//        for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
-//            if(i == position) {
-//                mBottomNav.getMenu().getItem(i).setChecked(true);
-//            } else {
-//                mBottomNav.getMenu().getItem(i).setChecked(false);
-//            }
-//        }
-//    }
+    // private void setSelectedTab(int position) {
+    // for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
+    // if(i == position) {
+    // mBottomNav.getMenu().getItem(i).setChecked(true);
+    // } else {
+    // mBottomNav.getMenu().getItem(i).setChecked(false);
+    // }
+    // }
+    // }
 
     private void setSelectedTab(int position) {
 
@@ -508,7 +513,6 @@ public class NavigationDrawerActivity extends K9Activity
                 mBottomNav.findViewById(R.id.menu_offers).performClick();
                 break;
         }
-
     }
 
     private String getJsonString(InputStream inputStream) {
@@ -532,18 +536,16 @@ public class NavigationDrawerActivity extends K9Activity
         // news, video and offers
         String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
 
+        // news tab drawer menu
+        // mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
+        // mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
 
 
-        //news tab drawer menu
-//        mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-//        mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
-
-
-        //video tab drawer menu
+        // video tab drawer menu
         mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
         mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this);
 
-        //offers tab drawer menu
+        // offers tab drawer menu
         mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
         mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this);
     }
@@ -552,11 +554,11 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.navigation_drawer, menu);
-        if(mMailPresenter != null) {
+        // getMenuInflater().inflate(R.menu.navigation_drawer, menu);
+        if (mMailPresenter != null) {
             mMailPresenter.onCreateOptionsMenu(menu, getMenuInflater());
         }
-        if(mNewsPresenter != null) {
+        if (mNewsPresenter != null) {
             mNewsPresenter.onCreateOptionsMenu(menu, getMenuInflater());
         }
         return true;
@@ -566,16 +568,16 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
-//        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        // boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
 
-        if(mMailPresenter != null) {
+        if (mMailPresenter != null) {
             return mMailPresenter.onPrepareOptionsMenu(menu);
         }
-        if(mNewsPresenter != null) {
+        if (mNewsPresenter != null) {
             return mNewsPresenter.onPrepareOptionsMenu(menu);
         }
 
-//        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+        // menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -586,14 +588,14 @@ public class NavigationDrawerActivity extends K9Activity
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        switch(mSelectedTab) {
+        switch (mSelectedTab) {
             case MAIL_TAB_SELECTED:
-                if(mMailPresenter != null) {
+                if (mMailPresenter != null) {
                     return mMailPresenter.onOptionsItemSelected(item);
                 }
                 break;
             case NEWS_TAB_SELECTED:
-                if(mNewsPresenter != null) {
+                if (mNewsPresenter != null) {
                     return mNewsPresenter.onOptionsItemSelected(item);
                 }
                 break;
@@ -615,8 +617,8 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     /**
-     * When using the ActionBarDrawerToggle, you must call it during
-     * onPostCreate() and onConfigurationChanged()...
+     * When using the ActionBarDrawerToggle, you must call it during onPostCreate() and
+     * onConfigurationChanged()...
      */
 
     @Override
@@ -634,7 +636,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     private void onMailTabClicked() {
-        if(mSelectedTab != MAIL_TAB_SELECTED) {
+        if (mSelectedTab != MAIL_TAB_SELECTED) {
             mSelectedTab = MAIL_TAB_SELECTED;
             mMailPresenter.onCreateView();
             mMailPresenter.onResume();
@@ -642,7 +644,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     private void onNewsTabClicked() {
-        if(mSelectedTab != NEWS_TAB_SELECTED) {
+        if (mSelectedTab != NEWS_TAB_SELECTED) {
             mSelectedTab = NEWS_TAB_SELECTED;
             mNewsPresenter.onCreateView();
             mNewsPresenter.onResume();
@@ -650,14 +652,14 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     private void onVideoTabClicked() {
-        if(mSelectedTab != VIDEO_TAB_SELECTED) {
+        if (mSelectedTab != VIDEO_TAB_SELECTED) {
             mSelectedTab = VIDEO_TAB_SELECTED;
         }
-//        setAdapterBasedOnSelectedTab(mSelectedTab);
+        // setAdapterBasedOnSelectedTab(mSelectedTab);
     }
 
     private void onOffersTabClicked() {
-        if(mSelectedTab != OFFERS_TAB_SELECTED) {
+        if (mSelectedTab != OFFERS_TAB_SELECTED) {
             mSelectedTab = OFFERS_TAB_SELECTED;
 
         }
@@ -671,14 +673,15 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public NewsFragment.NewsFragmentListener getNewsFragmentListner() {
-        if(mNewsPresenter == null) {
+        if (mNewsPresenter == null) {
             forceBuildDaggerComponent();
         }
         return mNewsPresenter;
     }
+
     @Override
     public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
-        if(mMailPresenter == null) {
+        if (mMailPresenter == null) {
             forceBuildDaggerComponent();
         }
         return mMailPresenter;
@@ -686,7 +689,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public MessageViewFragment.MessageViewFragmentListener getMessageViewFragmentListner() {
-        if(mMailPresenter == null) {
+        if (mMailPresenter == null) {
             forceBuildDaggerComponent();
         }
         return mMailPresenter;
@@ -694,13 +697,14 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void onBackPressed() {
-        if(mNewsPresenter!= null && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL){
+        if (mNewsPresenter != null
+                && mNewsPresenter.getDisplayMode() == NewsPresenter.DisplayMode.NEWS_DETAIL) {
             mNewsPresenter.goBackOnHistory();
-        } else if(mMailPresenter != null
+        } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                    && mMailPresenter.getMessageListWasDisplayed())) {
-                mMailPresenter.showMessageList();
-        } else if(mMailPresenter != null
+                && mMailPresenter.getMessageListWasDisplayed())) {
+            mMailPresenter.showMessageList();
+        } else if (mMailPresenter != null
                 && getIntent().getStringExtra(SearchManager.QUERY) != null) {
             mMailPresenter.goBack();
         } else {
@@ -720,7 +724,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void setDrawerListAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
-        if(mDrawerList != null && adapter != null) {
+        if (mDrawerList != null && adapter != null) {
             mDrawerList.setAdapter(adapter);
         }
     }
@@ -730,19 +734,16 @@ public class NavigationDrawerActivity extends K9Activity
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
-
-
-
     public void updateMe(Me me, String json) {
 
         String defaultTab = me.getDefaultTab();
         int defaultTabIndex = NEWS_TAB_SELECTED;
 
-        if(defaultTab.equals(MAIL_TAB)) {
+        if (defaultTab.equals(MAIL_TAB)) {
             defaultTabIndex = MAIL_TAB_SELECTED;
-        } else if(defaultTab.equals(VIDEO_TAB)) {
+        } else if (defaultTab.equals(VIDEO_TAB)) {
             defaultTabIndex = NEWS_TAB_SELECTED;
-        } else if(defaultTab.equals(OFFERS_TAB)) {
+        } else if (defaultTab.equals(OFFERS_TAB)) {
             defaultTabIndex = OFFERS_TAB_SELECTED;
         }
 
@@ -758,22 +759,21 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void showInformations() {
-
-
-        final Dialog customize= new Dialog(this,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        final Dialog customize =
+                new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         customize.setContentView(R.layout.dialog_informations);
         customize.setCancelable(true);
 
-        WebView view = (WebView) customize
-                .findViewById(R.id.webview);
+        WebView view = (WebView) customize.findViewById(R.id.webview);
 
         view.getSettings().setJavaScriptEnabled(true);
-        MainConfig mainConfig = null ;
-        if(getApiController() != null){
+        MainConfig mainConfig = null;
+        if (getApiController() != null) {
             mainConfig = getApiController().getMainConfig();
         }
-        if(mainConfig != null && mainConfig.getEndpoints()!=null && mainConfig.getEndpoints().getInfoAbout()!= null){
-            view.loadUrl( mainConfig.getEndpoints().getInfoAbout().getUrl());
+        if (mainConfig != null && mainConfig.getEndpoints() != null
+                && mainConfig.getEndpoints().getInfoAbout() != null) {
+            view.loadUrl(mainConfig.getEndpoints().getInfoAbout().getUrl());
         }
         view.setWebViewClient(new WebViewClient());
         Button btnOk = (Button) customize.findViewById(R.id.btn_close);
@@ -781,7 +781,6 @@ public class NavigationDrawerActivity extends K9Activity
 
             @Override
             public void onClick(View v) {
-
                 customize.dismiss();
             }
         });

@@ -14,6 +14,40 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.AccountStats;
+import com.fsck.k9.BaseAccount;
+import com.fsck.k9.FontSizes;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.R;
+import com.fsck.k9.activity.compose.MessageActions;
+import com.fsck.k9.activity.misc.ExtendedAsyncTask;
+import com.fsck.k9.activity.misc.NonConfigurationInstance;
+import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.AccountSetupBasics;
+import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.activity.setup.WelcomeMessage;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.helper.SizeFormatter;
+import com.fsck.k9.mail.AuthType;
+import com.fsck.k9.mail.ServerSettings;
+import com.fsck.k9.mail.Transport;
+import com.fsck.k9.mail.store.RemoteStore;
+import com.fsck.k9.mailstore.StorageManager;
+import com.fsck.k9.preferences.SettingsExporter;
+import com.fsck.k9.preferences.SettingsImportExportException;
+import com.fsck.k9.preferences.SettingsImporter;
+import com.fsck.k9.preferences.SettingsImporter.AccountDescription;
+import com.fsck.k9.preferences.SettingsImporter.AccountDescriptionPair;
+import com.fsck.k9.preferences.SettingsImporter.ImportContents;
+import com.fsck.k9.preferences.SettingsImporter.ImportResults;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchAccount;
+import com.fsck.k9.search.SearchSpecification.Attribute;
+import com.fsck.k9.search.SearchSpecification.SearchField;
+import com.fsck.k9.view.ColorChip;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -60,40 +94,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fsck.k9.Account;
-import com.fsck.k9.AccountStats;
-import com.fsck.k9.BaseAccount;
-import com.fsck.k9.FontSizes;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
-import com.fsck.k9.activity.compose.MessageActions;
-import com.fsck.k9.activity.misc.ExtendedAsyncTask;
-import com.fsck.k9.activity.misc.NonConfigurationInstance;
-import com.fsck.k9.activity.setup.AccountSettings;
-import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.activity.setup.Prefs;
-import com.fsck.k9.activity.setup.WelcomeMessage;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.helper.SizeFormatter;
-import com.fsck.k9.mail.AuthType;
-import com.fsck.k9.mail.ServerSettings;
-import com.fsck.k9.mail.Transport;
-import com.fsck.k9.mail.store.RemoteStore;
-import com.fsck.k9.mailstore.StorageManager;
-import com.fsck.k9.preferences.SettingsExporter;
-import com.fsck.k9.preferences.SettingsImportExportException;
-import com.fsck.k9.preferences.SettingsImporter;
-import com.fsck.k9.preferences.SettingsImporter.AccountDescription;
-import com.fsck.k9.preferences.SettingsImporter.AccountDescriptionPair;
-import com.fsck.k9.preferences.SettingsImporter.ImportContents;
-import com.fsck.k9.preferences.SettingsImporter.ImportResults;
-import com.fsck.k9.search.LocalSearch;
-import com.fsck.k9.search.SearchAccount;
-import com.fsck.k9.search.SearchSpecification.Attribute;
-import com.fsck.k9.search.SearchSpecification.SearchField;
-import com.fsck.k9.view.ColorChip;
-
 import de.cketti.library.changelog.ChangeLog;
 
 
@@ -102,7 +102,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     /**
      * URL used to open Android Market application
      */
-    private static final String ANDROID_MARKET_URL = "https://play.google.com/store/apps/details?id=org.openintents.filemanager";
+    private static final String ANDROID_MARKET_URL =
+            "https://play.google.com/store/apps/details?id=org.openintents.filemanager";
 
     /**
      * Number of special accounts ('Unified Inbox' and 'All Messages')
@@ -117,9 +118,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     /*
      * Must be serializable hence implementation class used for declaration.
      */
-    private ConcurrentHashMap<String, AccountStats> accountStats = new ConcurrentHashMap<String, AccountStats>();
+    private ConcurrentHashMap<String, AccountStats> accountStats =
+            new ConcurrentHashMap<String, AccountStats>();
 
-    private ConcurrentMap<BaseAccount, String> pendingWork = new ConcurrentHashMap<BaseAccount, String>();
+    private ConcurrentMap<BaseAccount, String> pendingWork =
+            new ConcurrentHashMap<BaseAccount, String>();
 
     private BaseAccount mSelectedContextAccount;
     private int mUnreadMessageCount = 0;
@@ -167,6 +170,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 mActionBarSubTitle.setText(operation);
             }
         }
+
         public void refreshTitle() {
             runOnUiThread(new Runnable() {
                 public void run() {
@@ -196,15 +200,18 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             });
         }
 
-        public void accountSizeChanged(final Account account, final long oldSize, final long newSize) {
+        public void accountSizeChanged(final Account account, final long oldSize,
+                final long newSize) {
             runOnUiThread(new Runnable() {
                 public void run() {
                     AccountStats stats = accountStats.get(account.getUuid());
                     if (newSize != -1 && stats != null && K9.measureAccounts()) {
                         stats.size = newSize;
                     }
-                    String toastText = getString(R.string.account_size_changed, account.getDescription(),
-                                                 SizeFormatter.formatSize(getApplication(), oldSize), SizeFormatter.formatSize(getApplication(), newSize));
+                    String toastText =
+                            getString(R.string.account_size_changed, account.getDescription(),
+                                    SizeFormatter.formatSize(getApplication(), oldSize),
+                                    SizeFormatter.formatSize(getApplication(), newSize));
 
                     Toast toast = Toast.makeText(getApplication(), toastText, Toast.LENGTH_LONG);
                     toast.show();
@@ -214,6 +221,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 }
             });
         }
+
         public void progress(final boolean progress) {
             // Make sure we don't try this before the menu is initialized
             // this could happen while the activity is initialized.
@@ -224,7 +232,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             runOnUiThread(new Runnable() {
                 public void run() {
                     if (progress) {
-                        mRefreshMenuItem.setActionView(R.layout.actionbar_indeterminate_progress_actionview);
+                        mRefreshMenuItem.setActionView(
+                                R.layout.actionbar_indeterminate_progress_actionview);
                     } else {
                         mRefreshMenuItem.setActionView(null);
                     }
@@ -232,6 +241,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             });
 
         }
+
         public void progress(final int progress) {
             runOnUiThread(new Runnable() {
                 public void run() {
@@ -252,7 +262,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         }
 
         @Override
-        public void folderStatusChanged(Account account, String folderName, int unreadMessageCount) {
+        public void folderStatusChanged(Account account, String folderName,
+                int unreadMessageCount) {
             try {
                 AccountStats stats = account.getStats(Accounts.this);
                 if (stats == null) {
@@ -264,6 +275,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 Log.e(K9.LOG_TAG, "Unable to get account stats", e);
             }
         }
+
         @Override
         public void accountStatusChanged(BaseAccount account, AccountStats stats) {
             AccountStats oldStats = accountStats.get(account.getUuid());
@@ -286,7 +298,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 mHandler.progress(Window.PROGRESS_END);
                 mHandler.refreshTitle();
             } else {
-                int level = (Window.PROGRESS_END / mAdapter.getCount()) * (mAdapter.getCount() - pendingWork.size()) ;
+                int level = (Window.PROGRESS_END / mAdapter.getCount())
+                        * (mAdapter.getCount() - pendingWork.size());
                 mHandler.progress(level);
             }
         }
@@ -297,13 +310,12 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         }
 
         @Override
-        public void synchronizeMailboxFinished(
-            Account account,
-            String folder,
-            int totalMessagesInMailbox,
-        int numNewMessages) {
-            MessagingController.getInstance(getApplication()).getAccountStats(Accounts.this, account, mListener);
-            super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox, numNewMessages);
+        public void synchronizeMailboxFinished(Account account, String folder,
+                int totalMessagesInMailbox, int numNewMessages) {
+            MessagingController.getInstance(getApplication()).getAccountStats(Accounts.this,
+                    account, mListener);
+            super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox,
+                    numNewMessages);
 
             mHandler.progress(false);
 
@@ -316,8 +328,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         }
 
         @Override
-        public void synchronizeMailboxFailed(Account account, String folder,
-        String message) {
+        public void synchronizeMailboxFailed(Account account, String folder, String message) {
             super.synchronizeMailboxFailed(account, folder, message);
             mHandler.progress(false);
 
@@ -336,8 +347,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
     public static void listAccounts(Context context) {
         Intent intent = new Intent(context, Accounts.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_STARTUP, false);
         context.startActivity(intent);
     }
@@ -380,7 +391,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         Intent intent = getIntent();
-        //onNewIntent(intent);
+        // onNewIntent(intent);
 
         // see if we should show the welcome message
         if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
@@ -460,7 +471,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     @SuppressWarnings("unchecked")
     private void restoreAccountStats(Bundle icicle) {
         if (icicle != null) {
-            Map<String, AccountStats> oldStats = (Map<String, AccountStats>)icicle.get(ACCOUNT_STATS);
+            Map<String, AccountStats> oldStats =
+                    (Map<String, AccountStats>) icicle.get(ACCOUNT_STATS);
             if (oldStats != null) {
                 accountStats.putAll(oldStats);
             }
@@ -522,9 +534,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     }
 
     private List<BaseAccount> accounts = new ArrayList<BaseAccount>();
+
     private enum ACCOUNT_LOCATION {
         TOP, MIDDLE, BOTTOM;
     }
+
     private EnumSet<ACCOUNT_LOCATION> accountLocation(BaseAccount account) {
         EnumSet<ACCOUNT_LOCATION> accountLocation = EnumSet.of(ACCOUNT_LOCATION.MIDDLE);
         if (accounts.size() > 0) {
@@ -546,10 +560,10 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         accounts.addAll(Preferences.getPreferences(this).getAccounts());
 
         // see if we should show the welcome message
-//        if (accounts.length < 1) {
-//            WelcomeMessage.showWelcomeMessage(this);
-//            finish();
-//        }
+        // if (accounts.length < 1) {
+        // WelcomeMessage.showWelcomeMessage(this);
+        // finish();
+        // }
 
         List<BaseAccount> newAccounts;
         if (!K9.isHideSpecialAccounts() && accounts.size() > 0) {
@@ -557,8 +571,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 createSpecialAccounts();
             }
 
-            newAccounts = new ArrayList<BaseAccount>(accounts.size() +
-                    SPECIAL_ACCOUNTS_COUNT);
+            newAccounts = new ArrayList<BaseAccount>(accounts.size() + SPECIAL_ACCOUNTS_COUNT);
             newAccounts.add(mUnifiedInboxAccount);
             newAccounts.add(mAllMessagesAccount);
         } else {
@@ -600,12 +613,12 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
 
     /*
-     * This method is called with 'null' for the argument 'account' if
-     * all accounts are to be checked. This is handled accordingly in
-     * MessagingController.checkMail().
+     * This method is called with 'null' for the argument 'account' if all accounts are to be
+     * checked. This is handled accordingly in MessagingController.checkMail().
      */
     private void onCheckMail(Account account) {
-        MessagingController.getInstance(getApplication()).checkMail(this, account, true, true, null);
+        MessagingController.getInstance(getApplication()).checkMail(this, account, true, true,
+                null);
         if (account == null) {
             MessagingController.getInstance(getApplication()).sendPendingMessages(null);
         } else {
@@ -633,22 +646,23 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     }
 
     /**
-     * Show that account's inbox or folder-list
-     * or return false if the account is not available.
+     * Show that account's inbox or folder-list or return false if the account is not available.
+     * 
      * @param account the account to open ({@link SearchAccount} or {@link Account})
      * @return false if unsuccessfull
      */
     private boolean onOpenAccount(BaseAccount account) {
         if (account instanceof SearchAccount) {
-            SearchAccount searchAccount = (SearchAccount)account;
+            SearchAccount searchAccount = (SearchAccount) account;
             MessageList.actionDisplaySearch(this, searchAccount.getRelatedSearch(), false, false);
         } else {
-            Account realAccount = (Account)account;
+            Account realAccount = (Account) account;
             if (!realAccount.isEnabled()) {
                 onActivateAccount(realAccount);
                 return false;
             } else if (!realAccount.isAvailable(this)) {
-                String toastText = getString(R.string.account_unavailable, account.getDescription());
+                String toastText =
+                        getString(R.string.account_unavailable, account.getDescription());
                 Toast toast = Toast.makeText(getApplication(), toastText, Toast.LENGTH_SHORT);
                 toast.show();
 
@@ -661,7 +675,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 LocalSearch search = new LocalSearch(realAccount.getAutoExpandFolderName());
                 search.addAllowedFolder(realAccount.getAutoExpandFolderName());
                 search.addAccountUuid(realAccount.getUuid());
-                MessageList.actionDisplaySearch(this, search, false, true);}
+                MessageList.actionDisplaySearch(this, search, false, true);
+            }
         }
         return true;
     }
@@ -675,10 +690,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     /**
      * Ask the user to enter the server passwords for disabled accounts.
      *
-     * @param disabledAccounts
-     *         A non-empty list of {@link Account}s to ask the user for passwords. Never
-     *         {@code null}.
-     *         <p><strong>Note:</strong> Calling this method will modify the supplied list.</p>
+     * @param disabledAccounts A non-empty list of {@link Account}s to ask the user for passwords.
+     *        Never {@code null}.
+     *        <p>
+     *        <strong>Note:</strong> Calling this method will modify the supplied list.
+     *        </p>
      */
     private void promptForServerPasswords(final List<Account> disabledAccounts) {
         Account account = disabledAccounts.remove(0);
@@ -705,11 +721,9 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         /**
          * Constructor
          *
-         * @param account
-         *         The {@link Account} to ask the server passwords for. Never {@code null}.
-         * @param accounts
-         *         The (possibly empty) list of remaining accounts to ask passwords for. Never
-         *         {@code null}.
+         * @param account The {@link Account} to ask the server passwords for. Never {@code null}.
+         * @param accounts The (possibly empty) list of remaining accounts to ask passwords for.
+         *        Never {@code null}.
          */
         PasswordPromptDialog(Account account, List<Account> accounts) {
             mAccount = account;
@@ -755,21 +769,17 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             ServerSettings outgoing = Transport.decodeTransportUri(mAccount.getTransportUri());
 
             /*
-             * Don't ask for the password to the outgoing server for WebDAV
-             * accounts, because incoming and outgoing servers are identical for
-             * this account type. Also don't ask when the username is missing.
-             * Also don't ask when the AuthType is EXTERNAL.
+             * Don't ask for the password to the outgoing server for WebDAV accounts, because
+             * incoming and outgoing servers are identical for this account type. Also don't ask
+             * when the username is missing. Also don't ask when the AuthType is EXTERNAL.
              */
             boolean configureOutgoingServer = AuthType.EXTERNAL != outgoing.authenticationType
-                    && !(ServerSettings.Type.WebDAV == outgoing.type)
-                    && outgoing.username != null
+                    && !(ServerSettings.Type.WebDAV == outgoing.type) && outgoing.username != null
                     && !outgoing.username.isEmpty()
-                    && (outgoing.password == null || outgoing.password
-                            .isEmpty());
+                    && (outgoing.password == null || outgoing.password.isEmpty());
 
             boolean configureIncomingServer = AuthType.EXTERNAL != incoming.authenticationType
-                    && (incoming.password == null || incoming.password
-                            .isEmpty());
+                    && (incoming.password == null || incoming.password.isEmpty());
 
             // Create a ScrollView that will be used as container for the whole layout
             final ScrollView scrollView = new ScrollView(activity);
@@ -779,40 +789,42 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             builder.setTitle(activity.getString(R.string.settings_import_activate_account_header));
             builder.setView(scrollView);
             builder.setPositiveButton(activity.getString(R.string.okay_action),
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String incomingPassword = null;
-                    if (mIncomingPasswordView != null) {
-                        incomingPassword = mIncomingPasswordView.getText().toString();
-                    }
-                    String outgoingPassword = null;
-                    if (mOutgoingPasswordView != null) {
-                        outgoingPassword = (mUseIncomingView.isChecked()) ?
-                                           incomingPassword : mOutgoingPasswordView.getText().toString();
-                    }
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String incomingPassword = null;
+                            if (mIncomingPasswordView != null) {
+                                incomingPassword = mIncomingPasswordView.getText().toString();
+                            }
+                            String outgoingPassword = null;
+                            if (mOutgoingPasswordView != null) {
+                                outgoingPassword = (mUseIncomingView.isChecked()) ? incomingPassword
+                                        : mOutgoingPasswordView.getText().toString();
+                            }
 
-                    dialog.dismiss();
+                            dialog.dismiss();
 
-                    // Set the server passwords in the background
-                    SetPasswordsAsyncTask asyncTask = new SetPasswordsAsyncTask(activity, mAccount,
-                            incomingPassword, outgoingPassword, mRemainingAccounts);
-                    activity.setNonConfigurationInstance(asyncTask);
-                    asyncTask.execute();
-                }
-            });
+                            // Set the server passwords in the background
+                            SetPasswordsAsyncTask asyncTask =
+                                    new SetPasswordsAsyncTask(activity, mAccount, incomingPassword,
+                                            outgoingPassword, mRemainingAccounts);
+                            activity.setNonConfigurationInstance(asyncTask);
+                            asyncTask.execute();
+                        }
+                    });
             builder.setNegativeButton(activity.getString(R.string.cancel_action),
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                    activity.setNonConfigurationInstance(null);
-                }
-            });
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            activity.setNonConfigurationInstance(null);
+                        }
+                    });
             mDialog = builder.create();
 
             // Use the dialog's layout inflater so its theme is used (and not the activity's theme).
-            View layout = mDialog.getLayoutInflater().inflate(R.layout.accounts_password_prompt, scrollView);
+            View layout = mDialog.getLayoutInflater().inflate(R.layout.accounts_password_prompt,
+                    scrollView);
 
             // Set the intro text that tells the user what to do
             TextView intro = (TextView) layout.findViewById(R.id.password_prompt_intro);
@@ -820,16 +832,17 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                     R.plurals.settings_import_server_passwords,
                     (configureIncomingServer && configureOutgoingServer) ? 2 : 1);
             intro.setText(activity.getString(R.string.settings_import_activate_account_intro,
-                                             mAccount.getDescription(), serverPasswords));
+                    mAccount.getDescription(), serverPasswords));
 
             if (configureIncomingServer) {
                 // Display the hostname of the incoming server
-                TextView incomingText = (TextView) layout.findViewById(
-                                            R.id.password_prompt_incoming_server);
+                TextView incomingText =
+                        (TextView) layout.findViewById(R.id.password_prompt_incoming_server);
                 incomingText.setText(activity.getString(R.string.settings_import_incoming_server,
-                                                        incoming.host));
+                        incoming.host));
 
-                mIncomingPasswordView = (EditText) layout.findViewById(R.id.incoming_server_password);
+                mIncomingPasswordView =
+                        (EditText) layout.findViewById(R.id.incoming_server_password);
                 mIncomingPasswordView.addTextChangedListener(this);
             } else {
                 layout.findViewById(R.id.incoming_server_prompt).setVisibility(View.GONE);
@@ -837,17 +850,17 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
             if (configureOutgoingServer) {
                 // Display the hostname of the outgoing server
-                TextView outgoingText = (TextView) layout.findViewById(
-                                            R.id.password_prompt_outgoing_server);
+                TextView outgoingText =
+                        (TextView) layout.findViewById(R.id.password_prompt_outgoing_server);
                 outgoingText.setText(activity.getString(R.string.settings_import_outgoing_server,
-                                                        outgoing.host));
+                        outgoing.host));
 
-                mOutgoingPasswordView = (EditText) layout.findViewById(
-                                            R.id.outgoing_server_password);
+                mOutgoingPasswordView =
+                        (EditText) layout.findViewById(R.id.outgoing_server_password);
                 mOutgoingPasswordView.addTextChangedListener(this);
 
-                mUseIncomingView = (CheckBox) layout.findViewById(
-                        R.id.use_incoming_server_password);
+                mUseIncomingView =
+                        (CheckBox) layout.findViewById(R.id.use_incoming_server_password);
 
                 if (configureIncomingServer) {
                     mUseIncomingView.setChecked(true);
@@ -906,10 +919,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                     if (mOutgoingPasswordView == null) {
                         enable = true;
                     }
-                    // If the checkbox to use the incoming server password is checked we need to make
+                    // If the checkbox to use the incoming server password is checked we need to
+                    // make
                     // sure that the password box for the outgoing server isn't empty.
-                    else if (mUseIncomingView.isChecked() ||
-                             mOutgoingPasswordView.getText().length() > 0) {
+                    else if (mUseIncomingView.isChecked()
+                            || mOutgoingPasswordView.getText().length() > 0) {
                         enable = true;
                     }
                 }
@@ -942,9 +956,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         private List<Account> mRemainingAccounts;
         private Application mApplication;
 
-        protected SetPasswordsAsyncTask(Activity activity, Account account,
-                                        String incomingPassword, String outgoingPassword,
-                                        List<Account> remainingAccounts) {
+        protected SetPasswordsAsyncTask(Activity activity, Account account, String incomingPassword,
+                String outgoingPassword, List<Account> remainingAccounts) {
             super(activity);
             mAccount = account;
             mIncomingPassword = incomingPassword;
@@ -957,8 +970,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         protected void showProgressDialog() {
             String title = mActivity.getString(R.string.settings_import_activate_account_header);
             int passwordCount = (mOutgoingPassword == null) ? 1 : 2;
-            String message = mActivity.getResources().getQuantityString(
-                                 R.plurals.settings_import_setting_passwords, passwordCount);
+            String message = mActivity.getResources()
+                    .getQuantityString(R.plurals.settings_import_setting_passwords, passwordCount);
             mProgressDialog = ProgressDialog.show(mActivity, title, message, true);
         }
 
@@ -1030,101 +1043,88 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         // Android recreates our dialogs on configuration changes even when they have been
         // dismissed. Make sure we have all information necessary before creating a new dialog.
         switch (id) {
-        case DIALOG_REMOVE_ACCOUNT: {
-            if (mSelectedContextAccount == null) {
-                return null;
-            }
+            case DIALOG_REMOVE_ACCOUNT: {
+                if (mSelectedContextAccount == null) {
+                    return null;
+                }
 
-            return ConfirmationDialog.create(this, id,
-                                             R.string.account_delete_dlg_title,
-                                             getString(R.string.account_delete_dlg_instructions_fmt,
-                                                     mSelectedContextAccount.getDescription()),
-                                             R.string.okay_action,
-                                             R.string.cancel_action,
-            new Runnable() {
-                @Override
-                public void run() {
-                    if (mSelectedContextAccount instanceof Account) {
-                        Account realAccount = (Account) mSelectedContextAccount;
-                        try {
-                            realAccount.getLocalStore().delete();
-                        } catch (Exception e) {
-                            // Ignore, this may lead to localStores on sd-cards that
-                            // are currently not inserted to be left
-                        }
-                        MessagingController.getInstance(getApplication())
-                        .deleteAccount(realAccount);
-                        Preferences.getPreferences(Accounts.this)
-                        .deleteAccount(realAccount);
-                        K9.setServicesEnabled(Accounts.this);
-                        refresh();
-                    }
-                }
-            });
-        }
-        case DIALOG_CLEAR_ACCOUNT: {
-            if (mSelectedContextAccount == null) {
-                return null;
+                return ConfirmationDialog.create(this, id, R.string.account_delete_dlg_title,
+                        getString(R.string.account_delete_dlg_instructions_fmt,
+                                mSelectedContextAccount.getDescription()),
+                        R.string.okay_action, R.string.cancel_action, new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mSelectedContextAccount instanceof Account) {
+                                    Account realAccount = (Account) mSelectedContextAccount;
+                                    try {
+                                        realAccount.getLocalStore().delete();
+                                    } catch (Exception e) {
+                                        // Ignore, this may lead to localStores on sd-cards that
+                                        // are currently not inserted to be left
+                                    }
+                                    MessagingController.getInstance(getApplication())
+                                            .deleteAccount(realAccount);
+                                    Preferences.getPreferences(Accounts.this)
+                                            .deleteAccount(realAccount);
+                                    K9.setServicesEnabled(Accounts.this);
+                                    refresh();
+                                }
+                            }
+                        });
             }
-
-            return ConfirmationDialog.create(this, id,
-                                             R.string.account_clear_dlg_title,
-                                             getString(R.string.account_clear_dlg_instructions_fmt,
-                                                     mSelectedContextAccount.getDescription()),
-                                             R.string.okay_action,
-                                             R.string.cancel_action,
-            new Runnable() {
-                @Override
-                public void run() {
-                    if (mSelectedContextAccount instanceof Account) {
-                        Account realAccount = (Account) mSelectedContextAccount;
-                        mHandler.workingAccount(realAccount,
-                                                R.string.clearing_account);
-                        MessagingController.getInstance(getApplication())
-                        .clear(realAccount, null);
-                    }
+            case DIALOG_CLEAR_ACCOUNT: {
+                if (mSelectedContextAccount == null) {
+                    return null;
                 }
-            });
-        }
-        case DIALOG_RECREATE_ACCOUNT: {
-            if (mSelectedContextAccount == null) {
-                return null;
+
+                return ConfirmationDialog.create(this, id, R.string.account_clear_dlg_title,
+                        getString(R.string.account_clear_dlg_instructions_fmt,
+                                mSelectedContextAccount.getDescription()),
+                        R.string.okay_action, R.string.cancel_action, new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mSelectedContextAccount instanceof Account) {
+                                    Account realAccount = (Account) mSelectedContextAccount;
+                                    mHandler.workingAccount(realAccount, R.string.clearing_account);
+                                    MessagingController.getInstance(getApplication())
+                                            .clear(realAccount, null);
+                                }
+                            }
+                        });
             }
+            case DIALOG_RECREATE_ACCOUNT: {
+                if (mSelectedContextAccount == null) {
+                    return null;
+                }
 
-            return ConfirmationDialog.create(this, id,
-                                             R.string.account_recreate_dlg_title,
-                                             getString(R.string.account_recreate_dlg_instructions_fmt,
-                                                     mSelectedContextAccount.getDescription()),
-                                             R.string.okay_action,
-                                             R.string.cancel_action,
-            new Runnable() {
-                @Override
-                public void run() {
-                    if (mSelectedContextAccount instanceof Account) {
-                        Account realAccount = (Account) mSelectedContextAccount;
-                        mHandler.workingAccount(realAccount,
-                                                R.string.recreating_account);
-                        MessagingController.getInstance(getApplication())
-                        .recreate(realAccount, null);
-                    }
-                }
-            });
-        }
-        case DIALOG_NO_FILE_MANAGER: {
-            return ConfirmationDialog.create(this, id,
-                                             R.string.import_dialog_error_title,
-                                             getString(R.string.import_dialog_error_message),
-                                             R.string.open_market,
-                                             R.string.close,
-            new Runnable() {
-                @Override
-                public void run() {
-                    Uri uri = Uri.parse(ANDROID_MARKET_URL);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    startActivity(intent);
-                }
-            });
-        }
+                return ConfirmationDialog.create(this, id, R.string.account_recreate_dlg_title,
+                        getString(R.string.account_recreate_dlg_instructions_fmt,
+                                mSelectedContextAccount.getDescription()),
+                        R.string.okay_action, R.string.cancel_action, new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mSelectedContextAccount instanceof Account) {
+                                    Account realAccount = (Account) mSelectedContextAccount;
+                                    mHandler.workingAccount(realAccount,
+                                            R.string.recreating_account);
+                                    MessagingController.getInstance(getApplication())
+                                            .recreate(realAccount, null);
+                                }
+                            }
+                        });
+            }
+            case DIALOG_NO_FILE_MANAGER: {
+                return ConfirmationDialog.create(this, id, R.string.import_dialog_error_title,
+                        getString(R.string.import_dialog_error_message), R.string.open_market,
+                        R.string.close, new Runnable() {
+                            @Override
+                            public void run() {
+                                Uri uri = Uri.parse(ANDROID_MARKET_URL);
+                                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                startActivity(intent);
+                            }
+                        });
+            }
         }
 
         return super.onCreateDialog(id);
@@ -1134,21 +1134,21 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     public void onPrepareDialog(int id, Dialog d) {
         AlertDialog alert = (AlertDialog) d;
         switch (id) {
-        case DIALOG_REMOVE_ACCOUNT: {
-            alert.setMessage(getString(R.string.account_delete_dlg_instructions_fmt,
-                                       mSelectedContextAccount.getDescription()));
-            break;
-        }
-        case DIALOG_CLEAR_ACCOUNT: {
-            alert.setMessage(getString(R.string.account_clear_dlg_instructions_fmt,
-                                       mSelectedContextAccount.getDescription()));
-            break;
-        }
-        case DIALOG_RECREATE_ACCOUNT: {
-            alert.setMessage(getString(R.string.account_recreate_dlg_instructions_fmt,
-                                       mSelectedContextAccount.getDescription()));
-            break;
-        }
+            case DIALOG_REMOVE_ACCOUNT: {
+                alert.setMessage(getString(R.string.account_delete_dlg_instructions_fmt,
+                        mSelectedContextAccount.getDescription()));
+                break;
+            }
+            case DIALOG_CLEAR_ACCOUNT: {
+                alert.setMessage(getString(R.string.account_clear_dlg_instructions_fmt,
+                        mSelectedContextAccount.getDescription()));
+                break;
+            }
+            case DIALOG_RECREATE_ACCOUNT: {
+                alert.setMessage(getString(R.string.account_recreate_dlg_instructions_fmt,
+                        mSelectedContextAccount.getDescription()));
+                break;
+            }
         }
 
         super.onPrepareDialog(id, d);
@@ -1156,14 +1156,15 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
     @Override
     public boolean onContextItemSelected(android.view.MenuItem item) {
-        AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo)item.getMenuInfo();
+        AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
         // submenus don't actually set the menuInfo, so the "advanced"
         // submenu wouldn't work.
         if (menuInfo != null) {
-            mSelectedContextAccount = (BaseAccount)getListView().getItemAtPosition(menuInfo.position);
+            mSelectedContextAccount =
+                    (BaseAccount) getListView().getItemAtPosition(menuInfo.position);
         }
         if (mSelectedContextAccount instanceof Account) {
-            Account realAccount = (Account)mSelectedContextAccount;
+            Account realAccount = (Account) mSelectedContextAccount;
             switch (item.getItemId()) {
                 case R.id.delete_account:
                     onDeleteAccount(realAccount);
@@ -1206,9 +1207,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         showDialog(DIALOG_CLEAR_ACCOUNT);
 
     }
+
     private void onRecreate(Account account) {
         showDialog(DIALOG_RECREATE_ACCOUNT);
     }
+
     private void onMove(final Account account, final boolean up) {
         MoveAccountAsyncTask asyncTask = new MoveAccountAsyncTask(this, account, up);
         setNonConfigurationInstance(asyncTask);
@@ -1216,117 +1219,110 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     }
 
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        BaseAccount account = (BaseAccount)parent.getItemAtPosition(position);
+        BaseAccount account = (BaseAccount) parent.getItemAtPosition(position);
         onOpenAccount(account);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.add_new_account:
-            onAddNewAccount();
-            break;
-        case R.id.edit_prefs:
-            onEditPrefs();
-            break;
-        case R.id.check_mail:
-            onCheckMail(null);
-            break;
-        case R.id.compose:
-            onCompose();
-            break;
-        case R.id.about:
-            onAbout();
-            break;
-        case R.id.search:
-            onSearchRequested();
-            break;
-        case R.id.export_all:
-            onExport(true, null);
-            break;
-        case R.id.import_settings:
-            onImport();
-            break;
-        default:
-            return super.onOptionsItemSelected(item);
+            case R.id.add_new_account:
+                onAddNewAccount();
+                break;
+            case R.id.edit_prefs:
+                onEditPrefs();
+                break;
+            case R.id.check_mail:
+                onCheckMail(null);
+                break;
+            case R.id.compose:
+                onCompose();
+                break;
+            case R.id.about:
+                onAbout();
+                break;
+            case R.id.search:
+                onSearchRequested();
+                break;
+            case R.id.export_all:
+                onExport(true, null);
+                break;
+            case R.id.import_settings:
+                onImport();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
         }
         return true;
     }
 
     private static String[][] USED_LIBRARIES = new String[][] {
-        new String[] {"jutf7", "http://jutf7.sourceforge.net/"},
-        new String[] {"JZlib", "http://www.jcraft.com/jzlib/"},
-        new String[] {"Commons IO", "http://commons.apache.org/io/"},
-        new String[] {"Mime4j", "http://james.apache.org/mime4j/"},
-        new String[] {"HtmlCleaner", "http://htmlcleaner.sourceforge.net/"},
-        new String[] {"Android-PullToRefresh", "https://github.com/chrisbanes/Android-PullToRefresh"},
-        new String[] {"ckChangeLog", "https://github.com/cketti/ckChangeLog"},
-        new String[] {"HoloColorPicker", "https://github.com/LarsWerkman/HoloColorPicker"},
-        new String[] {"Glide", "https://github.com/bumptech/glide"},
-        new String[] {"TokenAutoComplete", "https://github.com/splitwise/TokenAutoComplete/"},
-    };
+            new String[] {"jutf7", "http://jutf7.sourceforge.net/"},
+            new String[] {"JZlib", "http://www.jcraft.com/jzlib/"},
+            new String[] {"Commons IO", "http://commons.apache.org/io/"},
+            new String[] {"Mime4j", "http://james.apache.org/mime4j/"},
+            new String[] {"HtmlCleaner", "http://htmlcleaner.sourceforge.net/"},
+            new String[] {"Android-PullToRefresh",
+                    "https://github.com/chrisbanes/Android-PullToRefresh"},
+            new String[] {"ckChangeLog", "https://github.com/cketti/ckChangeLog"},
+            new String[] {"HoloColorPicker", "https://github.com/LarsWerkman/HoloColorPicker"},
+            new String[] {"Glide", "https://github.com/bumptech/glide"},
+            new String[] {"TokenAutoComplete", "https://github.com/splitwise/TokenAutoComplete/"},};
 
     private void onAbout() {
         String appName = getString(R.string.app_name);
         int year = Calendar.getInstance().get(Calendar.YEAR);
         WebView wv = new WebView(this);
         StringBuilder html = new StringBuilder()
-        .append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />")
-        .append("<img src=\"file:///android_asset/icon.png\" alt=\"").append(appName).append("\"/>")
-        .append("<h1>")
-        .append(String.format(getString(R.string.about_title_fmt),
-                              "<a href=\"" + getString(R.string.app_webpage_url)) + "\">")
-        .append(appName)
-        .append("</a>")
-        .append("</h1><p>")
-        .append(appName)
-        .append(" ")
-        .append(String.format(getString(R.string.debug_version_fmt), getVersionNumber()))
-        .append("</p><p>")
-        .append(String.format(getString(R.string.app_authors_fmt),
-                              getString(R.string.app_authors)))
-        .append("</p><p>")
-        .append(String.format(getString(R.string.app_revision_fmt),
-                              "<a href=\"" + getString(R.string.app_revision_url) + "\">" +
-                              getString(R.string.app_revision_url) +
-                              "</a>"))
-        .append("</p><hr/><p>")
-        .append(String.format(getString(R.string.app_copyright_fmt), year, year))
-        .append("</p><hr/><p>")
-        .append(getString(R.string.app_license))
-        .append("</p><hr/><p>");
+                .append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />")
+                .append("<img src=\"file:///android_asset/icon.png\" alt=\"").append(appName)
+                .append("\"/>").append("<h1>")
+                .append(String.format(getString(R.string.about_title_fmt),
+                        "<a href=\"" + getString(R.string.app_webpage_url)) + "\">")
+                .append(appName).append("</a>").append("</h1><p>").append(appName).append(" ")
+                .append(String.format(getString(R.string.debug_version_fmt), getVersionNumber()))
+                .append("</p><p>")
+                .append(String.format(getString(R.string.app_authors_fmt),
+                        getString(R.string.app_authors)))
+                .append("</p><p>")
+                .append(String.format(getString(R.string.app_revision_fmt),
+                        "<a href=\"" + getString(R.string.app_revision_url) + "\">"
+                                + getString(R.string.app_revision_url) + "</a>"))
+                .append("</p><hr/><p>")
+                .append(String.format(getString(R.string.app_copyright_fmt), year))
+                .append("</p><hr/><p>").append(getString(R.string.app_license))
+                .append("</p><hr/><p>");
 
         StringBuilder libs = new StringBuilder().append("<ul>");
         for (String[] library : USED_LIBRARIES) {
-            libs.append("<li><a href=\"").append(library[1]).append("\">").append(library[0]).append("</a></li>");
+            libs.append("<li><a href=\"").append(library[1]).append("\">").append(library[0])
+                    .append("</a></li>");
         }
         libs.append("</ul>");
 
         html.append(String.format(getString(R.string.app_libraries), libs.toString()))
-        .append("</p><hr/><p>")
-        .append(String.format(getString(R.string.app_emoji_icons),
-                              "<div>TypePad \u7d75\u6587\u5b57\u30a2\u30a4\u30b3\u30f3\u753b\u50cf " +
-                              "(<a href=\"http://typepad.jp/\">Six Apart Ltd</a>) / " +
-                              "<a href=\"http://creativecommons.org/licenses/by/2.1/jp/\">CC BY 2.1</a></div>"))
-        .append("</p><hr/><p>")
-        .append(getString(R.string.app_htmlcleaner_license));
+                .append("</p><hr/><p>")
+                .append(String.format(getString(R.string.app_emoji_icons),
+                        "<div>TypePad \u7d75\u6587\u5b57\u30a2\u30a4\u30b3\u30f3\u753b\u50cf "
+                                + "(<a href=\"http://typepad.jp/\">Six Apart Ltd</a>) / "
+                                + "<a href=\"http://creativecommons.org/licenses/by/2.1/jp/\">CC BY 2.1</a></div>"))
+                .append("</p><hr/><p>").append(getString(R.string.app_htmlcleaner_license));
 
 
-        wv.loadDataWithBaseURL("file:///android_res/drawable/", html.toString(), "text/html", "utf-8", null);
-        new AlertDialog.Builder(this)
-        .setView(wv)
-        .setCancelable(true)
-        .setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface d, int c) {
-                d.dismiss();
-            }
-        })
-        .setNeutralButton(R.string.changelog_full_title, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface d, int c) {
-                new ChangeLog(Accounts.this).getFullLogDialog().show();
-            }
-        })
-        .show();
+        wv.loadDataWithBaseURL("file:///android_res/drawable/", html.toString(), "text/html",
+                "utf-8", null);
+        new AlertDialog.Builder(this).setView(wv).setCancelable(true)
+                .setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int c) {
+                        d.dismiss();
+                    }
+                }).setNeutralButton(R.string.changelog_full_title,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface d, int c) {
+                                new ChangeLog(Accounts.this).getFullLogDialog().show();
+                            }
+                        })
+                .show();
     }
 
     /**
@@ -1340,7 +1336,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
             version = pi.versionName;
         } catch (PackageManager.NameNotFoundException e) {
-            //Log.e(TAG, "Package name not found", e);
+            // Log.e(TAG, "Package name not found", e);
         }
         return version;
     }
@@ -1363,7 +1359,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         menu.setHeaderTitle(R.string.accounts_context_menu_title);
 
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        BaseAccount account =  mAdapter.getItem(info.position);
+        BaseAccount account = mAdapter.getItem(info.position);
 
         if ((account instanceof Account) && !((Account) account).isEnabled()) {
             getMenuInflater().inflate(R.menu.disabled_accounts_context, menu);
@@ -1374,21 +1370,18 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         if (account instanceof SearchAccount) {
             for (int i = 0; i < menu.size(); i++) {
                 android.view.MenuItem item = menu.getItem(i);
-                    item.setVisible(false);
+                item.setVisible(false);
             }
-        }
-        else {
+        } else {
             EnumSet<ACCOUNT_LOCATION> accountLocation = accountLocation(account);
             if (accountLocation.contains(ACCOUNT_LOCATION.TOP)) {
                 menu.findItem(R.id.move_up).setEnabled(false);
-            }
-            else {
+            } else {
                 menu.findItem(R.id.move_up).setEnabled(true);
             }
             if (accountLocation.contains(ACCOUNT_LOCATION.BOTTOM)) {
                 menu.findItem(R.id.move_down).setEnabled(false);
-            }
-            else {
+            } else {
                 menu.findItem(R.id.move_down).setEnabled(true);
             }
         }
@@ -1404,7 +1397,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
         if (infos.size() > 0) {
             startActivityForResult(Intent.createChooser(i, null),
-                                   ACTIVITY_REQUEST_PICK_SETTINGS_FILE);
+                    ACTIVITY_REQUEST_PICK_SETTINGS_FILE);
         } else {
             showDialog(DIALOG_NO_FILE_MANAGER);
         }
@@ -1412,16 +1405,17 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(K9.LOG_TAG, "onActivityResult requestCode = " + requestCode + ", resultCode = " + resultCode + ", data = " + data);
+        Log.i(K9.LOG_TAG, "onActivityResult requestCode = " + requestCode + ", resultCode = "
+                + resultCode + ", data = " + data);
         if (resultCode != RESULT_OK)
             return;
         if (data == null) {
             return;
         }
         switch (requestCode) {
-        case ACTIVITY_REQUEST_PICK_SETTINGS_FILE:
-            onImport(data.getData());
-            break;
+            case ACTIVITY_REQUEST_PICK_SETTINGS_FILE:
+                onImport(data.getData());
+                break;
         }
     }
 
@@ -1474,8 +1468,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle(mHeaderRes);
             builder.setMessage(message);
-            builder.setPositiveButton(R.string.okay_action,
-            new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
@@ -1489,8 +1482,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         /**
          * Returns the message the dialog should display.
          *
-         * @param activity
-         *         The {@code Activity} this dialog belongs to.
+         * @param activity The {@code Activity} this dialog belongs to.
          *
          * @return The message the dialog should display
          */
@@ -1501,8 +1493,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         /**
          * This method is called after the "OK" button was pressed.
          *
-         * @param activity
-         *         The {@code Activity} this dialog belongs to.
+         * @param activity The {@code Activity} this dialog belongs to.
          */
         protected void okayAction(Accounts activity) {
             // Do nothing
@@ -1512,10 +1503,9 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     /**
      * Shows a dialog that displays how many accounts were successfully imported.
      *
-     * @param importResults
-     *         The {@link ImportResults} instance returned by the {@link SettingsImporter}.
-     * @param filename
-     *         The name of the settings file that was imported.
+     * @param importResults The {@link ImportResults} instance returned by the
+     *        {@link SettingsImporter}.
+     * @param filename The name of the settings file that was imported.
      */
     private void showAccountsImportedDialog(ImportResults importResults, String filename) {
         AccountsImportedDialog dialog = new AccountsImportedDialog(importResults, filename);
@@ -1538,11 +1528,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
         @Override
         protected String generateMessage(Accounts activity) {
-            //TODO: display names of imported accounts (name from file *and* possibly new name)
+            // TODO: display names of imported accounts (name from file *and* possibly new name)
 
             int imported = mImportResults.importedAccounts.size();
-            String accounts = activity.getResources().getQuantityString(
-                                  R.plurals.settings_import_accounts, imported, imported);
+            String accounts = activity.getResources()
+                    .getQuantityString(R.plurals.settings_import_accounts, imported, imported);
             return activity.getString(R.string.settings_import_success, accounts, mFilename);
         }
 
@@ -1568,11 +1558,9 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     /**
      * Display a dialog that lets the user select which accounts to import from the settings file.
      *
-     * @param importContents
-     *         The {@link ImportContents} instance returned by
-     *         {@link SettingsImporter#getImportStreamContents(InputStream)}
-     * @param uri
-     *         The (content) URI of the settings file.
+     * @param importContents The {@link ImportContents} instance returned by
+     *        {@link SettingsImporter#getImportStreamContents(InputStream)}
+     * @param uri The (content) URI of the settings file.
      */
     private void showImportSelectionDialog(ImportContents importContents, Uri uri) {
         ImportSelectionDialog dialog = new ImportSelectionDialog(importContents, uri);
@@ -1640,9 +1628,9 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 }
             }
 
-            //TODO: listview header: "Please select the settings you wish to import"
-            //TODO: listview footer: "Select all" / "Select none" buttons?
-            //TODO: listview footer: "Overwrite existing accounts?" checkbox
+            // TODO: listview header: "Please select the settings you wish to import"
+            // TODO: listview footer: "Select all" / "Select none" buttons?
+            // TODO: listview footer: "Overwrite existing accounts?" checkbox
 
             OnMultiChoiceClickListener listener = new OnMultiChoiceClickListener() {
                 @Override
@@ -1655,8 +1643,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             builder.setMultiChoiceItems(contents.toArray(new String[0]), checkedItems, listener);
             builder.setTitle(activity.getString(R.string.settings_import_selection));
             builder.setInverseBackgroundForced(true);
-            builder.setPositiveButton(R.string.okay_action,
-            new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -1673,29 +1660,29 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                     }
 
                     /*
-                     * TODO: Think some more about this. Overwriting could change the store
-                     * type. This requires some additional code in order to work smoothly
-                     * while the app is running.
+                     * TODO: Think some more about this. Overwriting could change the store type.
+                     * This requires some additional code in order to work smoothly while the app is
+                     * running.
                      */
                     boolean overwrite = false;
 
                     dialog.dismiss();
                     activity.setNonConfigurationInstance(null);
 
-                    ImportAsyncTask importAsyncTask = new ImportAsyncTask(activity,
-                            includeGlobals, accountUuids, overwrite, mUri);
+                    ImportAsyncTask importAsyncTask = new ImportAsyncTask(activity, includeGlobals,
+                            accountUuids, overwrite, mUri);
                     activity.setNonConfigurationInstance(importAsyncTask);
                     importAsyncTask.execute();
                 }
             });
             builder.setNegativeButton(R.string.cancel_action,
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                    activity.setNonConfigurationInstance(null);
-                }
-            });
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            activity.setNonConfigurationInstance(null);
+                        }
+                    });
             mDialog = builder.show();
         }
     }
@@ -1704,9 +1691,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
      * Set the {@code NonConfigurationInstance} this activity should retain on configuration
      * changes.
      *
-     * @param inst
-     *         The {@link NonConfigurationInstance} that should be retained when
-     *         {@link Accounts#onRetainNonConfigurationInstance()} is called.
+     * @param inst The {@link NonConfigurationInstance} that should be retained when
+     *        {@link Accounts#onRetainNonConfigurationInstance()} is called.
      */
     private void setNonConfigurationInstance(NonConfigurationInstance inst) {
         mNonConfigurationInstance = inst;
@@ -1732,16 +1718,21 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 holder.description = (TextView) view.findViewById(R.id.description);
                 holder.email = (TextView) view.findViewById(R.id.email);
                 holder.newMessageCount = (TextView) view.findViewById(R.id.new_message_count);
-                holder.flaggedMessageCount = (TextView) view.findViewById(R.id.flagged_message_count);
-                holder.newMessageCountWrapper = (View) view.findViewById(R.id.new_message_count_wrapper);
-                holder.flaggedMessageCountWrapper = (View) view.findViewById(R.id.flagged_message_count_wrapper);
+                holder.flaggedMessageCount =
+                        (TextView) view.findViewById(R.id.flagged_message_count);
+                holder.newMessageCountWrapper =
+                        (View) view.findViewById(R.id.new_message_count_wrapper);
+                holder.flaggedMessageCountWrapper =
+                        (View) view.findViewById(R.id.flagged_message_count_wrapper);
                 holder.newMessageCountIcon = (View) view.findViewById(R.id.new_message_count_icon);
-                holder.flaggedMessageCountIcon = (View) view.findViewById(R.id.flagged_message_count_icon);
+                holder.flaggedMessageCountIcon =
+                        (View) view.findViewById(R.id.flagged_message_count_icon);
                 holder.activeIcons = (RelativeLayout) view.findViewById(R.id.active_icons);
 
                 holder.chip = view.findViewById(R.id.chip);
                 holder.folders = (ImageButton) view.findViewById(R.id.folders);
-                holder.accountsItemLayout = (LinearLayout)view.findViewById(R.id.accounts_item_layout);
+                holder.accountsItemLayout =
+                        (LinearLayout) view.findViewById(R.id.accounts_item_layout);
 
                 view.setTag(holder);
             }
@@ -1770,40 +1761,48 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             if (stats != null) {
                 unreadMessageCount = stats.unreadMessageCount;
                 holder.newMessageCount.setText(String.format("%d", unreadMessageCount));
-                holder.newMessageCountWrapper.setVisibility(unreadMessageCount > 0 ? View.VISIBLE : View.GONE);
+                holder.newMessageCountWrapper
+                        .setVisibility(unreadMessageCount > 0 ? View.VISIBLE : View.GONE);
 
                 holder.flaggedMessageCount.setText(String.format("%d", stats.flaggedMessageCount));
-                holder.flaggedMessageCountWrapper.setVisibility(K9.messageListStars() && stats.flaggedMessageCount > 0 ? View.VISIBLE : View.GONE);
+                holder.flaggedMessageCountWrapper
+                        .setVisibility(K9.messageListStars() && stats.flaggedMessageCount > 0
+                                ? View.VISIBLE : View.GONE);
 
-                holder.flaggedMessageCountWrapper.setOnClickListener(createFlaggedSearchListener(account));
-                holder.newMessageCountWrapper.setOnClickListener(createUnreadSearchListener(account));
+                holder.flaggedMessageCountWrapper
+                        .setOnClickListener(createFlaggedSearchListener(account));
+                holder.newMessageCountWrapper
+                        .setOnClickListener(createUnreadSearchListener(account));
 
                 holder.activeIcons.setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
-                        Toast toast = Toast.makeText(getApplication(), getString(R.string.tap_hint), Toast.LENGTH_SHORT);
+                        Toast toast = Toast.makeText(getApplication(), getString(R.string.tap_hint),
+                                Toast.LENGTH_SHORT);
                         toast.show();
                     }
-                }
-                                                     );
+                });
 
             } else {
                 holder.newMessageCountWrapper.setVisibility(View.GONE);
                 holder.flaggedMessageCountWrapper.setVisibility(View.GONE);
             }
             if (account instanceof Account) {
-                Account realAccount = (Account)account;
+                Account realAccount = (Account) account;
 
                 holder.chip.setBackgroundColor(realAccount.getChipColor());
 
-                holder.flaggedMessageCountIcon.setBackgroundDrawable( realAccount.generateColorChip(false, false, false, false,true).drawable() );
-                holder.newMessageCountIcon.setBackgroundDrawable( realAccount.generateColorChip(false, false, false, false, false).drawable() );
+                holder.flaggedMessageCountIcon.setBackgroundDrawable(
+                        realAccount.generateColorChip(false, false, false, false, true).drawable());
+                holder.newMessageCountIcon.setBackgroundDrawable(realAccount
+                        .generateColorChip(false, false, false, false, false).drawable());
 
             } else {
                 holder.chip.setBackgroundColor(0xff999999);
-                holder.newMessageCountIcon.setBackgroundDrawable( new ColorChip(0xff999999, false, ColorChip.CIRCULAR).drawable() );
-                holder.flaggedMessageCountIcon.setBackgroundDrawable(new ColorChip(0xff999999, false, ColorChip.STAR).drawable());
+                holder.newMessageCountIcon.setBackgroundDrawable(
+                        new ColorChip(0xff999999, false, ColorChip.CIRCULAR).drawable());
+                holder.flaggedMessageCountIcon.setBackgroundDrawable(
+                        new ColorChip(0xff999999, false, ColorChip.STAR).drawable());
             }
-
 
 
 
@@ -1816,7 +1815,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 holder.folders.setVisibility(View.VISIBLE);
                 holder.folders.setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
-                        FolderList.actionHandleAccount(Accounts.this, (Account)account);
+                        FolderList.actionHandleAccount(Accounts.this, (Account) account);
 
                     }
                 });
@@ -1908,7 +1907,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
 
         private ExportAsyncTask(Accounts activity, boolean includeGlobals,
-                                Set<String> accountUuids) {
+                Set<String> accountUuids) {
             super(activity);
             mIncludeGlobals = includeGlobals;
             mAccountUuids = accountUuids;
@@ -1924,8 +1923,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                mFileName = SettingsExporter.exportToFile(mContext, mIncludeGlobals,
-                            mAccountUuids);
+                mFileName = SettingsExporter.exportToFile(mContext, mIncludeGlobals, mAccountUuids);
             } catch (SettingsImportExportException e) {
                 Log.w(K9.LOG_TAG, "Exception during export", e);
                 return false;
@@ -1944,11 +1942,11 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
             if (success) {
                 activity.showSimpleDialog(R.string.settings_export_success_header,
-                                          R.string.settings_export_success, mFileName);
+                        R.string.settings_export_success, mFileName);
             } else {
-                //TODO: better error messages
+                // TODO: better error messages
                 activity.showSimpleDialog(R.string.settings_export_failed_header,
-                                          R.string.settings_export_failure);
+                        R.string.settings_export_failure);
             }
         }
     }
@@ -1964,7 +1962,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         private ImportResults mImportResults;
 
         private ImportAsyncTask(Accounts activity, boolean includeGlobals,
-                                List<String> accountUuids, boolean overwrite, Uri uri) {
+                List<String> accountUuids, boolean overwrite, Uri uri) {
             super(activity);
             mIncludeGlobals = includeGlobals;
             mAccountUuids = accountUuids;
@@ -1984,8 +1982,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             try {
                 InputStream is = mContext.getContentResolver().openInputStream(mUri);
                 try {
-                    mImportResults = SettingsImporter.importSettings(mContext, is,
-                                     mIncludeGlobals, mAccountUuids, mOverwrite);
+                    mImportResults = SettingsImporter.importSettings(mContext, is, mIncludeGlobals,
+                            mAccountUuids, mOverwrite);
                 } finally {
                     try {
                         is.close();
@@ -2021,21 +2019,22 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             if (success && (globalSettings || imported > 0)) {
                 if (imported == 0) {
                     activity.showSimpleDialog(R.string.settings_import_success_header,
-                                              R.string.settings_import_global_settings_success, filename);
+                            R.string.settings_import_global_settings_success, filename);
                 } else {
                     activity.showAccountsImportedDialog(mImportResults, filename);
                 }
 
                 activity.refresh();
             } else {
-                //TODO: better error messages
+                // TODO: better error messages
                 activity.showSimpleDialog(R.string.settings_import_failed_header,
-                                          R.string.settings_import_failure, filename);
+                        R.string.settings_import_failure, filename);
             }
         }
     }
 
-    private static class ListImportContentsAsyncTask extends ExtendedAsyncTask<Void, Void, Boolean> {
+    private static class ListImportContentsAsyncTask
+            extends ExtendedAsyncTask<Void, Void, Boolean> {
         private Uri mUri;
         private ImportContents mImportContents;
 
@@ -2089,9 +2088,9 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 activity.showImportSelectionDialog(mImportContents, mUri);
             } else {
                 String filename = mUri.getLastPathSegment();
-                //TODO: better error messages
+                // TODO: better error messages
                 activity.showSimpleDialog(R.string.settings_import_failed_header,
-                                          R.string.settings_import_failure, filename);
+                        R.string.settings_import_failure, filename);
             }
         }
     }

@@ -45,7 +45,7 @@ import rx.schedulers.Schedulers;
 
 public class ApiController {
 
-    private static final String USERLOGIN = "USERLOGIN";
+    private static final String RESPONSE_ME = "RESPONSE_ME";
 
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String HEADER_AUTHORIZED = "Authorized";
@@ -71,48 +71,61 @@ public class ApiController {
     private final StorageEditor mEditor;
     private final Storage mStorage;
     private final Account mAccount;
+
     private ApiClient mApiClient;
 
     private final Set<ApiControllerInterface> listeners = new CopyOnWriteArraySet<>();
 
-    private ResponseHeaderInterceptor.ResponseHeaderListener headerListener = new ResponseHeaderInterceptor.ResponseHeaderListener(){
-        @Override
-        public void onHeadersIntercepted(Headers headers){
-            String headerAuthValue = headers.get(HEADER_AUTHORIZED);
-            if(headerAuthValue != null) {
-                mAuthorizedHeaderValue = headerAuthValue;
-            }
-        }
-    };
+    private ResponseHeaderInterceptor.ResponseHeaderListener headerListener =
+            new ResponseHeaderInterceptor.ResponseHeaderListener() {
+                @Override
+                public void onHeadersIntercepted(Headers headers) {
+                    String headerAuthValue = headers.get(HEADER_AUTHORIZED);
+                    if (headerAuthValue != null) {
+                        mAuthorizedHeaderValue = headerAuthValue;
+                    }
+                }
+            };
 
-    private HttpLoggingInterceptor mLoggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE);
+    private HttpLoggingInterceptor mLoggingInterceptor =
+            new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE);
 
     private Interceptor mInterceptor = new Interceptor() {
         @Override
         public Response intercept(Interceptor.Chain chain) throws IOException {
             Request original = chain.request();
-            Request.Builder requestBuilder = original.newBuilder()
-                    .header(HEADER_AUTHORIZATION, mAuthorizedHeaderValue+","+HEADER_APP_ID+"=\""+API_APPID+"\"");
+            Request.Builder requestBuilder = original.newBuilder().header(HEADER_AUTHORIZATION,
+                    mAuthorizedHeaderValue + "," + HEADER_APP_ID + "=\"" + API_APPID + "\"");
 
             Request request = requestBuilder.build();
-//            return chain.proceed(request);
+            // return chain.proceed(request);
             Response response = chain.proceed(request);
 
-//            response.code();
-//
-//            int tryCount = 0;
-//            if(!response.isSuccessful() && tryCount++ < 3) {
-//                Log.d("intercept", "Request is not successful - " + request.method()+"@"+request.url()+" "+tryCount);
-//                response = chain.proceed(request);
-//            }
+            // response.code();
+            //
+            // int tryCount = 0;
+            // if(!response.isSuccessful() && tryCount++ < 3) {
+            // Log.d("intercept", "Request is not successful - " +
+            // request.method()+"@"+request.url()+" "+tryCount);
+            // response = chain.proceed(request);
+            // }
 
             ResponseBody responseBody = response.body();
             String responseBodyString = response.body().string();
-            Response newResponse = response.newBuilder().body(ResponseBody.create(responseBody.contentType(), responseBodyString.getBytes())).build();
+            Response newResponse = response.newBuilder().body(
+                    ResponseBody.create(responseBody.contentType(), responseBodyString.getBytes()))
+                    .build();
 
-//            Log.d(getClass().getName(),"URL:"+request.url().toString()+" Body:"+responseBodyString);
-            if(response.isSuccessful()) {
-                mEditor.putString(request.url().toString(), responseBodyString);
+            // Log.d(getClass().getName(),"URL:"+request.url().toString()+"
+            // Body:"+responseBodyString);
+            String urlKey = RESPONSE_ME;
+            if (request.url().toString()
+                    .equals(ApiClient.TISCALIAPP_BASEURL + ApiClient.TISCALIAPP_CONFIG_URL)) {
+                urlKey = request.url().toString();
+            }
+
+            if (response.isSuccessful()) {
+                mEditor.putString(urlKey, responseBodyString);
                 mEditor.commit();
             }
 
@@ -121,118 +134,100 @@ public class ApiController {
     };
 
     private OkHttpClient mHttpAuthorizeClient = new OkHttpClient.Builder()
-            .addInterceptor(mLoggingInterceptor)
-            .addInterceptor(mInterceptor)
-            .addInterceptor(new ResponseHeaderInterceptor(headerListener))
-            .build();
+            .addInterceptor(mLoggingInterceptor).addInterceptor(mInterceptor)
+            .addInterceptor(new ResponseHeaderInterceptor(headerListener)).build();
 
-    private Retrofit mAuthorizeRetrofit = new Retrofit.Builder()
-            .baseUrl(ApiClient.TISCALIAPP_BASEURL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-            .client(mHttpAuthorizeClient)
-            .callbackExecutor(new Executor() {
+    private Retrofit mAuthorizeRetrofit =
+            new Retrofit.Builder().baseUrl(ApiClient.TISCALIAPP_BASEURL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .client(mHttpAuthorizeClient).callbackExecutor(new Executor() {
                 @Override
                 public void execute(Runnable runnable) {
                     runnable.run();
                 }
-            })
-            .build();
+            }).build();
 
     private OkHttpClient mHttpApiClient = new OkHttpClient.Builder()
-            .addInterceptor(mLoggingInterceptor)
-            .addInterceptor(mInterceptor)
-            .build();
+            .addInterceptor(mLoggingInterceptor).addInterceptor(mInterceptor).build();
 
-    private Retrofit mApiRetrofit = new Retrofit.Builder()
-            .baseUrl(ApiClient.TISCALIAPP_BASEURL)
+    private Retrofit mApiRetrofit = new Retrofit.Builder().baseUrl(ApiClient.TISCALIAPP_BASEURL)
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxErrorHandlingCallAdapterFactory.create())
-            .client(mHttpApiClient)
-            .callbackExecutor(new Executor() {
+            .client(mHttpApiClient).callbackExecutor(new Executor() {
                 @Override
                 public void execute(Runnable runnable) {
                     runnable.run();
                 }
-            })
-            .build();
+            }).build();
 
 
     private ApiClient apiClient() {
-        if(mApiClient == null) {
+        if (mApiClient == null) {
             mApiClient = mApiRetrofit.create(ApiClient.class);
         }
         return mApiClient;
     }
 
     private Observable<MainConfig> getConfig() {
-        return apiClient()
-                .getConfig()
-                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-                .retry(RETRY_COUNT); //.subscribe(subscriber)
+        return apiClient().getConfig().subscribeOn(Schedulers.io())
+                // .observeOn(AndroidSchedulers.mainThread())
+                .retry(RETRY_COUNT); // .subscribe(subscriber)
     }
 
     private Observable<Authorize> getAuthorize() {
-        if(mMainConfig == null) {
+        if (mMainConfig == null) {
             return null;
         }
-        return mAuthorizeRetrofit
-                .create(ApiClient.class)
-                .getAuthorize(mMainConfig.getEndpoints().getAccountAuthorize().getUrl(),
-                        UUID,API_APPID)
+        return mAuthorizeRetrofit.create(ApiClient.class)
+                .getAuthorize(mMainConfig.getEndpoints().getAccountAuthorize().getUrl(), UUID,
+                        API_APPID)
                 .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
+                // .observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
     }
 
     private Observable<UserLogin> postUserLogin() {
-        if(mMainConfig == null || mAccount == null) {
+        if (mMainConfig == null || mAccount == null) {
             return null;
         }
         return apiClient()
                 .postUserLogin(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(),
                         mAccount.getEmail(), mAccount.getPassword())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
     }
 
     private Observable<UserLogin> postSectionVisibility(String sectionId, boolean isSelected) {
-        if(mMainConfig == null) {
+        if (mMainConfig == null) {
             return null;
         }
         return apiClient()
                 .postSectionVisibility(mMainConfig.getEndpoints().getSectionVisibility().getUrl(),
-                        sectionId,isSelected)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                        sectionId, isSelected)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
     }
 
     private Observable<UserLogin> postSectionFave(String sectionId, boolean isSelected) {
-        if(mMainConfig == null) {
+        if (mMainConfig == null) {
             return null;
         }
         return apiClient()
-                .postSectionFave(mMainConfig.getEndpoints().getSectionFave().getUrl(),
-                        sectionId,isSelected)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .postSectionFave(mMainConfig.getEndpoints().getSectionFave().getUrl(), sectionId,
+                        isSelected)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
     }
 
     private Observable<UserLogin> getMe() {
-        if(mMainConfig == null) {
+        if (mMainConfig == null) {
             return null;
         }
-        return apiClient()
-                .getMe(mMainConfig.getEndpoints().getUserMe().getUrl())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        return apiClient().getMe(mMainConfig.getEndpoints().getUserMe().getUrl())
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .retry(RETRY_COUNT);
     }
-
 
 
     public ApiController(Context context) {
@@ -248,20 +243,22 @@ public class ApiController {
 
     private void init() {
 
-        String mainConfig = mStorage.getString(ApiClient.TISCALIAPP_BASEURL+ApiClient.TISCALIAPP_CONFIG_URL, "");
-        if(mainConfig.length() > 0) {
+        String mainConfig = mStorage
+                .getString(ApiClient.TISCALIAPP_BASEURL + ApiClient.TISCALIAPP_CONFIG_URL, "");
+        if (mainConfig.length() > 0) {
             Gson gson = new Gson();
             mMainConfig = gson.fromJson(mainConfig, MainConfig.class);
         }
 
-        if(mMainConfig != null) {
+        if (mMainConfig != null) {
             Observable<Authorize> authorize = getAuthorize();
-            if(authorize != null) {
+            if (authorize != null) {
                 authorizeApi(true);
             }
 
-            String userLogin = mStorage.getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
-            if(userLogin.length() > 0) {
+            String userLogin = mStorage
+                    .getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
+            if (userLogin.length() > 0) {
                 Gson gson = new Gson();
                 mUserLogin = gson.fromJson(userLogin, UserLogin.class);
             }
@@ -269,18 +266,19 @@ public class ApiController {
 
         getConfig().subscribe(new Subscriber<MainConfig>() {
             @Override
-            public void onCompleted() {}
+            public void onCompleted() {
+            }
 
             @Override
             public void onError(Throwable e) {
-                Log.i(TAG,"MainConfig ERROR: " + e);
+                Log.i(TAG, "MainConfig ERROR: " + e);
             }
 
             @Override
             public void onNext(MainConfig mainConfig) {
                 Log.i(TAG, "MainConfig OK");
                 mMainConfig = mainConfig;
-                if(mAuthorizedHeaderValue.length() == 0) {
+                if (mAuthorizedHeaderValue.length() == 0) {
                     authorizeApi(mUserLogin == null);
                 }
             }
@@ -289,7 +287,7 @@ public class ApiController {
 
     private void authorizeApi(final boolean login) {
         Observable<Authorize> authorize = getAuthorize();
-        if(authorize != null) {
+        if (authorize != null) {
             authorize.subscribe(new Subscriber<Authorize>() {
                 @Override
                 public void onCompleted() {
@@ -304,7 +302,7 @@ public class ApiController {
                 @Override
                 public void onNext(Authorize authorize) {
                     Log.i(TAG, "Authorize OK");
-                    if(login) {
+                    if (login) {
                         userLoginApi();
                     }
                 }
@@ -314,7 +312,7 @@ public class ApiController {
 
     private void meApi() {
         Observable<UserLogin> me = getMe();
-        if(me != null) {
+        if (me != null) {
             me.subscribe(new SubscriberUserLogin());
         }
     }
@@ -322,30 +320,31 @@ public class ApiController {
     private void userLoginApi() {
         Observable<UserLogin> postUserLogin = postUserLogin();
 
-        if(postUserLogin != null) {
+        if (postUserLogin != null) {
             postUserLogin.subscribe(new SubscriberUserLogin());
         }
     }
 
-    public void sectionVisibility(String sectionId, boolean isSelected){
+    public void sectionVisibility(String sectionId, boolean isSelected) {
         Observable<UserLogin> postSectionVisibility = postSectionVisibility(sectionId, isSelected);
 
-        if(postSectionVisibility != null) {
+        if (postSectionVisibility != null) {
             postSectionVisibility.subscribe(new SubscriberUserLogin());
         }
     }
 
-    public void sectionFave( String sectionId, boolean isSelected, Action1<UserLogin> success, Action1<UserLogin> error){
+
+    public void sectionFave(String sectionId, boolean isSelected, Action1<UserLogin> success, Action1<UserLogin> error) {
         Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
 
-        if(postSectionFave != null) {
+        if (postSectionFave != null) {
             postSectionFave.subscribe(new SubscriberMe(success, error));
         }
     }
 
     class SubscriberMe extends SubscriberUserLogin {
-        private Action1 <UserLogin> mSucces;
-        private Action1 <UserLogin> mError;
+        private Action1<UserLogin> mSucces;
+        private Action1<UserLogin> mError;
 
         public SubscriberMe(Action1<UserLogin> mSucces, Action1<UserLogin> mError) {
             this.mSucces = mSucces;
@@ -364,6 +363,7 @@ public class ApiController {
             mSucces.call(userLogin);
         }
     }
+
     class SubscriberUserLogin extends Subscriber<UserLogin> {
 
         @Override
@@ -373,14 +373,14 @@ public class ApiController {
 
         @Override
         public void onError(Throwable e) {
-            if(e instanceof RetrofitException) {
+            if (e instanceof RetrofitException) {
                 RetrofitException re = (RetrofitException) e;
-                Log.i("APITEST","ERROR: "+re.getMessage());
+                Log.i("APITEST", "ERROR: " + re.getMessage());
 
-                if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_401) {
+                if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_401) {
 
                     Observable<Authorize> authorize = getAuthorize();
-                    if(authorize != null) {
+                    if (authorize != null) {
                         authorize.concatMap(new Func1<Authorize, Observable<UserLogin>>() {
                             @Override
                             public Observable<UserLogin> call(Authorize authorize) {
@@ -388,13 +388,13 @@ public class ApiController {
                             }
                         }).subscribe(new SubscriberUserLogin());
                     }
-                } else if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_403) {
+                } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_403) {
                     mAccount.setPassword("");
                     mAccount.save(mPrefs);
-                } else if(Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
+                } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
 
                     Observable<MainConfig> config = getConfig();
-                    if(config != null) {
+                    if (config != null) {
                         config.concatMap(new Func1<MainConfig, Observable<Authorize>>() {
                             @Override
                             public Observable<Authorize> call(MainConfig mainConfig) {
@@ -411,12 +411,12 @@ public class ApiController {
                 }
 
             }
-            Log.i("APITEST","ERROR: "+e.toString());
+            Log.i("APITEST", "ERROR: " + e.toString());
         }
 
         @Override
         public void onNext(UserLogin userLogin) {
-            Log.i("APITEST","Username: "+userLogin.getUser().getAccount());
+            Log.i("APITEST", "Username: " + userLogin.getUser().getAccount());
             mUserLogin = userLogin;
             refreshListeners();
         }
@@ -429,7 +429,8 @@ public class ApiController {
 
         private ResponseHeaderListener mListener;
 
-        public ResponseHeaderInterceptor() {}
+        public ResponseHeaderInterceptor() {
+        }
 
         public ResponseHeaderInterceptor(ResponseHeaderListener listener) {
             mListener = listener;
@@ -447,11 +448,11 @@ public class ApiController {
 
     public void sendMe(ApiControllerInterface listener) {
         String json = mStorage.getString(mMainConfig.getEndpoints().getUserMe().getUrl(), "");
-        if(json.length() == 0) {
-            json = mStorage.getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
+        if (json.length() == 0) {
+            json = mStorage.getString(RESPONSE_ME, "");
         }
 
-        if(mUserLogin != null && mUserLogin.getMe() != null) {
+        if (mUserLogin != null && mUserLogin.getMe() != null) {
             listener.updateMe(mUserLogin.getMe(), json);
         }
     }
