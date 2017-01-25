@@ -1,7 +1,5 @@
 package com.fsck.k9.fragment;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +87,7 @@ public class NewsPresenter
     private TabMode mTabMode;
     private String mCurrentPage;
     private String mMeJson;
-    private Me mMe;
+    private int mTimeoutRefresh = 1000;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
     private NewsPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
@@ -360,9 +358,10 @@ public class NewsPresenter
     }
 
     @Override
-    public Me getMe() {
-        return mMe;
+    public int getRefreshTimeout() {
+        return mTimeoutRefresh;
     }
+
 
     @Override
     public void setPageTitle(String title) {
@@ -498,20 +497,6 @@ public class NewsPresenter
         mCurrentPage = url;
     }
 
-    private String getJsonString(InputStream inputStream) {
-        try {
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            String jsonString = new String(buffer, "UTF-8");
-            return jsonString;
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
 
     public class CategoryNewsAdapter extends BaseAdapter {
         public Activity context;
@@ -869,8 +854,8 @@ public class NewsPresenter
         // mMenuItems.addAll(me.getOffers().getTiscaliMenuItem());
         // }
         mMenuItems.addAll(me.getNews().getTiscaliMenuItem());
+        mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
-        mMe = me;
 
         if (!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
             mIsHomePage = true;
