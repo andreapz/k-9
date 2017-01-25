@@ -923,8 +923,8 @@ Please submit bug reports, contribute new features and ask questions at
 
     <string name="dialog_confirm_delete_title">Confirm deletion</string>
     <string name="dialog_confirm_delete_message">Do you want to delete this message?</string>
-    <string name="dialog_fave_positive_msg">Hai aggiunto %s ai tuoi argomenti del cuore. Ti terremo aggiornato con una notifica quando pubblichiamo nuovi contenuti su questo tema</string>
-    <string name="dialog_fave_negative_msg">Hai rimosso %s dai tuoi argomenti del cuore. Ti consigliamo di attivarla nuovamente se vuoi continuare a ricevere notifiche sulle news di questa sezione</string>
+    <string name="dialog_fave_positive_msg">You add %s from your favorites. </string>
+    <string name="dialog_fave_negative_msg">You remove %s from your favorites. </string>
     <plurals name="dialog_confirm_delete_messages">
         <item quantity="one">Do you really want to delete this message?</item>
         <item quantity="other">Do you really want to delete <xliff:g id="message_count">%1$d</xliff:g> messages?</item>
