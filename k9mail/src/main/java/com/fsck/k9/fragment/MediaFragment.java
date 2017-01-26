@@ -147,21 +147,7 @@ public class MediaFragment extends Fragment {
         mExtraHeaders.put(HEADER_X_TISCALI_APP, PLATFORM_ANDROID);
         updateWebViewSettings();
 
-        mWebView.setWebChromeClient(new WebChromeClient() {
-//            @Override
-//            public void onReceivedTitle(WebView view, String title) {
-//                super.onReceivedTitle(view, title);
-//                if (!TextUtils.isEmpty(title) && mFragmentListener != null && mFragmentListener.isHomePage()) {
-//                    if (title.contains(" ")) {
-//                        title = title.substring(0, title.indexOf(" "));
-//                    }
-//                    String titleEncode = title.replaceAll("%20", " ");
-//                    if (mFragmentListener != null) {
-//                        mFragmentListener.setPageTitle(titleEncode);
-//                    }
-//                }
-//            }
-        });
+        mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
