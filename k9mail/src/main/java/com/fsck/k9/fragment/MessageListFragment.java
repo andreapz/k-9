@@ -527,7 +527,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             mFragmentListener.setMessageListTitle(displayName);
 
             String operation = mListener.getOperation(activity);
-            if (operation.length() < 1) {
+            if (isOutbox() || isErrorFolder()) {
+                mFragmentListener
+                        .setMessageListSubTitle(mContext.getString(R.string.status_syncing_off));
+            } else if (operation.length() < 1) {
                 mFragmentListener.setMessageListSubTitle(mAccount.getEmail());
             } else {
                 mFragmentListener.setMessageListSubTitle(operation);
@@ -2109,7 +2112,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         if (!mSearch.isManualSearch() && mCurrentFolder != null && mAccount != null) {
             if (mCurrentFolder.loading) {
                 updateFooter(mContext.getString(R.string.status_loading_more));
-            } else if (!mCurrentFolder.moreMessages) {
+            } else if (!mCurrentFolder.moreMessages || isOutbox() || isErrorFolder()) {
                 updateFooter(null);
             } else {
                 String message;
