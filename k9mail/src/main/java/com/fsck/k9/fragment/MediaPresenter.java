@@ -67,7 +67,7 @@ import rx.functions.Action1;
 
 @Singleton
 public abstract class MediaPresenter
-        implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
+        implements MediaFragment.MediaFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
         PresenterLifeCycle, ApiController.ApiControllerInterface {
 
     private static final int HOME_POSITION_ADAPTER = 1;
@@ -83,8 +83,8 @@ public abstract class MediaPresenter
     private final INavigationDrawerActivityListener mListener;
     private ActionBar mActionBar;
     private TextView mActionBarTitle;
-    private NewsFragment mNewsViewFragment;
-    private NewsFragment mNewsDetailFragment;
+    private MediaFragment mMediaViewFragment;
+    private MediaFragment mMediaDetailFragment;
     private DisplayMode mDisplayMode;
     private String mCurrentPage;
     private String mMeJson;
@@ -98,7 +98,7 @@ public abstract class MediaPresenter
     private boolean mStarted = false;
 
     public enum DisplayMode {
-        NEWS_VIEW, NEWS_DETAIL, SPLIT_VIEW
+        MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW
     }
 
     public enum Type {
@@ -162,10 +162,10 @@ public abstract class MediaPresenter
 
     private void findFragments() {
         FragmentManager fragmentManager = mContext.getFragmentManager();
-        mNewsViewFragment =
-                (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
-        mNewsDetailFragment =
-                (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
+        mMediaViewFragment =
+                (MediaFragment) fragmentManager.findFragmentById(R.id.news_view_container);
+        mMediaDetailFragment =
+                (MediaFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
     }
 
     /**
@@ -174,20 +174,20 @@ public abstract class MediaPresenter
     private void initializeFragments(String home) {
         FragmentManager fragmentManager = mContext.getFragmentManager();
 
-        boolean hasNewsFragment = (mNewsViewFragment != null);
+        boolean hasNewsFragment = (mMediaViewFragment != null);
         if (hasNewsFragment) {
-            mNewsViewFragment.setType(getType());
-            mNewsViewFragment.setUrl(home);
+            mMediaViewFragment.setType(getType());
+            mMediaViewFragment.setUrl(home);
         } else {
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            mNewsViewFragment = NewsFragment.newInstance(home, getType());
-            ft.add(R.id.news_view_container, mNewsViewFragment);
+            mMediaViewFragment = MediaFragment.newInstance(home, getType());
+            ft.add(R.id.news_view_container, mMediaViewFragment);
             ft.commit();
         }
 
-        if (mDisplayMode.equals(DisplayMode.NEWS_VIEW)) {
+        if (mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
             setActionBarToggle();
-            showNews();
+            showMedia();
         } else {
             setActionBarUp();
             detailPageLoad(home);
@@ -218,19 +218,19 @@ public abstract class MediaPresenter
             }
         }
 
-        mDisplayMode = DisplayMode.NEWS_VIEW;
+        mDisplayMode = DisplayMode.MEDIA_VIEW;
     }
 
     public void goBackOnHistory() {
-        if (mNewsDetailFragment != null && mNewsDetailFragment.canGoBack()) {
-            mNewsDetailFragment.goBackOnHistory();
+        if (mMediaDetailFragment != null && mMediaDetailFragment.canGoBack()) {
+            mMediaDetailFragment.goBackOnHistory();
         } else {
-            showNews();
+            showMedia();
         }
     }
 
-    public void showNews() {
-        mDisplayMode = DisplayMode.NEWS_VIEW;
+    public void showMedia() {
+        mDisplayMode = DisplayMode.MEDIA_VIEW;
         mViewSwitcher.showFirstView();
     }
 
@@ -242,19 +242,19 @@ public abstract class MediaPresenter
         manager.popBackStackImmediate();
     }
 
-    private void removeNewsFragment() {
-        if (mNewsViewFragment != null) {
-            mNewsViewFragment.mWebView.loadUrl("about:blank");
-            removeFragment(mNewsViewFragment);
-            mNewsViewFragment = null;
+    private void removeMediaFragment() {
+        if (mMediaViewFragment != null) {
+            mMediaViewFragment.mWebView.loadUrl("about:blank");
+            removeFragment(mMediaViewFragment);
+            mMediaViewFragment = null;
         }
     }
 
     private void removeDetailFragment() {
-        if (mNewsDetailFragment != null) {
-            mNewsDetailFragment.mWebView.loadUrl("about:blank");
-            removeFragment(mNewsDetailFragment);
-            mNewsDetailFragment = null;
+        if (mMediaDetailFragment != null) {
+            mMediaDetailFragment.mWebView.loadUrl("about:blank");
+            removeFragment(mMediaDetailFragment);
+            mMediaDetailFragment = null;
         }
     }
 
@@ -267,10 +267,6 @@ public abstract class MediaPresenter
         View customView = mActionBar.getCustomView();
         mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
         mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
-
-        // mActionBarTitle.setText(DEFAULT_ACTIONBAR_TITLE);
-
-
 
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
@@ -311,9 +307,9 @@ public abstract class MediaPresenter
 
 
     public void openSection(String url, boolean isHome) {
-        showNews();
-        if (mNewsViewFragment != null) {
-            mNewsViewFragment.updateUrl(url);
+        showMedia();
+        if (mMediaViewFragment != null) {
+            mMediaViewFragment.updateUrl(url);
         }
         mIsHomePage = isHome;
     }
@@ -345,12 +341,12 @@ public abstract class MediaPresenter
 
     @Override
     public boolean isDetailStatus() {
-        return mDisplayMode == DisplayMode.NEWS_DETAIL;
+        return mDisplayMode == DisplayMode.MEDIA_DETAIL;
     }
 
     @Override
     public boolean isHomePage() {
-        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
+        if (mDisplayMode == DisplayMode.MEDIA_DETAIL) {
             return false;
         } else {
             return mIsHomePage;
@@ -406,8 +402,8 @@ public abstract class MediaPresenter
             @Override
             public void call(UserLogin userLogin) {
 
-                if (mIsHomePage && mNewsViewFragment != null) {
-                    mNewsViewFragment.refreshUrl();
+                if (mIsHomePage && mMediaViewFragment != null) {
+                    mMediaViewFragment.refreshUrl();
                 }
 
             }
@@ -417,20 +413,20 @@ public abstract class MediaPresenter
     @Override
     public void detailPageLoad(String url) {
         mCurrentPage = url;
-        if (mNewsDetailFragment == null) {
-            NewsFragment fragment = NewsFragment.newInstance(url, getType());
+        if (mMediaDetailFragment == null) {
+            MediaFragment fragment = MediaFragment.newInstance(url, getType());
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.news_detail_container, fragment);
-            mNewsDetailFragment = fragment;
+            mMediaDetailFragment = fragment;
             ft.commit();
         }
 
-        mDisplayMode = DisplayMode.NEWS_DETAIL;
+        mDisplayMode = DisplayMode.MEDIA_DETAIL;
         mViewSwitcher.showSecondView();
 
-        if (mNewsDetailFragment != null) {
-            mNewsDetailFragment.getTitle();
-            mNewsDetailFragment.getSharable();
+        if (mMediaDetailFragment != null) {
+            mMediaDetailFragment.getTitle();
+            mMediaDetailFragment.getSharable();
         }
     }
 
@@ -451,8 +447,8 @@ public abstract class MediaPresenter
     @Override
     public void goBack() {
         FragmentManager fragmentManager = ((Activity) mContext).getFragmentManager();
-        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
-            showNews();
+        if (mDisplayMode == DisplayMode.MEDIA_DETAIL) {
+            showMedia();
 
         }
     }
@@ -502,30 +498,30 @@ public abstract class MediaPresenter
     }
 
 
-    public class CategoryNewsAdapter extends BaseAdapter {
+    public class CategoryMediaAdapter extends BaseAdapter {
         public Activity context;
         public LayoutInflater inflater;
-        List<TiscaliMenuItem> mNewsCategory;
+        List<TiscaliMenuItem> mMediaCategory;
 
-        public CategoryNewsAdapter(List<TiscaliMenuItem> Categories) {
+        public CategoryMediaAdapter(List<TiscaliMenuItem> Categories) {
             super();
             this.context = mContext;
             this.inflater =
                     (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            this.mNewsCategory = Categories;
+            this.mMediaCategory = Categories;
         }
 
         @Override
         public int getCount() {
             // TODO Auto-generated method stub
-            return mNewsCategory.size();
+            return mMediaCategory.size();
         }
 
         @Override
         public Object getItem(int position) {
             // TODO Auto-generated method stub
-            return mNewsCategory.get(position);
+            return mMediaCategory.get(position);
         }
 
         @Override
@@ -541,13 +537,13 @@ public abstract class MediaPresenter
         }
 
         public List<TiscaliMenuItem> getSelectedItmes() {
-            return mNewsCategory;
+            return mMediaCategory;
         }
 
         public class ViewHolder {
-            public CheckBox news_button;
-            public TextView news_category;
-            public RelativeLayout rl_news;
+            public CheckBox media_button;
+            public TextView media_category;
+            public RelativeLayout rl_media;
         }
 
         @Override
@@ -561,30 +557,30 @@ public abstract class MediaPresenter
                 holder = new ViewHolder();
                 convertView = inflater.inflate(R.layout.listview_news_dialogue_row, null);
 
-                holder.news_button = (CheckBox) convertView.findViewById(R.id.toggle_news);
-                holder.news_category = (TextView) convertView.findViewById(R.id.category_news);
-                holder.rl_news = (RelativeLayout) convertView.findViewById(R.id.row_news);
-                holder.news_button.setTag(position);
+                holder.media_button = (CheckBox) convertView.findViewById(R.id.toggle_media);
+                holder.media_category = (TextView) convertView.findViewById(R.id.category_media);
+                holder.rl_media = (RelativeLayout) convertView.findViewById(R.id.row_media);
+                holder.media_button.setTag(position);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.news_category.setText(mNewsCategory.get(position).getTitle());
+            holder.media_category.setText(mMediaCategory.get(position).getTitle());
             final ViewHolder final_Holder = holder;
 
-            if ((Boolean) mNewsCategory.get(position).getVisibility()) {
-                holder.news_button.setChecked(true);
+            if ((Boolean) mMediaCategory.get(position).getVisibility()) {
+                holder.media_button.setChecked(true);
             } else {
-                holder.news_button.setChecked(false);
+                holder.media_button.setChecked(false);
             }
 
-            holder.news_button
+            holder.media_button
                     .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                            TiscaliMenuItem item = mNewsCategory.get(position);
+                            TiscaliMenuItem item = mMediaCategory.get(position);
                             item.setVisibility(isChecked);
                             if (mListener != null) {
                                 mListener.getApiController().sectionVisibility(item.getSectionId(),
@@ -835,7 +831,7 @@ public abstract class MediaPresenter
         if (!mStarted) {
             return;
         }
-        removeNewsFragment();
+        removeMediaFragment();
         removeDetailFragment();
     }
 
@@ -862,20 +858,20 @@ public abstract class MediaPresenter
         mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
 
-        if (!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
+        if (!isInitialized && mDisplayMode != DisplayMode.MEDIA_DETAIL) {
             mIsHomePage = true;
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
 
         mNewsAdapter.updateData();
 
-        if (mDisplayMode == DisplayMode.NEWS_VIEW) {
-            if (mNewsViewFragment != null) {
-                mNewsViewFragment.refreshUrl();
+        if (mDisplayMode == DisplayMode.MEDIA_VIEW) {
+            if (mMediaViewFragment != null) {
+                mMediaViewFragment.refreshUrl();
             }
         } else {
-            if (mNewsViewFragment != null) {
-                mNewsDetailFragment.refreshUrl();
+            if (mMediaViewFragment != null) {
+                mMediaDetailFragment.refreshUrl();
             }
         }
     }
@@ -914,7 +910,7 @@ public abstract class MediaPresenter
 
         ListView listInterests = (ListView) customize.findViewById(R.id.list_catagory);
 
-        final CategoryNewsAdapter adapter = new CategoryNewsAdapter(data);
+        final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
 
         listInterests.setAdapter(adapter);
 
