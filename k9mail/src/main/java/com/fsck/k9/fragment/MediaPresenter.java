@@ -733,14 +733,20 @@ public abstract class MediaPresenter
                     itemViewHolder.mItemIconIv.setVisibility(View.GONE);
                 }
                 if (position == HOME_POSITION) {
-                    itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
-                    itemViewHolder.mItemActionTv.setText("personalizza");
-                    itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            showDialogCustomize(getCustomizableItems());
-                        }
-                    });
+                    if (Type.NEWS == getType()) {
+                        itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
+                        itemViewHolder.mItemActionTv.setText(
+                                mContext.getResources().getString(R.string.menu_item_customize));
+                        itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                showDialogCustomize(getCustomizableItems());
+                            }
+                        });
+                    } else {
+                        itemViewHolder.mItemActionTv.setVisibility(View.GONE);
+                    }
+
                 }
                 // add additionally left margin depending on depth
                 if (itemViewHolder.mItemContainerRl

@@ -1231,4 +1231,5 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="special_mailbox_name_spam_fmt">Spam</string>
     <string name="status_last_poll">Last poll <xliff:g id="lasttime">%s</xliff:g></string>
     <string name="customize_categories">Customize your home page</string>
+    <string name="menu_item_customize">customize</string>
 </resources>
