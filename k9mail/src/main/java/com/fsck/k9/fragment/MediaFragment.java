@@ -32,7 +32,7 @@ import android.webkit.WebViewClient;
  */
 
 
-public class NewsFragment extends Fragment {
+public class MediaFragment extends Fragment {
 
     private static final String JAVASCRIPT_TISCALI_APP_GET_TITLE =
             "javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)";
@@ -67,7 +67,7 @@ public class NewsFragment extends Fragment {
     public WebView mWebView;
     private String mUrl;
     private boolean mIsShareable = false;
-    private NewsFragmentListener mFragmentListener;
+    private MediaFragmentListener mFragmentListener;
 
 
     private String mIdSection;
@@ -75,9 +75,9 @@ public class NewsFragment extends Fragment {
     private Menu mMenu;
     private MediaPresenter.Type mType;
 
-    public static NewsFragment newInstance(String home, MediaPresenter.Type type) {
+    public static MediaFragment newInstance(String home, MediaPresenter.Type type) {
 
-        NewsFragment fragment = new NewsFragment();
+        MediaFragment fragment = new MediaFragment();
         Bundle args = new Bundle();
         args.putString(ARG_HOME, home);
         args.putString(ARG_TYPE, type.name());
@@ -104,7 +104,7 @@ public class NewsFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
@@ -154,7 +154,7 @@ public class NewsFragment extends Fragment {
                     }
                     String titleEncode = title.replaceAll("%20", " ");
                     if (mFragmentListener != null) {
-                        mFragmentListener.setPageTitle(title);
+                        mFragmentListener.setPageTitle(titleEncode);
                     }
                 }
             }
@@ -196,7 +196,7 @@ public class NewsFragment extends Fragment {
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT);
 
                 if (mFragmentListener.isHomePage()) {
-                    NewsFragmentListener listener = getFragmentListner();
+                    MediaFragmentListener listener = getFragmentListner();
                     if (listener != null) {
                         String value = listener.getMeJSON();
                         try {
@@ -301,13 +301,14 @@ public class NewsFragment extends Fragment {
         }
     }
 
-    private NewsFragmentListener getFragmentListner() {
+    private MediaFragmentListener getFragmentListner() {
 
-        NewsFragmentListener listener = null;
+        MediaFragmentListener listener = null;
 
-        if (getActivity() instanceof NewsFragmentGetListener) {
+        if (getActivity() instanceof MediaFragmentGetListener) {
             try {
-                listener = ((NewsFragmentGetListener) getActivity()).getNewsFragmentListner(mType);
+                listener =
+                        ((MediaFragmentGetListener) getActivity()).getMediaFragmentListener(mType);
             } catch (ClassCastException e) {
                 throw new ClassCastException(
                         getActivity().getClass() + " must implement NewsFragmentListener");
@@ -352,7 +353,7 @@ public class NewsFragment extends Fragment {
 
     }
 
-    public interface NewsFragmentListener {
+    public interface MediaFragmentListener {
         void enableActionBarProgress(boolean enable);
 
         void detailPageLoad(String url);
@@ -378,9 +379,9 @@ public class NewsFragment extends Fragment {
         void goBack();
     }
 
-    public interface NewsFragmentGetListener {
+    public interface MediaFragmentGetListener {
 
-        NewsFragmentListener getNewsFragmentListner(MediaPresenter.Type type);
+        MediaFragmentListener getMediaFragmentListener(MediaPresenter.Type mType);
     }
 
     class JsTiscaliAppObject {

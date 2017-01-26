@@ -31,9 +31,9 @@ import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.fragment.MailPresenter;
+import com.fsck.k9.fragment.MediaFragment;
 import com.fsck.k9.fragment.MediaPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
-import com.fsck.k9.fragment.NewsFragment;
 import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.fragment.OffersPresenter;
 import com.fsck.k9.fragment.VideoPresenter;
@@ -101,7 +101,7 @@ import android.widget.FrameLayout;
  */
 public class NavigationDrawerActivity extends K9Activity
         implements MessageListFragment.MessageListFragmentGetListener,
-        MessageViewFragment.MessageViewFragmentGetListener, NewsFragment.NewsFragmentGetListener,
+        MessageViewFragment.MessageViewFragmentGetListener, MediaFragment.MediaFragmentGetListener,
         INavigationDrawerActivityListener, ApiController.ApiControllerInterface {
 
     private static final String EXTRA_SEARCH = "search";
@@ -733,22 +733,6 @@ public class NavigationDrawerActivity extends K9Activity
         buildDaggerComponent(intent);
     }
 
-    @Override
-    public NewsFragment.NewsFragmentListener getNewsFragmentListner(MediaPresenter.Type type) {
-        if (mNewsPresenter == null) {
-            forceBuildDaggerComponent();
-        }
-
-        if (MediaPresenter.Type.VIDEO == type) {
-            return mVideoPresenter;
-        }
-
-        if (MediaPresenter.Type.OFFERS == type) {
-            return mOffersPresenter;
-        }
-
-        return mNewsPresenter;
-    }
 
     @Override
     public MessageListFragment.MessageListFragmentListener getMessageListFragmentListner() {
@@ -769,13 +753,13 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     public void onBackPressed() {
         if (mNewsPresenter != null
-                && mNewsPresenter.getDisplayMode() == MediaPresenter.DisplayMode.NEWS_DETAIL) {
+                && mNewsPresenter.getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
             mNewsPresenter.goBackOnHistory();
         } else if (mVideoPresenter != null
-                && mVideoPresenter.getDisplayMode() == MediaPresenter.DisplayMode.NEWS_DETAIL) {
+                && mVideoPresenter.getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
             mVideoPresenter.goBackOnHistory();
         } else if (mOffersPresenter != null
-                && mOffersPresenter.getDisplayMode() == MediaPresenter.DisplayMode.NEWS_DETAIL) {
+                && mOffersPresenter.getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
             mOffersPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
@@ -865,4 +849,20 @@ public class NavigationDrawerActivity extends K9Activity
         customize.show();
     }
 
+    @Override
+    public MediaFragment.MediaFragmentListener getMediaFragmentListener(MediaPresenter.Type type) {
+        if (mNewsPresenter == null) {
+            forceBuildDaggerComponent();
+        }
+
+        if (MediaPresenter.Type.VIDEO == type) {
+            return mVideoPresenter;
+        }
+
+        if (MediaPresenter.Type.OFFERS == type) {
+            return mOffersPresenter;
+        }
+
+        return mNewsPresenter;
+    }
 }
