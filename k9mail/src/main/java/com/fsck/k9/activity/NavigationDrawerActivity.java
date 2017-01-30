@@ -30,6 +30,7 @@ import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
+import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.MailPresenter;
 import com.fsck.k9.fragment.MediaFragment;
 import com.fsck.k9.fragment.MediaPresenter;
@@ -260,15 +261,20 @@ public class NavigationDrawerActivity extends K9Activity
 
         String accountUUid = intent.getStringExtra(EXTRA_ACCOUNT);
         Intent mailIntent;
+        Account account = null;
         // mail search
         if (intent.getStringExtra(SearchManager.QUERY) != null) {
             mailIntent = intent;
             intent.putExtra(EXTRA_STARTUP, false);
         } else if (accountUUid != null) {
-            mailIntent = getMailIntent(pref.getAccount(accountUUid));
+            account = pref.getAccount(accountUUid);
+            mailIntent = getMailIntent(account);
         } else {
-            mailIntent = getMailIntent(accounts.get(0));
+            account = accounts.get(0);
+            mailIntent = getMailIntent(account);
         }
+
+        updateAccount(account);
 
         if (mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
@@ -351,6 +357,16 @@ public class NavigationDrawerActivity extends K9Activity
             mBottomNav.setVisibility(View.GONE);
         }
 
+    }
+
+    @Override
+    public void updateAccount(Account account) {
+        if (account != null) {
+            MessagingController.getInstance(getApplication()).listFoldersSynchronous(account, true,
+                    null);
+            MessagingController.getInstance(getApplication()).checkMail(this, account, true, true,
+                    null);
+        }
     }
 
     private int getScreenWidth() {

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2008 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2008 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -683,7 +682,7 @@
         <item>AUTO</item>
     </string-array>
     <string-array name="account_settings_remote_search_num_results_entries">
-        <item >@string/account_settings_remote_search_num_results_entries_10</item>
+        <item>@string/account_settings_remote_search_num_results_entries_10</item>
         <item>@string/account_settings_remote_search_num_results_entries_25</item>
         <item>@string/account_settings_remote_search_num_results_entries_50</item>
         <item>@string/account_settings_remote_search_num_results_entries_100</item>
@@ -758,6 +757,7 @@
     <string-array name="settings_titles">
         <item>@string/account_settings_action</item>
         <item>@string/global_settings_action</item>
+        <item>@string/update_account_action</item>
         <item>@string/remove_account_action</item>
         <item>@string/informations_action</item>
     </string-array>

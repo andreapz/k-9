@@ -1,6 +1,31 @@
 
 package com.fsck.k9.activity.setup;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.R;
+import com.fsck.k9.activity.K9Activity;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.fragment.ConfirmationDialogFragment;
+import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
+import com.fsck.k9.mail.AuthenticationFailedException;
+import com.fsck.k9.mail.CertificateValidationException;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.Store;
+import com.fsck.k9.mail.Transport;
+import com.fsck.k9.mail.filter.Hex;
+import com.fsck.k9.mail.store.webdav.WebDavStore;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
@@ -17,48 +42,25 @@ import android.view.View.OnClickListener;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.fsck.k9.*;
-import com.fsck.k9.activity.K9Activity;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.fragment.ConfirmationDialogFragment;
-import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
-import com.fsck.k9.mail.AuthenticationFailedException;
-import com.fsck.k9.mail.CertificateValidationException;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.Store;
-import com.fsck.k9.mail.Transport;
-import com.fsck.k9.mail.store.webdav.WebDavStore;
-import com.fsck.k9.mail.filter.Hex;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.security.NoSuchAlgorithmException;
-import java.security.MessageDigest;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-
 /**
- * Checks the given settings to make sure that they can be used to send and
- * receive mail.
+ * Checks the given settings to make sure that they can be used to send and receive mail.
  * 
- * XXX NOTE: The manifest for this app has it ignore config changes, because
- * it doesn't correctly deal with restarting while its thread is running.
+ * XXX NOTE: The manifest for this app has it ignore config changes, because it doesn't correctly
+ * deal with restarting while its thread is running.
  */
-public class AccountSetupCheckSettings extends K9Activity implements OnClickListener,
-        ConfirmationDialogFragmentListener{
+public class AccountSetupCheckSettings extends K9Activity
+        implements OnClickListener, ConfirmationDialogFragmentListener {
 
     public static final int ACTIVITY_REQUEST_CODE = 1;
 
     private static final String EXTRA_ACCOUNT = "account";
 
-    private static final String EXTRA_CHECK_DIRECTION ="checkDirection";
+    private static final String EXTRA_CHECK_DIRECTION = "checkDirection";
 
     public static final int RESULT_ERROR_INVALID_USER_PASSWORD = -3;
 
     public enum CheckDirection {
-        INCOMING,
-        OUTGOING
+        INCOMING, OUTGOING
     }
 
     private Handler mHandler = new Handler();
@@ -87,8 +89,8 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_setup_check_settings);
-        mMessageView = (TextView)findViewById(R.id.message);
-        mProgressBar = (ProgressBar)findViewById(R.id.progress);
+        mMessageView = (TextView) findViewById(R.id.message);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress);
         findViewById(R.id.cancel).setOnClickListener(this);
 
         setMessage(R.string.account_setup_check_settings_retr_info_msg);
@@ -107,12 +109,9 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         X509Certificate[] chain = cve.getCertChain();
         // Avoid NullPointerException in acceptKeyDialog()
         if (chain != null) {
-            acceptKeyDialog(
-                    R.string.account_setup_failed_dlg_certificate_message_fmt,
-                    cve);
+            acceptKeyDialog(R.string.account_setup_failed_dlg_certificate_message_fmt, cve);
         } else {
-            showErrorDialog(
-                    R.string.account_setup_failed_dlg_server_message_fmt,
+            showErrorDialog(R.string.account_setup_failed_dlg_server_message_fmt,
                     errorMessageForCertificateException(cve));
         }
     }
@@ -163,70 +162,84 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
                 // We already know chain != null (tested before calling this method)
                 for (int i = 0; i < chain.length; i++) {
                     // display certificate chain information
-                    //TODO: localize this strings
+                    // TODO: localize this strings
                     chainInfo.append("Certificate chain[").append(i).append("]:\n");
-                    chainInfo.append("Subject: ").append(chain[i].getSubjectDN().toString()).append("\n");
+                    chainInfo.append("Subject: ").append(chain[i].getSubjectDN().toString())
+                            .append("\n");
 
                     // display SubjectAltNames too
                     // (the user may be mislead into mistrusting a certificate
-                    //  by a subjectDN not matching the server even though a
-                    //  SubjectAltName matches)
+                    // by a subjectDN not matching the server even though a
+                    // SubjectAltName matches)
                     try {
-                        final Collection < List<? >> subjectAlternativeNames = chain[i].getSubjectAlternativeNames();
+                        final Collection<List<?>> subjectAlternativeNames =
+                                chain[i].getSubjectAlternativeNames();
                         if (subjectAlternativeNames != null) {
                             // The list of SubjectAltNames may be very long
-                            //TODO: localize this string
+                            // TODO: localize this string
                             StringBuilder altNamesText = new StringBuilder();
-                            altNamesText.append("Subject has ").append(subjectAlternativeNames.size()).append(" alternative names\n");
+                            altNamesText.append("Subject has ")
+                                    .append(subjectAlternativeNames.size())
+                                    .append(" alternative names\n");
 
                             // we need these for matching
                             String storeURIHost = (Uri.parse(mAccount.getStoreUri())).getHost();
-                            String transportURIHost = (Uri.parse(mAccount.getTransportUri())).getHost();
+                            String transportURIHost =
+                                    (Uri.parse(mAccount.getTransportUri())).getHost();
 
                             for (List<?> subjectAlternativeName : subjectAlternativeNames) {
-                                Integer type = (Integer)subjectAlternativeName.get(0);
+                                Integer type = (Integer) subjectAlternativeName.get(0);
                                 Object value = subjectAlternativeName.get(1);
                                 String name;
                                 switch (type.intValue()) {
-                                case 0:
-                                    Log.w(K9.LOG_TAG, "SubjectAltName of type OtherName not supported.");
-                                    continue;
-                                case 1: // RFC822Name
-                                    name = (String)value;
-                                    break;
-                                case 2:  // DNSName
-                                    name = (String)value;
-                                    break;
-                                case 3:
-                                    Log.w(K9.LOG_TAG, "unsupported SubjectAltName of type x400Address");
-                                    continue;
-                                case 4:
-                                    Log.w(K9.LOG_TAG, "unsupported SubjectAltName of type directoryName");
-                                    continue;
-                                case 5:
-                                    Log.w(K9.LOG_TAG, "unsupported SubjectAltName of type ediPartyName");
-                                    continue;
-                                case 6:  // Uri
-                                    name = (String)value;
-                                    break;
-                                case 7: // ip-address
-                                    name = (String)value;
-                                    break;
-                                default:
-                                    Log.w(K9.LOG_TAG, "unsupported SubjectAltName of unknown type");
-                                    continue;
+                                    case 0:
+                                        Log.w(K9.LOG_TAG,
+                                                "SubjectAltName of type OtherName not supported.");
+                                        continue;
+                                    case 1: // RFC822Name
+                                        name = (String) value;
+                                        break;
+                                    case 2: // DNSName
+                                        name = (String) value;
+                                        break;
+                                    case 3:
+                                        Log.w(K9.LOG_TAG,
+                                                "unsupported SubjectAltName of type x400Address");
+                                        continue;
+                                    case 4:
+                                        Log.w(K9.LOG_TAG,
+                                                "unsupported SubjectAltName of type directoryName");
+                                        continue;
+                                    case 5:
+                                        Log.w(K9.LOG_TAG,
+                                                "unsupported SubjectAltName of type ediPartyName");
+                                        continue;
+                                    case 6: // Uri
+                                        name = (String) value;
+                                        break;
+                                    case 7: // ip-address
+                                        name = (String) value;
+                                        break;
+                                    default:
+                                        Log.w(K9.LOG_TAG,
+                                                "unsupported SubjectAltName of unknown type");
+                                        continue;
                                 }
 
-                                // if some of the SubjectAltNames match the store or transport -host,
+                                // if some of the SubjectAltNames match the store or transport
+                                // -host,
                                 // display them
-                                if (name.equalsIgnoreCase(storeURIHost) || name.equalsIgnoreCase(transportURIHost)) {
-                                    //TODO: localize this string
-                                    altNamesText.append("Subject(alt): ").append(name).append(",...\n");
-                                } else if (name.startsWith("*.") && (
-                                            storeURIHost.endsWith(name.substring(2)) ||
-                                            transportURIHost.endsWith(name.substring(2)))) {
-                                    //TODO: localize this string
-                                    altNamesText.append("Subject(alt): ").append(name).append(",...\n");
+                                if (name.equalsIgnoreCase(storeURIHost)
+                                        || name.equalsIgnoreCase(transportURIHost)) {
+                                    // TODO: localize this string
+                                    altNamesText.append("Subject(alt): ").append(name)
+                                            .append(",...\n");
+                                } else if (name.startsWith("*.")
+                                        && (storeURIHost.endsWith(name.substring(2))
+                                                || transportURIHost.endsWith(name.substring(2)))) {
+                                    // TODO: localize this string
+                                    altNamesText.append("Subject(alt): ").append(name)
+                                            .append(",...\n");
                                 }
                             }
                             chainInfo.append(altNamesText);
@@ -236,12 +249,14 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
                         Log.w(K9.LOG_TAG, "cannot display SubjectAltNames in dialog", e1);
                     }
 
-                    chainInfo.append("Issuer: ").append(chain[i].getIssuerDN().toString()).append("\n");
+                    chainInfo.append("Issuer: ").append(chain[i].getIssuerDN().toString())
+                            .append("\n");
                     if (sha1 != null) {
                         sha1.reset();
                         try {
                             char[] sha1sum = Hex.encodeHex(sha1.digest(chain[i].getEncoded()));
-                            chainInfo.append("Fingerprint (SHA-1): ").append(new String(sha1sum)).append("\n");
+                            chainInfo.append("Fingerprint (SHA-1): ").append(new String(sha1sum))
+                                    .append("\n");
                         } catch (CertificateEncodingException e) {
                             Log.e(K9.LOG_TAG, "Error while encoding certificate", e);
                         }
@@ -251,34 +266,35 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
                 // TODO: refactor with DialogFragment.
                 // This is difficult because we need to pass through chain[0] for onClick()
                 new AlertDialog.Builder(AccountSetupCheckSettings.this)
-                .setTitle(getString(R.string.account_setup_failed_dlg_invalid_certificate_title))
-                //.setMessage(getString(R.string.account_setup_failed_dlg_invalid_certificate)
-                .setMessage(getString(msgResId, exMessage)
-                            + " " + chainInfo.toString()
-                           )
-                .setCancelable(true)
-                .setPositiveButton(
-                    getString(R.string.account_setup_failed_dlg_invalid_certificate_accept),
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        acceptCertificate(chain[0]);
-                    }
-                })
-                .setNegativeButton(
-                    getString(R.string.account_setup_failed_dlg_invalid_certificate_reject),
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .show();
+                        .setTitle(getString(
+                                R.string.account_setup_failed_dlg_invalid_certificate_title))
+                        // .setMessage(getString(R.string.account_setup_failed_dlg_invalid_certificate)
+                        .setMessage(getString(msgResId, exMessage) + " " + chainInfo.toString())
+                        .setCancelable(true)
+                        .setPositiveButton(
+                                getString(
+                                        R.string.account_setup_failed_dlg_invalid_certificate_accept),
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        acceptCertificate(chain[0]);
+                                    }
+                                })
+                        .setNegativeButton(
+                                getString(
+                                        R.string.account_setup_failed_dlg_invalid_certificate_reject),
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        finish();
+                                    }
+                                })
+                        .show();
             }
         });
     }
 
     /**
-     * Permanently accepts a certificate for the INCOMING or OUTGOING direction
-     * by adding it to the local key store.
+     * Permanently accepts a certificate for the INCOMING or OUTGOING direction by adding it to the
+     * local key store.
      * 
      * @param certificate
      */
@@ -286,8 +302,7 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         try {
             mAccount.addCertificate(mDirection, certificate);
         } catch (CertificateException e) {
-            showErrorDialog(
-                    R.string.account_setup_failed_dlg_certificate_message_fmt,
+            showErrorDialog(R.string.account_setup_failed_dlg_certificate_message_fmt,
                     e.getMessage() == null ? "" : e.getMessage());
         }
         AccountSetupCheckSettings.actionCheckSettings(AccountSetupCheckSettings.this, mAccount,
@@ -307,9 +322,9 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
 
     public void onClick(View v) {
         switch (v.getId()) {
-        case R.id.cancel:
-            onCancel();
-            break;
+            case R.id.cancel:
+                onCancel();
+                break;
         }
     }
 
@@ -331,11 +346,9 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         switch (dialogId) {
             case R.id.dialog_account_setup_error: {
                 fragment = ConfirmationDialogFragment.newInstance(dialogId,
-                        getString(R.string.account_setup_failed_dlg_title),
-                        customMessage,
+                        getString(R.string.account_setup_failed_dlg_title), customMessage,
                         getString(R.string.account_setup_failed_dlg_edit_details_action),
-                        getString(R.string.account_setup_failed_dlg_continue_action)
-                );
+                        getString(R.string.account_setup_failed_dlg_continue_action));
                 break;
             }
             default: {
@@ -347,9 +360,10 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         ta.add(fragment, getDialogTag(dialogId));
         ta.commitAllowingStateLoss();
 
-        // TODO: commitAllowingStateLoss() is used to prevent https://code.google.com/p/android/issues/detail?id=23761
+        // TODO: commitAllowingStateLoss() is used to prevent
+        // https://code.google.com/p/android/issues/detail?id=23761
         // but is a bad...
-        //fragment.show(ta, getDialogTag(dialogId));
+        // fragment.show(ta, getDialogTag(dialogId));
     }
 
     private String getDialogTag(int dialogId) {
@@ -385,18 +399,23 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
 
     private String errorMessageForCertificateException(CertificateValidationException e) {
         switch (e.getReason()) {
-            case Expired: return getString(R.string.client_certificate_expired, e.getAlias(), e.getMessage());
-            case MissingCapability: return getString(R.string.auth_external_error);
-            case RetrievalFailure: return getString(R.string.client_certificate_retrieval_failure, e.getAlias());
-            case UseMessage: return e.getMessage();
+            case Expired:
+                return getString(R.string.client_certificate_expired, e.getAlias(), e.getMessage());
+            case MissingCapability:
+                return getString(R.string.auth_external_error);
+            case RetrievalFailure:
+                return getString(R.string.client_certificate_retrieval_failure, e.getAlias());
+            case UseMessage:
+                return e.getMessage();
             case Unknown:
-            default: return "";
+            default:
+                return "";
         }
     }
 
     /**
-     * FIXME: Don't use an AsyncTask to perform network operations.
-     * See also discussion in https://github.com/k9mail/k-9/pull/560
+     * FIXME: Don't use an AsyncTask to perform network operations. See also discussion in
+     * https://github.com/k9mail/k-9/pull/560
      */
     private class CheckAccountTask extends AsyncTask<CheckDirection, Integer, Void> {
         private final Account account;
@@ -410,9 +429,9 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
             final CheckDirection direction = params[0];
             try {
                 /*
-                 * This task could be interrupted at any point, but network operations can block,
-                 * so relying on InterruptedException is not enough. Instead, check after
-                 * each potentially long-running operation.
+                 * This task could be interrupted at any point, but network operations can block, so
+                 * relying on InterruptedException is not enough. Instead, check after each
+                 * potentially long-running operation.
                  */
                 if (cancelled()) {
                     return null;
@@ -431,8 +450,7 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
 
             } catch (AuthenticationFailedException afe) {
                 Log.e(K9.LOG_TAG, "Error while testing settings", afe);
-                showErrorDialog(
-                        R.string.account_setup_failed_dlg_auth_message_fmt,
+                showErrorDialog(R.string.account_setup_failed_dlg_auth_message_fmt,
                         afe.getMessage() == null ? "" : afe.getMessage());
             } catch (CertificateValidationException cve) {
                 handleCertificateValidationException(cve);
@@ -498,9 +516,10 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
             if (store instanceof WebDavStore) {
                 publishProgress(R.string.account_setup_check_settings_fetch);
             }
-            MessagingController.getInstance(getApplication()).listFoldersSynchronous(account, true, null);
-            MessagingController.getInstance(getApplication())
-                    .synchronizeMailbox(account, account.getInboxFolderName(), null, null);
+            // MessagingController.getInstance(getApplication()).listFoldersSynchronous(account,
+            // true, null);
+            // MessagingController.getInstance(getApplication())
+            // .synchronizeMailbox(account, account.getInboxFolderName(), null, null);
         }
 
         @Override
