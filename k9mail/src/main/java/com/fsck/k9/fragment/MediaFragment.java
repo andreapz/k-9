@@ -4,6 +4,7 @@ package com.fsck.k9.fragment;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Timer;
 
 import com.fsck.k9.R;
 
@@ -13,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -74,6 +74,8 @@ public class MediaFragment extends Fragment {
     private boolean mIsResizable = false;
     private Menu mMenu;
     private MediaPresenter.Type mType;
+    private Timer mTimerRefresh;
+    private Handler mHandler;
 
     public static MediaFragment newInstance(String home, MediaPresenter.Type type) {
 
@@ -108,6 +110,7 @@ public class MediaFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
+        mHandler = new Handler();
         if (savedInstanceState == null) {
             mType = getType(getArguments().getString(ARG_TYPE));
 
@@ -144,27 +147,13 @@ public class MediaFragment extends Fragment {
         mExtraHeaders.put(HEADER_X_TISCALI_APP, PLATFORM_ANDROID);
         updateWebViewSettings();
 
-        mWebView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onReceivedTitle(WebView view, String title) {
-                super.onReceivedTitle(view, title);
-                if (!TextUtils.isEmpty(title)) {
-                    if (title.contains(" ")) {
-                        title = title.substring(0, title.indexOf(" "));
-                    }
-                    String titleEncode = title.replaceAll("%20", " ");
-                    if (mFragmentListener != null) {
-                        mFragmentListener.setPageTitle(titleEncode);
-                    }
-                }
-            }
-        });
+        mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
                 Log.d("TiscaliWebViewClient", "[URL]:" + url + " @" + this);
-                if (mFragmentListener.isHomePage()) {
+                if (mFragmentListener != null && mFragmentListener.isHomePage()) {
                     Uri uri = Uri.parse(url);
                     String lastSegment = uri.getLastPathSegment();
                     if (lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
@@ -190,10 +179,23 @@ public class MediaFragment extends Fragment {
                 if (mFragmentListener != null) {
                     mFragmentListener.enableActionBarProgress(false);
                 }
-                view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
+                if (mType.equals(MediaPresenter.Type.OFFERS)) {
+                    String title = view.getTitle();
+                    if (title.contains(" ")) {
+                        title = title.substring(0, title.indexOf(" "));
+                    }
+                    String titleEncode = title.replaceAll("%20", " ");
+                    if (mFragmentListener != null) {
+                        mFragmentListener.setPageTitle(titleEncode);
+                    }
+                } else {
+                    view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
+                }
+
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_IS_SHAREABLE);
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_ID_SECTION);
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT);
+
 
                 if (mFragmentListener.isHomePage()) {
                     MediaFragmentListener listener = getFragmentListner();
@@ -287,17 +289,19 @@ public class MediaFragment extends Fragment {
             mWebView.loadUrl(url, mExtraHeaders);
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
-                    if (mUrl != null) {
-                        loadUrl(mUrl);
+            if (mHandler != null) {
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
+                        if (mUrl != null) {
+                            loadUrl(mUrl);
+                        }
                     }
-                }
-            }, mFragmentListener.getRefreshTimeout());
+                }, mFragmentListener.getRefreshTimeout());
+            }
+
+
         }
     }
 

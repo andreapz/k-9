@@ -17,7 +17,7 @@
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:ellipsize="end"
-            android:singleLine="true"
+            android:maxLines="1"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <ProgressBar

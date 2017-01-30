@@ -1015,4 +1015,5 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="special_mailbox_name_spam_fmt">Spam</string>
     <string name="status_last_poll">Ultima verifica <xliff:g id="lasttime">%s</xliff:g></string>
     <string name="customize_categories">Personalizza la tua home page selezionando gli argomenti che ti interessano</string>
+    <string name="menu_item_customize">personalizza</string>
 </resources>
