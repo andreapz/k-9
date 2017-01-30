@@ -850,6 +850,26 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == MediaPresenter.MEDIA_PRESENTER_BROWSING) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (mNewsPresenter != null && mNewsPresenter
+                        .getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
+                    mNewsPresenter.goBackOnHistory();
+                } else if (mVideoPresenter != null && mVideoPresenter
+                        .getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
+                    mVideoPresenter.goBackOnHistory();
+                } else if (mOffersPresenter != null && mOffersPresenter
+                        .getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
+                    mOffersPresenter.goBackOnHistory();
+                }
+            }
+
+        }
+    }// onActivityResult
+
+    @Override
     public MediaFragment.MediaFragmentListener getMediaFragmentListener(MediaPresenter.Type type) {
         if (mNewsPresenter == null) {
             forceBuildDaggerComponent();

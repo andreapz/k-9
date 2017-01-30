@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.Timer;
 
 import com.fsck.k9.R;
+import com.fsck.k9.activity.BrowserActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -72,10 +74,12 @@ public class MediaFragment extends Fragment {
 
     private String mIdSection;
     private boolean mIsResizable = false;
+    private boolean mIsExternalBrowsing = false;
     private Menu mMenu;
     private MediaPresenter.Type mType;
     private Timer mTimerRefresh;
     private Handler mHandler;
+
 
     public static MediaFragment newInstance(String home, MediaPresenter.Type type) {
 
@@ -106,7 +110,7 @@ public class MediaFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
@@ -153,10 +157,12 @@ public class MediaFragment extends Fragment {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
                 Log.d("TiscaliWebViewClient", "[URL]:" + url + " @" + this);
+                Uri uri = Uri.parse(url);
                 if (mFragmentListener != null && mFragmentListener.isHomePage()) {
-                    Uri uri = Uri.parse(url);
+
                     String lastSegment = uri.getLastPathSegment();
-                    if (lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
+                    if (lastSegment != null
+                            && lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
                         String sessionId = uri.getQueryParameter(TISCALI_APP_FAVE_SECTIONID_PARAMS);
                         String value = uri.getQueryParameter(TISCALI_APP_FAVE_FAV_PARAMS);
                         mFragmentListener.setFavoriteSection(sessionId,
@@ -164,13 +170,20 @@ public class MediaFragment extends Fragment {
                         return true;
                     }
                 }
+                if (uri.getHost() != null && mFragmentListener.isWalledGarden(uri.getHost())) {
+                    if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
+                        mFragmentListener.detailPageLoad(url);
+                        return true;
+                    }
+                } else if (!mIsExternalBrowsing) {
+                    Intent myIntent = new Intent(getActivity(), BrowserActivity.class);
+                    myIntent.putExtra(BrowserActivity.EXTRA_URL, url); // Optional parameters
+                    getActivity().startActivityForResult(myIntent,
+                            MediaPresenter.MEDIA_PRESENTER_BROWSING);
+                    mIsExternalBrowsing = true;
+                    return false;
 
-
-                if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
-                    mFragmentListener.detailPageLoad(url);
-                    return true;
                 }
-
                 return false;
             }
 
@@ -230,7 +243,7 @@ public class MediaFragment extends Fragment {
         settings.setJavaScriptEnabled(true);
         settings.setBuiltInZoomControls(true);
         settings.setUseWideViewPort(true);
-        settings.setSupportMultipleWindows(true);
+        // settings.setSupportMultipleWindows(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLoadsImagesAutomatically(true);
         settings.setDomStorageEnabled(true);
@@ -365,6 +378,8 @@ public class MediaFragment extends Fragment {
         boolean isDetailStatus();
 
         boolean isHomePage();
+
+        boolean isWalledGarden(String domain);
 
         String getMeJSON();
 

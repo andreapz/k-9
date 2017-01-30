@@ -97,6 +97,9 @@
             android:name=".activity.Accounts"
             android:configChanges="locale"
             android:label="@string/app_name" />
+        <activity
+            android:name=".activity.BrowserActivity"
+            android:label="@string/prefs_title" />
 
         <activity
             android:name=".activity.setup.Prefs"
