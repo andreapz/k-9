@@ -249,13 +249,6 @@ public abstract class MediaPresenter
     public void showMedia() {
         mDisplayMode = DisplayMode.MEDIA_VIEW;
         mViewSwitcher.showFirstView();
-        // if (mMediaViewFragment != null && mMediaViewFragment.mWebView != null) {
-        // enableActionBarProgress(true);
-        // mMediaViewFragment.mWebView.reload();
-        // if (mMediaDetailFragment != null) {
-        // mMediaDetailFragment.setUrl(null);
-        // }
-        // }
     }
 
     private void removeFragment(Fragment fragment) {
@@ -275,10 +268,6 @@ public abstract class MediaPresenter
 
     private void removeMediaFragment() {
         if (mMediaViewFragment != null) {
-            // mMediaViewFragment.mWebView.loadUrl("about:blank");
-            // removeFragment(mMediaViewFragment);
-            // isAttached = false;
-            // mMediaViewFragment = null;
             mMediaViewFragment.mWebView.setVisibility(View.INVISIBLE);
             hideFragment(mMediaViewFragment);
         }
