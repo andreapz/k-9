@@ -181,7 +181,7 @@ public class MediaFragment extends Fragment {
                     getActivity().startActivityForResult(myIntent,
                             MediaPresenter.MEDIA_PRESENTER_BROWSING);
                     mFragmentListener.setExternalBrowsing(true);
-                    return false;
+                    return true;
 
                 }
                 return false;

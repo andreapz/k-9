@@ -1,5 +1,7 @@
 package com.fsck.k9.activity;
 
+import java.util.HashMap;
+
 import com.fsck.k9.R;
 
 import android.content.Intent;
@@ -24,12 +26,15 @@ import android.widget.TextView;
 public class BrowserActivity extends K9Activity {
 
     public static final String EXTRA_URL = "BrowserActivity_URL";
+    public static final String PLATFORM_ANDROID = "android";
+    public static final String HEADER_X_TISCALI_APP = "X-Tiscali-App";
     private WebView mWebView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private ActionBar mActionBar;
     private TextView mActionBarTitle;
     private ProgressBar mActionBarProgress;
+    private HashMap<String, String> mExtraHeaders;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,14 +54,10 @@ public class BrowserActivity extends K9Activity {
         initializeActionBar();
         mWebView = (WebView) findViewById(R.id.webview);
         mWebView.setWebViewClient(new WebViewClient() {
-            //            @Override
-//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//
-//
-//                return false;
-//            }
+
             @Override
             public void onPageFinished(WebView view, String url) {
+                mActionBarTitle.setText(view.getTitle());
                 mActionBarProgress.setVisibility(View.INVISIBLE);
 
             }
@@ -65,7 +66,7 @@ public class BrowserActivity extends K9Activity {
         updateWebViewSettings();
         if (url != null) {
             mActionBarProgress.setVisibility(View.VISIBLE);
-            mWebView.loadUrl(url);
+            mWebView.loadUrl(url, mExtraHeaders);
         }
 
 
@@ -85,6 +86,8 @@ public class BrowserActivity extends K9Activity {
     }
 
     private void updateWebViewSettings() {
+        mExtraHeaders = new HashMap<>();
+        mExtraHeaders.put(HEADER_X_TISCALI_APP, PLATFORM_ANDROID);
         // Enable Javascript
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
