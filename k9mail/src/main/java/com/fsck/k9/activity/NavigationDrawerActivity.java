@@ -854,15 +854,14 @@ public class NavigationDrawerActivity extends K9Activity
 
         if (requestCode == MediaPresenter.MEDIA_PRESENTER_BROWSING) {
             if (resultCode == Activity.RESULT_OK) {
-                if (mNewsPresenter != null && mNewsPresenter
-                        .getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
-                    mNewsPresenter.goBackOnHistory();
+                if (mNewsPresenter != null) {
+                    mNewsPresenter.onActivityResult();
                 } else if (mVideoPresenter != null && mVideoPresenter
                         .getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
-                    mVideoPresenter.goBackOnHistory();
+                    mVideoPresenter.onActivityResult();
                 } else if (mOffersPresenter != null && mOffersPresenter
                         .getDisplayMode() == MediaPresenter.DisplayMode.MEDIA_DETAIL) {
-                    mOffersPresenter.goBackOnHistory();
+                    mOffersPresenter.onActivityResult();
                 }
             }
 

@@ -74,7 +74,7 @@ public class MediaFragment extends Fragment {
 
     private String mIdSection;
     private boolean mIsResizable = false;
-    private boolean mIsExternalBrowsing = false;
+
     private Menu mMenu;
     private MediaPresenter.Type mType;
     private Timer mTimerRefresh;
@@ -175,12 +175,12 @@ public class MediaFragment extends Fragment {
                         mFragmentListener.detailPageLoad(url);
                         return true;
                     }
-                } else if (!mIsExternalBrowsing) {
+                } else if (!mFragmentListener.isExternalBrowsing()) {
                     Intent myIntent = new Intent(getActivity(), BrowserActivity.class);
                     myIntent.putExtra(BrowserActivity.EXTRA_URL, url); // Optional parameters
                     getActivity().startActivityForResult(myIntent,
                             MediaPresenter.MEDIA_PRESENTER_BROWSING);
-                    mIsExternalBrowsing = true;
+                    mFragmentListener.setExternalBrowsing(true);
                     return false;
 
                 }
@@ -378,6 +378,10 @@ public class MediaFragment extends Fragment {
         boolean isDetailStatus();
 
         boolean isHomePage();
+
+        boolean isExternalBrowsing();
+
+        void setExternalBrowsing(boolean value);
 
         boolean isWalledGarden(String domain);
 

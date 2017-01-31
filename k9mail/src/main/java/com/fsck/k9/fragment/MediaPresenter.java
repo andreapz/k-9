@@ -98,6 +98,7 @@ public abstract class MediaPresenter
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
+    private boolean mIsExternalBrowsing = false;
 
     public enum DisplayMode {
         MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW
@@ -229,6 +230,10 @@ public abstract class MediaPresenter
         } else {
             showMedia();
         }
+    }
+
+    public void onActivityResult() {
+        setExternalBrowsing(false);
     }
 
     public void showMedia() {
@@ -370,6 +375,17 @@ public abstract class MediaPresenter
             }
         }
         return false;
+    }
+
+    @Override
+    public void setExternalBrowsing(boolean value) {
+        mIsExternalBrowsing = value;
+    }
+
+    @Override
+    public boolean isExternalBrowsing() {
+
+        return mIsExternalBrowsing;
     }
 
     @Override

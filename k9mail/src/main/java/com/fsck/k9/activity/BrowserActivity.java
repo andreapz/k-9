@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +14,8 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 /**
  * Created by thomascastangia on 30/01/17.
@@ -24,6 +27,9 @@ public class BrowserActivity extends K9Activity {
     private WebView mWebView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+    private ActionBar mActionBar;
+    private TextView mActionBarTitle;
+    private ProgressBar mActionBarProgress;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,15 +46,42 @@ public class BrowserActivity extends K9Activity {
         if (extras != null) {
             url = extras.getString(EXTRA_URL);
         }
-
+        initializeActionBar();
         mWebView = (WebView) findViewById(R.id.webview);
-        mWebView.setWebViewClient(new WebViewClient());
+        mWebView.setWebViewClient(new WebViewClient() {
+            //            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//
+//
+//                return false;
+//            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                mActionBarProgress.setVisibility(View.INVISIBLE);
+
+            }
+        });
+
         updateWebViewSettings();
         if (url != null) {
+            mActionBarProgress.setVisibility(View.VISIBLE);
             mWebView.loadUrl(url);
         }
 
 
+    }
+
+    private void initializeActionBar() {
+        mActionBar = getSupportActionBar();
+
+        mActionBar.setDisplayShowCustomEnabled(true);
+        mActionBar.setCustomView(R.layout.actioncustombar_news);
+
+        View customView = mActionBar.getCustomView();
+        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
+        mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
+
+        mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     private void updateWebViewSettings() {
@@ -104,4 +137,14 @@ public class BrowserActivity extends K9Activity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mWebView != null && mWebView.canGoBack()) {
+            mWebView.goBack();
+        } else {
+            Intent returnIntent = getIntent();
+            setResult(RESULT_OK, returnIntent);
+            finish();
+        }
+    }
 }
