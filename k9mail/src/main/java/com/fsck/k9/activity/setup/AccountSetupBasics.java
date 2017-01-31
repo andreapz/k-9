@@ -7,6 +7,24 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.EmailAddressValidator;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.R;
+import com.fsck.k9.account.AccountCreator;
+import com.fsck.k9.activity.K9Activity;
+import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
+import com.fsck.k9.helper.UrlEncodingHelper;
+import com.fsck.k9.helper.Utility;
+import com.fsck.k9.mail.AuthType;
+import com.fsck.k9.mail.ConnectionSecurity;
+import com.fsck.k9.mail.ServerSettings;
+import com.fsck.k9.mail.Transport;
+import com.fsck.k9.mail.store.RemoteStore;
+import com.fsck.k9.view.ClientCertificateSpinner;
+import com.fsck.k9.view.ClientCertificateSpinner.OnClientCertificateChangedListener;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -25,38 +43,19 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-
-import com.fsck.k9.Account;
-import com.fsck.k9.EmailAddressValidator;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
-import com.fsck.k9.activity.K9Activity;
-import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
-import com.fsck.k9.helper.UrlEncodingHelper;
-import com.fsck.k9.helper.Utility;
-import com.fsck.k9.mail.AuthType;
-import com.fsck.k9.mail.ConnectionSecurity;
-import com.fsck.k9.mail.ServerSettings;
-import com.fsck.k9.mail.Transport;
-import com.fsck.k9.mail.store.RemoteStore;
-import com.fsck.k9.account.AccountCreator;
-import com.fsck.k9.view.ClientCertificateSpinner;
-import com.fsck.k9.view.ClientCertificateSpinner.OnClientCertificateChangedListener;
+import android.widget.TextView;
 
 /**
- * Prompts the user for the email address and password.
- * Attempts to lookup default settings for the domain the user specified. If the
- * domain is known the settings are handed off to the AccountSetupCheckSettings
- * activity. If no settings are found the settings are handed off to the
+ * Prompts the user for the email address and password. Attempts to lookup default settings for the
+ * domain the user specified. If the domain is known the settings are handed off to the
+ * AccountSetupCheckSettings activity. If no settings are found the settings are handed off to the
  * AccountSetupAccountType activity.
  */
-public class AccountSetupBasics extends K9Activity
-    implements OnClickListener, TextWatcher, OnCheckedChangeListener, OnClientCertificateChangedListener {
+public class AccountSetupBasics extends K9Activity implements OnClickListener, TextWatcher,
+        OnCheckedChangeListener, OnClientCertificateChangedListener {
     private final static String EXTRA_ACCOUNT = "com.fsck.k9.AccountSetupBasics.account";
     private final static int DIALOG_NOTE = 1;
-    private final static String STATE_KEY_PROVIDER =
-            "com.fsck.k9.AccountSetupBasics.provider";
+    private final static String STATE_KEY_PROVIDER = "com.fsck.k9.AccountSetupBasics.provider";
     private final static String STATE_KEY_CHECKED_INCOMING =
             "com.fsck.k9.AccountSetupBasics.checkedIncoming";
 
@@ -72,6 +71,7 @@ public class AccountSetupBasics extends K9Activity
     private EmailAddressValidator mEmailValidator = new EmailAddressValidator();
     private boolean mCheckedIncoming = false;
     private CheckBox mShowPasswordCheckBox;
+    private String mEmailDomain;
 
     public static void actionNewAccount(Context context) {
         Intent i = new Intent(context, AccountSetupBasics.class);
@@ -82,15 +82,20 @@ public class AccountSetupBasics extends K9Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_setup_basics);
-        mEmailView = (EditText)findViewById(R.id.account_email);
-        mPasswordView = (EditText)findViewById(R.id.account_password);
-        mClientCertificateCheckBox = (CheckBox)findViewById(R.id.account_client_certificate);
-        mClientCertificateSpinner = (ClientCertificateSpinner)findViewById(R.id.account_client_certificate_spinner);
-        mNextButton = (Button)findViewById(R.id.next);
-        mManualSetupButton = (Button)findViewById(R.id.manual_setup);
+        mEmailView = (EditText) findViewById(R.id.account_email);
+        TextView emailDomainTv = (TextView) findViewById(R.id.account_domain);
+        mPasswordView = (EditText) findViewById(R.id.account_password);
+        mClientCertificateCheckBox = (CheckBox) findViewById(R.id.account_client_certificate);
+        mClientCertificateSpinner =
+                (ClientCertificateSpinner) findViewById(R.id.account_client_certificate_spinner);
+        mNextButton = (Button) findViewById(R.id.next);
+        mManualSetupButton = (Button) findViewById(R.id.manual_setup);
         mShowPasswordCheckBox = (CheckBox) findViewById(R.id.show_password);
         mNextButton.setOnClickListener(this);
         mManualSetupButton.setOnClickListener(this);
+
+        mEmailDomain = getResources().getString(R.string.account_setup_basics_domain_tiscali);
+        emailDomainTv.setText(mEmailDomain);
     }
 
     private void initializeViewListeners() {
@@ -144,11 +149,10 @@ public class AccountSetupBasics extends K9Activity
         super.onPostCreate(savedInstanceState);
 
         /*
-         * We wait until now to initialize the listeners because we didn't want
-         * the OnCheckedChangeListener active while the
-         * mClientCertificateCheckBox state was being restored because it could
-         * trigger the pop-up of a ClientCertificateSpinner.chooseCertificate()
-         * dialog.
+         * We wait until now to initialize the listeners because we didn't want the
+         * OnCheckedChangeListener active while the mClientCertificateCheckBox state was being
+         * restored because it could trigger the pop-up of a
+         * ClientCertificateSpinner.chooseCertificate() dialog.
          */
         initializeViewListeners();
         validateFields();
@@ -158,11 +162,9 @@ public class AccountSetupBasics extends K9Activity
         validateFields();
     }
 
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-    }
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-    }
+    public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
     @Override
     public void onClientCertificateChanged(String alias) {
@@ -202,7 +204,8 @@ public class AccountSetupBasics extends K9Activity
         if (show) {
             mPasswordView.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
         } else {
-            mPasswordView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            mPasswordView.setInputType(
+                    InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         }
         mPasswordView.setSelection(cursorPosition);
     }
@@ -210,7 +213,7 @@ public class AccountSetupBasics extends K9Activity
     private void validateFields() {
         boolean clientCertificateChecked = mClientCertificateCheckBox.isChecked();
         String clientCertificateAlias = mClientCertificateSpinner.getAlias();
-        String email = mEmailView.getText().toString();
+        String email = mEmailView.getText().toString() + mEmailDomain;
 
         boolean valid = Utility.requiredFieldValid(mEmailView)
                 && ((!clientCertificateChecked && Utility.requiredFieldValid(mPasswordView))
@@ -220,9 +223,8 @@ public class AccountSetupBasics extends K9Activity
         mNextButton.setEnabled(valid);
         mManualSetupButton.setEnabled(valid);
         /*
-         * Dim the next button's icon to 50% if the button is disabled.
-         * TODO this can probably be done with a stateful drawable. Check into it.
-         * android:state_enabled
+         * Dim the next button's icon to 50% if the button is disabled. TODO this can probably be
+         * done with a stateful drawable. Check into it. android:state_enabled
          */
         Utility.setCompoundDrawablesAlpha(mNextButton, mNextButton.isEnabled() ? 255 : 128);
     }
@@ -254,30 +256,24 @@ public class AccountSetupBasics extends K9Activity
     public Dialog onCreateDialog(int id) {
         if (id == DIALOG_NOTE) {
             if (mProvider != null && mProvider.note != null) {
-                return new AlertDialog.Builder(this)
-                       .setMessage(mProvider.note)
-                       .setPositiveButton(
-                           getString(R.string.okay_action),
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        finishAutoSetup();
-                    }
-                })
-                       .setNegativeButton(
-                           getString(R.string.cancel_action),
-                           null)
-                       .create();
+                return new AlertDialog.Builder(this).setMessage(mProvider.note)
+                        .setPositiveButton(getString(R.string.okay_action),
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        finishAutoSetup();
+                                    }
+                                })
+                        .setNegativeButton(getString(R.string.cancel_action), null).create();
             }
         }
         return null;
     }
 
     private void finishAutoSetup() {
-        String email = mEmailView.getText().toString();
+        String email = mEmailView.getText().toString() + mEmailDomain;
         String password = mPasswordView.getText().toString();
-        String[] emailParts = splitEmail(email);
-        String user = emailParts[0];
-        String domain = emailParts[1];
+        String user = mEmailView.getText().toString();
+        String domain = mEmailDomain.substring(mEmailDomain.indexOf("@") + 1);
         try {
             String userEnc = UrlEncodingHelper.encodeUtf8(user);
             String passwordEnc = UrlEncodingHelper.encodeUtf8(password);
@@ -288,8 +284,9 @@ public class AccountSetupBasics extends K9Activity
             incomingUsername = incomingUsername.replaceAll("\\$domain", domain);
 
             URI incomingUriTemplate = mProvider.incomingUriTemplate;
-            URI incomingUri = new URI(incomingUriTemplate.getScheme(), incomingUsername + ":" + passwordEnc,
-                    incomingUriTemplate.getHost(), incomingUriTemplate.getPort(), null, null, null);
+            URI incomingUri = new URI(incomingUriTemplate.getScheme(),
+                    incomingUsername + ":" + passwordEnc, incomingUriTemplate.getHost(),
+                    incomingUriTemplate.getPort(), null, null, null);
 
             String outgoingUsername = mProvider.outgoingUsernameTemplate;
 
@@ -301,14 +298,14 @@ public class AccountSetupBasics extends K9Activity
                 outgoingUsername = outgoingUsername.replaceAll("\\$email", email);
                 outgoingUsername = outgoingUsername.replaceAll("\\$user", userEnc);
                 outgoingUsername = outgoingUsername.replaceAll("\\$domain", domain);
-                outgoingUri = new URI(outgoingUriTemplate.getScheme(), outgoingUsername + ":"
-                                      + passwordEnc, outgoingUriTemplate.getHost(), outgoingUriTemplate.getPort(), null,
-                                      null, null);
+                outgoingUri = new URI(outgoingUriTemplate.getScheme(),
+                        outgoingUsername + ":" + passwordEnc, outgoingUriTemplate.getHost(),
+                        outgoingUriTemplate.getPort(), null, null, null);
 
             } else {
-                outgoingUri = new URI(outgoingUriTemplate.getScheme(),
-                                      null, outgoingUriTemplate.getHost(), outgoingUriTemplate.getPort(), null,
-                                      null, null);
+                outgoingUri = new URI(outgoingUriTemplate.getScheme(), null,
+                        outgoingUriTemplate.getHost(), outgoingUriTemplate.getPort(), null, null,
+                        null);
 
 
             }
@@ -326,12 +323,11 @@ public class AccountSetupBasics extends K9Activity
             ServerSettings incomingSettings = RemoteStore.decodeStoreUri(incomingUri.toString());
             mAccount.setDeletePolicy(AccountCreator.getDefaultDeletePolicy(incomingSettings.type));
 
-            // Check incoming here.  Then check outgoing in onActivityResult()
+            // Check incoming here. Then check outgoing in onActivityResult()
             AccountSetupCheckSettings.actionCheckSettings(this, mAccount, CheckDirection.INCOMING);
         } catch (URISyntaxException use) {
             /*
-             * If there is some problem with the URI we give up and go on to
-             * manual setup.
+             * If there is some problem with the URI we give up and go on to manual setup.
              */
             onManualSetup();
         }
@@ -345,14 +341,11 @@ public class AccountSetupBasics extends K9Activity
             return;
         }
 
-        String email = mEmailView.getText().toString();
-        String[] emailParts = splitEmail(email);
-        String domain = emailParts[1];
+        String domain = mEmailDomain.substring(mEmailDomain.indexOf("@") + 1);
         mProvider = findProviderForDomain(domain);
         if (mProvider == null) {
             /*
-             * We don't have default settings for this account, start the manual
-             * setup process.
+             * We don't have default settings for this account, start the manual setup process.
              */
             onManualSetup();
             return;
@@ -369,11 +362,12 @@ public class AccountSetupBasics extends K9Activity
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (!mCheckedIncoming) {
-                //We've successfully checked incoming.  Now check outgoing.
+                // We've successfully checked incoming. Now check outgoing.
                 mCheckedIncoming = true;
-                AccountSetupCheckSettings.actionCheckSettings(this, mAccount, CheckDirection.OUTGOING);
+                AccountSetupCheckSettings.actionCheckSettings(this, mAccount,
+                        CheckDirection.OUTGOING);
             } else {
-                //We've successfully checked outgoing as well.
+                // We've successfully checked outgoing as well.
                 mAccount.setDescription(mAccount.getEmail());
                 mAccount.save(Preferences.getPreferences(this));
                 K9.setServicesEnabled(this);
@@ -384,10 +378,9 @@ public class AccountSetupBasics extends K9Activity
     }
 
     private void onManualSetup() {
-        String email = mEmailView.getText().toString();
-        String[] emailParts = splitEmail(email);
-        String user = email;
-        String domain = emailParts[1];
+        String email = mEmailView.getText().toString() + mEmailDomain;
+        String user = mEmailView.getText().toString();
+        String domain = mEmailDomain.substring(mEmailDomain.indexOf("@") + 1);
 
         String password = null;
         String clientCertificateAlias = null;
@@ -408,10 +401,12 @@ public class AccountSetupBasics extends K9Activity
 
         // set default uris
         // NOTE: they will be changed again in AccountSetupAccountType!
-        ServerSettings storeServer = new ServerSettings(ServerSettings.Type.IMAP, "mail." + domain, -1,
-                ConnectionSecurity.SSL_TLS_REQUIRED, authenticationType, user, password, clientCertificateAlias);
-        ServerSettings transportServer = new ServerSettings(ServerSettings.Type.SMTP, "mail." + domain, -1,
-                ConnectionSecurity.SSL_TLS_REQUIRED, authenticationType, user, password, clientCertificateAlias);
+        ServerSettings storeServer = new ServerSettings(ServerSettings.Type.IMAP, "mail." + domain,
+                -1, ConnectionSecurity.SSL_TLS_REQUIRED, authenticationType, user, password,
+                clientCertificateAlias);
+        ServerSettings transportServer = new ServerSettings(ServerSettings.Type.SMTP,
+                "mail." + domain, -1, ConnectionSecurity.SSL_TLS_REQUIRED, authenticationType, user,
+                password, clientCertificateAlias);
         String storeUri = RemoteStore.createStoreUri(storeServer);
         String transportUri = Transport.createTransportUri(transportServer);
         mAccount.setStoreUri(storeUri);
@@ -441,18 +436,19 @@ public class AccountSetupBasics extends K9Activity
 
     public void onClick(View v) {
         switch (v.getId()) {
-        case R.id.next:
-            onNext();
-            break;
-        case R.id.manual_setup:
-            onManualSetup();
-            break;
+            case R.id.next:
+                onNext();
+                break;
+            case R.id.manual_setup:
+                onManualSetup();
+                break;
         }
     }
 
     /**
-     * Attempts to get the given attribute as a String resource first, and if it fails
-     * returns the attribute as a simple String value.
+     * Attempts to get the given attribute as a String resource first, and if it fails returns the
+     * attribute as a simple String value.
+     * 
      * @param xml
      * @param name
      * @return
@@ -472,8 +468,7 @@ public class AccountSetupBasics extends K9Activity
             int xmlEventType;
             Provider provider = null;
             while ((xmlEventType = xml.next()) != XmlResourceParser.END_DOCUMENT) {
-                if (xmlEventType == XmlResourceParser.START_TAG
-                        && "provider".equals(xml.getName())
+                if (xmlEventType == XmlResourceParser.START_TAG && "provider".equals(xml.getName())
                         && domain.equalsIgnoreCase(getXmlAttribute(xml, "domain"))) {
                     provider = new Provider();
                     provider.id = getXmlAttribute(xml, "id");
@@ -481,18 +476,15 @@ public class AccountSetupBasics extends K9Activity
                     provider.domain = getXmlAttribute(xml, "domain");
                     provider.note = getXmlAttribute(xml, "note");
                 } else if (xmlEventType == XmlResourceParser.START_TAG
-                           && "incoming".equals(xml.getName())
-                           && provider != null) {
+                        && "incoming".equals(xml.getName()) && provider != null) {
                     provider.incomingUriTemplate = new URI(getXmlAttribute(xml, "uri"));
                     provider.incomingUsernameTemplate = getXmlAttribute(xml, "username");
                 } else if (xmlEventType == XmlResourceParser.START_TAG
-                           && "outgoing".equals(xml.getName())
-                           && provider != null) {
+                        && "outgoing".equals(xml.getName()) && provider != null) {
                     provider.outgoingUriTemplate = new URI(getXmlAttribute(xml, "uri"));
                     provider.outgoingUsernameTemplate = getXmlAttribute(xml, "username");
                 } else if (xmlEventType == XmlResourceParser.END_TAG
-                           && "provider".equals(xml.getName())
-                           && provider != null) {
+                        && "provider".equals(xml.getName()) && provider != null) {
                     return provider;
                 }
             }
