@@ -92,6 +92,10 @@ public class NewsFragment extends Fragment {
         this.mUrl = url;
     }
 
+    public String getUrl() {
+        return mUrl;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,58 +148,7 @@ public class NewsFragment extends Fragment {
         updateWebViewSettings();
 
         mWebView.setWebChromeClient(new WebChromeClient());
-        mWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
-                Log.d("TiscaliWebViewClient", "[URL]:" + url + " @" + this);
-                if (mFragmentListener.isHomePage()) {
-                    Uri uri = Uri.parse(url);
-                    String lastSegment = uri.getLastPathSegment();
-                    if (lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
-                        String sessionId = uri.getQueryParameter(TISCALI_APP_FAVE_SECTIONID_PARAMS);
-                        String value = uri.getQueryParameter(TISCALI_APP_FAVE_FAV_PARAMS);
-                        mFragmentListener.setFavoriteSection(sessionId,
-                                Boolean.parseBoolean(value));
-                        return true;
-                    }
-                }
-
-
-                if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
-                    mFragmentListener.detailPageLoad(url);
-                    return true;
-                }
-
-                return false;
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                if (mFragmentListener != null) {
-                    mFragmentListener.enableActionBarProgress(false);
-                }
-                view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
-                view.loadUrl(JAVASCRIPT_TISCALI_APP_IS_SHAREABLE);
-                view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_ID_SECTION);
-                view.loadUrl(JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT);
-
-                if (mFragmentListener.isHomePage()) {
-                    NewsFragmentListener listener = getFragmentListner();
-                    if (listener != null) {
-                        String value = listener.getMeJSON();
-                        try {
-                            String valueEncoded =
-                                    URLEncoder.encode(value, "UTF-8").replace("%", "\\x");
-                            view.loadUrl(JAVASCRIPT_TISCALI_APP_SET_PAGE_STATUS.replace("%D",
-                                    valueEncoded));
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        });
+        mWebView.setWebViewClient(new TiscaliWebClient());
     }
 
     @Override
@@ -217,7 +170,7 @@ public class NewsFragment extends Fragment {
         settings.setLoadsImagesAutomatically(true);
         settings.setDomStorageEnabled(true);
         settings.setLoadWithOverviewMode(true);
-        settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         if (Build.VERSION.SDK_INT >= 19) {
             mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -410,5 +363,57 @@ public class NewsFragment extends Fragment {
             Log.d("TiscaliWebView", "[SET]:" + value);
         }
 
+    }
+
+    private class TiscaliWebClient extends WebViewClient {
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+            Log.d("TiscaliWebViewClient", "[URL]:" + url + " @" + this);
+            if (mFragmentListener.isHomePage()) {
+                Uri uri = Uri.parse(url);
+                String lastSegment = uri.getLastPathSegment();
+                if (lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
+                    String sessionId = uri.getQueryParameter(TISCALI_APP_FAVE_SECTIONID_PARAMS);
+                    String value = uri.getQueryParameter(TISCALI_APP_FAVE_FAV_PARAMS);
+                    mFragmentListener.setFavoriteSection(sessionId, Boolean.parseBoolean(value));
+                    return true;
+                }
+            }
+
+
+            if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
+                mFragmentListener.detailPageLoad(url);
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            if (mFragmentListener != null) {
+                mFragmentListener.enableActionBarProgress(false);
+            }
+            view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
+            view.loadUrl(JAVASCRIPT_TISCALI_APP_IS_SHAREABLE);
+            view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_ID_SECTION);
+            view.loadUrl(JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT);
+
+            if (mFragmentListener.isHomePage()) {
+                NewsFragmentListener listener = getFragmentListner();
+                if (listener != null) {
+                    String value = listener.getMeJSON();
+                    try {
+                        String valueEncoded = URLEncoder.encode(value, "UTF-8").replace("%", "\\x");
+                        view.loadUrl(
+                                JAVASCRIPT_TISCALI_APP_SET_PAGE_STATUS.replace("%D", valueEncoded));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 }

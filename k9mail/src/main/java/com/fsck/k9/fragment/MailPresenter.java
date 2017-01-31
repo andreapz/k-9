@@ -1126,6 +1126,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
         outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
         outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
+        mSavedInstanceState = outState;
     }
 
     @Override

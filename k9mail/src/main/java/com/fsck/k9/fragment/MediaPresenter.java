@@ -96,6 +96,7 @@ public abstract class MediaPresenter
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
+    private boolean isAttached = false;
 
     public enum DisplayMode {
         NEWS_VIEW, NEWS_DETAIL, SPLIT_VIEW
@@ -119,6 +120,7 @@ public abstract class MediaPresenter
 
     @Nullable
     public void onCreateView() {
+
         mStarted = true;
         mInflater = mContext.getLayoutInflater();
         FrameLayout container = mListener.getContainer();
@@ -136,8 +138,7 @@ public abstract class MediaPresenter
 
         mIsHomePage = true;
         initializeActionBar();
-        findFragments();
-
+//            findFragments();
         initializeDisplayMode(mSavedInstanceState);
 
         mListener.setDrawerListAdapter(mNewsAdapter);
@@ -158,6 +159,7 @@ public abstract class MediaPresenter
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
         outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
+        mSavedInstanceState = outState;
     }
 
     private void findFragments() {
@@ -178,12 +180,20 @@ public abstract class MediaPresenter
         if (hasNewsFragment) {
             mNewsViewFragment.setType(getType());
             mNewsViewFragment.setUrl(home);
+            mNewsViewFragment.mWebView.setVisibility(View.VISIBLE);
         } else {
-            FragmentTransaction ft = fragmentManager.beginTransaction();
             mNewsViewFragment = NewsFragment.newInstance(home, getType());
-            ft.add(R.id.news_view_container, mNewsViewFragment);
-            ft.commit();
         }
+
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+
+        if (isAttached) {
+            ft.show(mNewsViewFragment);
+        } else {
+            ft.add(R.id.news_view_container, mNewsViewFragment);
+            isAttached = true;
+        }
+        ft.commit();
 
         if (mDisplayMode.equals(DisplayMode.NEWS_VIEW)) {
             setActionBarToggle();
@@ -242,11 +252,21 @@ public abstract class MediaPresenter
         manager.popBackStackImmediate();
     }
 
+    private void hideFragment(Fragment fragment) {
+        FragmentManager manager = mContext.getFragmentManager();
+        FragmentTransaction ft = manager.beginTransaction();
+        ft.hide(fragment);
+        ft.commit();
+    }
+
     private void removeNewsFragment() {
         if (mNewsViewFragment != null) {
-            mNewsViewFragment.mWebView.loadUrl("about:blank");
-            removeFragment(mNewsViewFragment);
-            mNewsViewFragment = null;
+            // mNewsViewFragment.mWebView.loadUrl("about:blank");
+//            removeFragment(mNewsViewFragment);
+//            isAttached = false;
+            // mNewsViewFragment = null;
+            mNewsViewFragment.mWebView.setVisibility(View.INVISIBLE);
+            hideFragment(mNewsViewFragment);
         }
     }
 
@@ -270,8 +290,6 @@ public abstract class MediaPresenter
 
         mActionBarTitle.setText(DEFAULT_ACTIONBAR_TITLE);
 
-
-
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
@@ -289,12 +307,12 @@ public abstract class MediaPresenter
                     @Override
                     public void onError(Throwable e) {
 
-            }
+                    }
 
                     @Override
                     public void onNext(Object o) {
 
-            }
+                    }
                 });
 
     }
@@ -305,7 +323,7 @@ public abstract class MediaPresenter
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
 
@@ -333,10 +351,12 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {}
+                    public void onError(Throwable e) {
+                    }
 
                     @Override
-                    public void onNext(Object o) {}
+                    public void onNext(Object o) {
+                    }
                 });
 
     }
@@ -622,7 +642,8 @@ public abstract class MediaPresenter
             }
         };
 
-        public NewsAdapter() {}
+        public NewsAdapter() {
+        }
 
         public void updateData() {
             mItems.clear();
@@ -861,15 +882,16 @@ public abstract class MediaPresenter
         mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
 
-        if (!isInitialized && mDisplayMode != DisplayMode.NEWS_DETAIL) {
+        if (!isInitialized && mDisplayMode == DisplayMode.NEWS_VIEW) {
             mIsHomePage = true;
+            mCurrentPage = mMenuItems.get(HOME_POSITION_PRESENTER).getUrl();
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
 
         mNewsAdapter.updateData();
 
         if (mDisplayMode == DisplayMode.NEWS_VIEW) {
-            if (mNewsViewFragment != null) {
+            if (mNewsViewFragment != null && mNewsViewFragment.getUrl() == null) {
                 mNewsViewFragment.refreshUrl();
             }
         } else {
