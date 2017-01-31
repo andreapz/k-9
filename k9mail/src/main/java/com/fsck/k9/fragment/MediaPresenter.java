@@ -72,6 +72,7 @@ public abstract class MediaPresenter
 
     private static final int HOME_POSITION_ADAPTER = 1;
     private static final int HOME_POSITION_PRESENTER = 0;
+    public static final int MEDIA_PRESENTER_BROWSING = 5;
     public static final String DEFAULT_ACTIONBAR_TITLE = "Tiscali";
     private final Activity mContext;
     private static final String ARG_HOME = "HOME";
@@ -91,11 +92,13 @@ public abstract class MediaPresenter
     private int mTimeoutRefresh = 1000;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
+    private List<String> mWalledGarden = new ArrayList<>();
     private MediaPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
     private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
+    private boolean mIsExternalBrowsing = false;
 
     public enum DisplayMode {
         MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW
@@ -229,12 +232,19 @@ public abstract class MediaPresenter
         }
     }
 
+    public void onActivityResult() {
+        setExternalBrowsing(false);
+    }
+
     public void showMedia() {
         mDisplayMode = DisplayMode.MEDIA_VIEW;
         mViewSwitcher.showFirstView();
         if (mMediaViewFragment != null && mMediaViewFragment.mWebView != null) {
             enableActionBarProgress(true);
             mMediaViewFragment.mWebView.reload();
+            if (mMediaDetailFragment != null) {
+                mMediaDetailFragment.setUrl(null);
+            }
         }
     }
 
@@ -354,6 +364,28 @@ public abstract class MediaPresenter
             return mIsHomePage;
         }
 
+    }
+
+    @Override
+    public boolean isWalledGarden(String domain) {
+        for (int i = 0; i < mWalledGarden.size(); i++) {
+            String walled = mWalledGarden.get(i);
+            if (domain.contains(walled)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void setExternalBrowsing(boolean value) {
+        mIsExternalBrowsing = value;
+    }
+
+    @Override
+    public boolean isExternalBrowsing() {
+
+        return mIsExternalBrowsing;
     }
 
     @Override
@@ -869,6 +901,10 @@ public abstract class MediaPresenter
         if (!isInitialized && mDisplayMode != DisplayMode.MEDIA_DETAIL) {
             mIsHomePage = true;
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
+        }
+        if (mListener != null) {
+            mWalledGarden =
+                    mListener.getApiController().getMainConfig().getConfig().getWalledGarden();
         }
 
         mNewsAdapter.updateData();
