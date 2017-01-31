@@ -77,6 +77,8 @@ public class AccountSetupCheckSettings extends K9Activity
 
     private boolean mDestroyed;
 
+    private CheckAccountTask mCheckAccountTask;
+
     public static void actionCheckSettings(Activity context, Account account,
             CheckDirection direction) {
         Intent i = new Intent(context, AccountSetupCheckSettings.class);
@@ -100,7 +102,8 @@ public class AccountSetupCheckSettings extends K9Activity
         mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
         mDirection = (CheckDirection) getIntent().getSerializableExtra(EXTRA_CHECK_DIRECTION);
 
-        new CheckAccountTask(mAccount).execute(mDirection);
+        mCheckAccountTask = new CheckAccountTask(mAccount);
+        mCheckAccountTask.execute(mDirection);
     }
 
     private void handleCertificateValidationException(CertificateValidationException cve) {
@@ -302,8 +305,8 @@ public class AccountSetupCheckSettings extends K9Activity
         try {
             mAccount.addCertificate(mDirection, certificate);
         } catch (CertificateException e) {
-            showErrorDialog(R.string.account_setup_failed_dlg_certificate_message_fmt,
-                    e.getMessage() == null ? "" : e.getMessage());
+            String message = e.getMessage() == null ? "" : e.getMessage();
+            showErrorDialog(R.string.account_setup_failed_dlg_certificate_message_fmt, message);
         }
         AccountSetupCheckSettings.actionCheckSettings(AccountSetupCheckSettings.this, mAccount,
                 mDirection);
@@ -318,6 +321,8 @@ public class AccountSetupCheckSettings extends K9Activity
     private void onCancel() {
         mCanceled = true;
         setMessage(R.string.account_setup_check_settings_canceling_msg);
+        mCheckAccountTask.cancel(true);
+        finish();
     }
 
     public void onClick(View v) {
@@ -346,9 +351,8 @@ public class AccountSetupCheckSettings extends K9Activity
         switch (dialogId) {
             case R.id.dialog_account_setup_error: {
                 fragment = ConfirmationDialogFragment.newInstance(dialogId,
-                        getString(R.string.account_setup_failed_dlg_title), customMessage,
-                        getString(R.string.account_setup_failed_dlg_edit_details_action),
-                        getString(R.string.account_setup_failed_dlg_continue_action));
+                        getString(R.string.account_setup_failed_dlg_title), customMessage, null,
+                        getString(R.string.account_setup_failed_dlg_edit_details_action), false);
                 break;
             }
             default: {
@@ -372,20 +376,13 @@ public class AccountSetupCheckSettings extends K9Activity
 
     @Override
     public void doPositiveClick(int dialogId) {
-        switch (dialogId) {
-            case R.id.dialog_account_setup_error: {
-                finish();
-                break;
-            }
-        }
+        // nothing to do here...
     }
 
     @Override
     public void doNegativeClick(int dialogId) {
         switch (dialogId) {
             case R.id.dialog_account_setup_error: {
-                mCanceled = false;
-                setResult(RESULT_OK);
                 finish();
                 break;
             }
@@ -450,14 +447,12 @@ public class AccountSetupCheckSettings extends K9Activity
 
             } catch (AuthenticationFailedException afe) {
                 Log.e(K9.LOG_TAG, "Error while testing settings", afe);
-                showErrorDialog(R.string.account_setup_failed_dlg_auth_message_fmt,
-                        afe.getMessage() == null ? "" : afe.getMessage());
+                showErrorDialog(R.string.account_setup_failed_dlg_auth_message_fmt, null);
             } catch (CertificateValidationException cve) {
                 handleCertificateValidationException(cve);
             } catch (Exception e) {
                 Log.e(K9.LOG_TAG, "Error while testing settings", e);
-                String message = e.getMessage() == null ? "" : e.getMessage();
-                showErrorDialog(R.string.account_setup_failed_dlg_server_message_fmt, message);
+                showErrorDialog(R.string.account_setup_failed_dlg_server_message_fmt, null);
             }
             return null;
         }
