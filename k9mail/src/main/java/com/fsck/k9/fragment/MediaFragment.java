@@ -4,11 +4,14 @@ package com.fsck.k9.fragment;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Timer;
 
 import com.fsck.k9.R;
+import com.fsck.k9.activity.BrowserActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,7 +34,7 @@ import android.webkit.WebViewClient;
  */
 
 
-public class NewsFragment extends Fragment {
+public class MediaFragment extends Fragment {
 
     private static final String JAVASCRIPT_TISCALI_APP_GET_TITLE =
             "javascript:window.TiscaliApp.setTitle(tiscaliApp.getTitle)";
@@ -66,17 +69,21 @@ public class NewsFragment extends Fragment {
     public WebView mWebView;
     private String mUrl;
     private boolean mIsShareable = false;
-    private NewsFragmentListener mFragmentListener;
+    private MediaFragmentListener mFragmentListener;
 
 
     private String mIdSection;
     private boolean mIsResizable = false;
+
     private Menu mMenu;
     private MediaPresenter.Type mType;
+    private Timer mTimerRefresh;
+    private Handler mHandler;
 
-    public static NewsFragment newInstance(String home, MediaPresenter.Type type) {
 
-        NewsFragment fragment = new NewsFragment();
+    public static MediaFragment newInstance(String home, MediaPresenter.Type type) {
+
+        MediaFragment fragment = new MediaFragment();
         Bundle args = new Bundle();
         args.putString(ARG_HOME, home);
         args.putString(ARG_TYPE, type.name());
@@ -111,6 +118,7 @@ public class NewsFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
+        mHandler = new Handler();
         if (savedInstanceState == null) {
             mType = getType(getArguments().getString(ARG_TYPE));
 
@@ -165,7 +173,7 @@ public class NewsFragment extends Fragment {
         settings.setJavaScriptEnabled(true);
         settings.setBuiltInZoomControls(true);
         settings.setUseWideViewPort(true);
-        settings.setSupportMultipleWindows(true);
+        // settings.setSupportMultipleWindows(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLoadsImagesAutomatically(true);
         settings.setDomStorageEnabled(true);
@@ -224,27 +232,28 @@ public class NewsFragment extends Fragment {
             mWebView.loadUrl(url, mExtraHeaders);
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
-                    if (mUrl != null) {
-                        loadUrl(mUrl);
+            if (mHandler != null) {
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
+                        if (mUrl != null) {
+                            loadUrl(mUrl);
+                        }
                     }
-                }
-            }, mFragmentListener.getRefreshTimeout());
+                }, mFragmentListener.getRefreshTimeout());
+            }
         }
     }
 
-    private NewsFragmentListener getFragmentListner() {
+    private MediaFragmentListener getFragmentListner() {
 
-        NewsFragmentListener listener = null;
+        MediaFragmentListener listener = null;
 
-        if (getActivity() instanceof NewsFragmentGetListener) {
+        if (getActivity() instanceof MediaFragmentGetListener) {
             try {
-                listener = ((NewsFragmentGetListener) getActivity()).getNewsFragmentListner(mType);
+                listener =
+                        ((MediaFragmentGetListener) getActivity()).getMediaFragmentListener(mType);
             } catch (ClassCastException e) {
                 throw new ClassCastException(
                         getActivity().getClass() + " must implement NewsFragmentListener");
@@ -289,7 +298,7 @@ public class NewsFragment extends Fragment {
 
     }
 
-    public interface NewsFragmentListener {
+    public interface MediaFragmentListener {
         void enableActionBarProgress(boolean enable);
 
         void detailPageLoad(String url);
@@ -297,6 +306,12 @@ public class NewsFragment extends Fragment {
         boolean isDetailStatus();
 
         boolean isHomePage();
+
+        boolean isExternalBrowsing();
+
+        void setExternalBrowsing(boolean value);
+
+        boolean isWalledGarden(String domain);
 
         String getMeJSON();
 
@@ -315,9 +330,9 @@ public class NewsFragment extends Fragment {
         void goBack();
     }
 
-    public interface NewsFragmentGetListener {
+    public interface MediaFragmentGetListener {
 
-        NewsFragmentListener getNewsFragmentListner(MediaPresenter.Type type);
+        MediaFragmentListener getMediaFragmentListener(MediaPresenter.Type mType);
     }
 
     class JsTiscaliAppObject {
@@ -371,10 +386,11 @@ public class NewsFragment extends Fragment {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
             Log.d("TiscaliWebViewClient", "[URL]:" + url + " @" + this);
-            if (mFragmentListener.isHomePage()) {
-                Uri uri = Uri.parse(url);
+            Uri uri = Uri.parse(url);
+            if (mFragmentListener != null && mFragmentListener.isHomePage()) {
+
                 String lastSegment = uri.getLastPathSegment();
-                if (lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
+                if (lastSegment != null && lastSegment.compareTo(TISCALI_APP_FAVE_SEGMENT) == 0) {
                     String sessionId = uri.getQueryParameter(TISCALI_APP_FAVE_SECTIONID_PARAMS);
                     String value = uri.getQueryParameter(TISCALI_APP_FAVE_FAV_PARAMS);
                     mFragmentListener.setFavoriteSection(sessionId, Boolean.parseBoolean(value));
@@ -382,12 +398,20 @@ public class NewsFragment extends Fragment {
                 }
             }
 
-
-            if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
-                mFragmentListener.detailPageLoad(url);
+            if (uri.getHost() != null && mFragmentListener.isWalledGarden(uri.getHost())) {
+                if (mFragmentListener != null && !mFragmentListener.isDetailStatus()) {
+                    mFragmentListener.detailPageLoad(url);
+                    return true;
+                }
+            } else if (!mFragmentListener.isExternalBrowsing()) {
+                Intent myIntent = new Intent(getActivity(), BrowserActivity.class);
+                myIntent.putExtra(BrowserActivity.EXTRA_URL, url); // Optional parameters
+                getActivity().startActivityForResult(myIntent,
+                        MediaPresenter.MEDIA_PRESENTER_BROWSING);
+                mFragmentListener.setExternalBrowsing(true);
                 return true;
-            }
 
+            }
             return false;
         }
 
@@ -396,13 +420,25 @@ public class NewsFragment extends Fragment {
             if (mFragmentListener != null) {
                 mFragmentListener.enableActionBarProgress(false);
             }
-            view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
+            if (mType.equals(MediaPresenter.Type.OFFERS)) {
+                String title = view.getTitle();
+                if (title.contains(" ")) {
+                    title = title.substring(0, title.indexOf(" "));
+                }
+                String titleEncode = title.replaceAll("%20", " ");
+                if (mFragmentListener != null) {
+                    mFragmentListener.setPageTitle(titleEncode);
+                }
+            } else {
+                view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
+            }
+
             view.loadUrl(JAVASCRIPT_TISCALI_APP_IS_SHAREABLE);
             view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_ID_SECTION);
             view.loadUrl(JAVASCRIPT_TISCALI_APP_HAS_RESIZABLE_TEXT);
 
             if (mFragmentListener.isHomePage()) {
-                NewsFragmentListener listener = getFragmentListner();
+                MediaFragmentListener listener = getFragmentListner();
                 if (listener != null) {
                     String value = listener.getMeJSON();
                     try {

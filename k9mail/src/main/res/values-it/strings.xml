@@ -119,6 +119,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="global_settings_action">Impostazioni globali</string>
     <string name="informations_action">Informazioni</string>
     <string name="remove_account_action">Rimuovi account</string>
+    <string name="update_account_action">Aggiorna account</string>
     <string name="clear_pending_action">Annulla tutte le azioni in corso (pericolo!)</string>
     <string name="mark_as_read_action">Marca come letto</string>
     <string name="send_alternate_action">Condividi</string>
@@ -420,9 +421,9 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="account_setup_options_mail_display_count_all">tutti i messaggi</string>
     <string name="move_copy_cannot_copy_unsynced_message">Impossibile copiare o spostare un messaggio che non sia sincronizzato con il server</string>
     <string name="account_setup_failed_dlg_title">Impossibile completare la configurazione</string>
-    <string name="account_setup_failed_dlg_auth_message_fmt">Nome utente o password errata.\n(<xliff:g id="error">%s</xliff:g>)</string>
+    <string name="account_setup_failed_dlg_auth_message_fmt">Nome utente o password errata.</string>
     <string name="account_setup_failed_dlg_certificate_message_fmt">Il server ha fornito un certificato SSL non valido. A volte ciò è dovuto a problemi di configurazione del server. In altri casi potrebbe dipendere da un tentativo di attacco a te o al tuo server di posta. Se non sei sicuro delle cause, fai clic su Rifiuta e contatta gli amministratori del tuo server di posta.\n\n(<xliff:g id="error">%s</xliff:g>)</string>
-    <string name="account_setup_failed_dlg_server_message_fmt">Impossibile connettersi al server.\n(<xliff:g id="error">%s</xliff:g>)</string>
+    <string name="account_setup_failed_dlg_server_message_fmt">Impossibile connettersi al server.</string>
     <string name="account_setup_failed_dlg_edit_details_action">Modifica i dettagli</string>
     <string name="account_setup_failed_dlg_continue_action">Continua</string>
     <string name="account_settings_push_advanced_title">Avanzate</string>
@@ -1014,4 +1015,5 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="special_mailbox_name_spam_fmt">Spam</string>
     <string name="status_last_poll">Ultima verifica <xliff:g id="lasttime">%s</xliff:g></string>
     <string name="customize_categories">Personalizza la tua home page selezionando gli argomenti che ti interessano</string>
+    <string name="menu_item_customize">personalizza</string>
 </resources>

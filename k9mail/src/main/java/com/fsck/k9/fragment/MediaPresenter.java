@@ -67,11 +67,12 @@ import rx.functions.Action1;
 
 @Singleton
 public abstract class MediaPresenter
-        implements NewsFragment.NewsFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
+        implements MediaFragment.MediaFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
         PresenterLifeCycle, ApiController.ApiControllerInterface {
 
     private static final int HOME_POSITION_ADAPTER = 1;
     private static final int HOME_POSITION_PRESENTER = 0;
+    public static final int MEDIA_PRESENTER_BROWSING = 5;
     public static final String DEFAULT_ACTIONBAR_TITLE = "Tiscali";
     private final Activity mContext;
     private static final String ARG_HOME = "HOME";
@@ -83,23 +84,25 @@ public abstract class MediaPresenter
     private final INavigationDrawerActivityListener mListener;
     private ActionBar mActionBar;
     private TextView mActionBarTitle;
-    private NewsFragment mNewsViewFragment;
-    private NewsFragment mNewsDetailFragment;
+    private MediaFragment mMediaViewFragment;
+    private MediaFragment mMediaDetailFragment;
     private DisplayMode mDisplayMode;
     private String mCurrentPage;
     private String mMeJson;
     private int mTimeoutRefresh = 1000;
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
+    private List<String> mWalledGarden = new ArrayList<>();
     private MediaPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
     private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
     private boolean isAttached = false;
+    private boolean mIsExternalBrowsing = false;
 
     public enum DisplayMode {
-        NEWS_VIEW, NEWS_DETAIL, SPLIT_VIEW
+        MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW
     }
 
     public enum Type {
@@ -138,7 +141,7 @@ public abstract class MediaPresenter
 
         mIsHomePage = true;
         initializeActionBar();
-//            findFragments();
+        // findFragments();
         initializeDisplayMode(mSavedInstanceState);
 
         mListener.setDrawerListAdapter(mNewsAdapter);
@@ -164,10 +167,10 @@ public abstract class MediaPresenter
 
     private void findFragments() {
         FragmentManager fragmentManager = mContext.getFragmentManager();
-        mNewsViewFragment =
-                (NewsFragment) fragmentManager.findFragmentById(R.id.news_view_container);
-        mNewsDetailFragment =
-                (NewsFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
+        mMediaViewFragment =
+                (MediaFragment) fragmentManager.findFragmentById(R.id.news_view_container);
+        mMediaDetailFragment =
+                (MediaFragment) fragmentManager.findFragmentById(R.id.news_detail_container);
     }
 
     /**
@@ -176,28 +179,28 @@ public abstract class MediaPresenter
     private void initializeFragments(String home) {
         FragmentManager fragmentManager = mContext.getFragmentManager();
 
-        boolean hasNewsFragment = (mNewsViewFragment != null);
+        boolean hasNewsFragment = (mMediaViewFragment != null);
         if (hasNewsFragment) {
-            mNewsViewFragment.setType(getType());
-            mNewsViewFragment.setUrl(home);
-            mNewsViewFragment.mWebView.setVisibility(View.VISIBLE);
+            mMediaViewFragment.setType(getType());
+            mMediaViewFragment.setUrl(home);
+            mMediaViewFragment.mWebView.setVisibility(View.VISIBLE);
         } else {
-            mNewsViewFragment = NewsFragment.newInstance(home, getType());
+            mMediaViewFragment = MediaFragment.newInstance(home, getType());
         }
 
         FragmentTransaction ft = fragmentManager.beginTransaction();
 
         if (isAttached) {
-            ft.show(mNewsViewFragment);
+            ft.show(mMediaViewFragment);
         } else {
-            ft.add(R.id.news_view_container, mNewsViewFragment);
+            ft.add(R.id.news_view_container, mMediaViewFragment);
             isAttached = true;
         }
         ft.commit();
 
-        if (mDisplayMode.equals(DisplayMode.NEWS_VIEW)) {
+        if (mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
             setActionBarToggle();
-            showNews();
+            showMedia();
         } else {
             setActionBarUp();
             detailPageLoad(home);
@@ -228,20 +231,31 @@ public abstract class MediaPresenter
             }
         }
 
-        mDisplayMode = DisplayMode.NEWS_VIEW;
+        mDisplayMode = DisplayMode.MEDIA_VIEW;
     }
 
     public void goBackOnHistory() {
-        if (mNewsDetailFragment != null && mNewsDetailFragment.canGoBack()) {
-            mNewsDetailFragment.goBackOnHistory();
+        if (mMediaDetailFragment != null && mMediaDetailFragment.canGoBack()) {
+            mMediaDetailFragment.goBackOnHistory();
         } else {
-            showNews();
+            showMedia();
         }
     }
 
-    public void showNews() {
-        mDisplayMode = DisplayMode.NEWS_VIEW;
+    public void onActivityResult() {
+        setExternalBrowsing(false);
+    }
+
+    public void showMedia() {
+        mDisplayMode = DisplayMode.MEDIA_VIEW;
         mViewSwitcher.showFirstView();
+        if (mMediaViewFragment != null && mMediaViewFragment.mWebView != null) {
+            enableActionBarProgress(true);
+            mMediaViewFragment.mWebView.reload();
+            if (mMediaDetailFragment != null) {
+                mMediaDetailFragment.setUrl(null);
+            }
+        }
     }
 
     private void removeFragment(Fragment fragment) {
@@ -259,22 +273,21 @@ public abstract class MediaPresenter
         ft.commit();
     }
 
-    private void removeNewsFragment() {
-        if (mNewsViewFragment != null) {
-            // mNewsViewFragment.mWebView.loadUrl("about:blank");
-//            removeFragment(mNewsViewFragment);
-//            isAttached = false;
-            // mNewsViewFragment = null;
-            mNewsViewFragment.mWebView.setVisibility(View.INVISIBLE);
-            hideFragment(mNewsViewFragment);
+    private void removeMediaFragment() {
+        if (mMediaViewFragment != null) {
+            // mMediaViewFragment.mWebView.loadUrl("about:blank");
+            // removeFragment(mMediaViewFragment);
+            // isAttached = false;
+            // mMediaViewFragment = null;
+            mMediaViewFragment.mWebView.setVisibility(View.INVISIBLE);
+            hideFragment(mMediaViewFragment);
         }
     }
 
     private void removeDetailFragment() {
-        if (mNewsDetailFragment != null) {
-            mNewsDetailFragment.mWebView.loadUrl("about:blank");
-            removeFragment(mNewsDetailFragment);
-            mNewsDetailFragment = null;
+        if (mMediaDetailFragment != null) {
+            removeFragment(mMediaDetailFragment);
+            mMediaDetailFragment = null;
         }
     }
 
@@ -299,7 +312,8 @@ public abstract class MediaPresenter
                     @Override
                     public void onCompleted() {
                         if (mActionBarTitle != null) {
-                            mActionBarTitle.setText(title);
+                            String titleEncode = title.replaceAll("%20", " ");
+                            mActionBarTitle.setText(titleEncode);
                         }
 
                     }
@@ -307,12 +321,12 @@ public abstract class MediaPresenter
                     @Override
                     public void onError(Throwable e) {
 
-                    }
+            }
 
                     @Override
                     public void onNext(Object o) {
 
-                    }
+            }
                 });
 
     }
@@ -323,14 +337,14 @@ public abstract class MediaPresenter
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
 
     public void openSection(String url, boolean isHome) {
-        showNews();
-        if (mNewsViewFragment != null) {
-            mNewsViewFragment.updateUrl(url);
+        showMedia();
+        if (mMediaViewFragment != null) {
+            mMediaViewFragment.updateUrl(url);
         }
         mIsHomePage = isHome;
     }
@@ -351,12 +365,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
 
     }
@@ -364,17 +376,39 @@ public abstract class MediaPresenter
 
     @Override
     public boolean isDetailStatus() {
-        return mDisplayMode == DisplayMode.NEWS_DETAIL;
+        return mDisplayMode == DisplayMode.MEDIA_DETAIL;
     }
 
     @Override
     public boolean isHomePage() {
-        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
+        if (mDisplayMode == DisplayMode.MEDIA_DETAIL) {
             return false;
         } else {
             return mIsHomePage;
         }
 
+    }
+
+    @Override
+    public boolean isWalledGarden(String domain) {
+        for (int i = 0; i < mWalledGarden.size(); i++) {
+            String walled = mWalledGarden.get(i);
+            if (domain.contains(walled)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void setExternalBrowsing(boolean value) {
+        mIsExternalBrowsing = value;
+    }
+
+    @Override
+    public boolean isExternalBrowsing() {
+
+        return mIsExternalBrowsing;
     }
 
     @Override
@@ -425,8 +459,8 @@ public abstract class MediaPresenter
             @Override
             public void call(UserLogin userLogin) {
 
-                if (mIsHomePage && mNewsViewFragment != null) {
-                    mNewsViewFragment.refreshUrl();
+                if (mIsHomePage && mMediaViewFragment != null) {
+                    mMediaViewFragment.refreshUrl();
                 }
 
             }
@@ -436,20 +470,20 @@ public abstract class MediaPresenter
     @Override
     public void detailPageLoad(String url) {
         mCurrentPage = url;
-        if (mNewsDetailFragment == null) {
-            NewsFragment fragment = NewsFragment.newInstance(url, getType());
+        if (mMediaDetailFragment == null) {
+            MediaFragment fragment = MediaFragment.newInstance(url, getType());
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.news_detail_container, fragment);
-            mNewsDetailFragment = fragment;
+            mMediaDetailFragment = fragment;
             ft.commit();
         }
 
-        mDisplayMode = DisplayMode.NEWS_DETAIL;
+        mDisplayMode = DisplayMode.MEDIA_DETAIL;
         mViewSwitcher.showSecondView();
 
-        if (mNewsDetailFragment != null) {
-            mNewsDetailFragment.getTitle();
-            mNewsDetailFragment.getSharable();
+        if (mMediaDetailFragment != null) {
+            mMediaDetailFragment.getTitle();
+            mMediaDetailFragment.getSharable();
         }
     }
 
@@ -470,8 +504,8 @@ public abstract class MediaPresenter
     @Override
     public void goBack() {
         FragmentManager fragmentManager = ((Activity) mContext).getFragmentManager();
-        if (mDisplayMode == DisplayMode.NEWS_DETAIL) {
-            showNews();
+        if (mDisplayMode == DisplayMode.MEDIA_DETAIL) {
+            showMedia();
 
         }
     }
@@ -521,30 +555,30 @@ public abstract class MediaPresenter
     }
 
 
-    public class CategoryNewsAdapter extends BaseAdapter {
+    public class CategoryMediaAdapter extends BaseAdapter {
         public Activity context;
         public LayoutInflater inflater;
-        List<TiscaliMenuItem> mNewsCategory;
+        List<TiscaliMenuItem> mMediaCategory;
 
-        public CategoryNewsAdapter(List<TiscaliMenuItem> Categories) {
+        public CategoryMediaAdapter(List<TiscaliMenuItem> Categories) {
             super();
             this.context = mContext;
             this.inflater =
                     (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            this.mNewsCategory = Categories;
+            this.mMediaCategory = Categories;
         }
 
         @Override
         public int getCount() {
             // TODO Auto-generated method stub
-            return mNewsCategory.size();
+            return mMediaCategory.size();
         }
 
         @Override
         public Object getItem(int position) {
             // TODO Auto-generated method stub
-            return mNewsCategory.get(position);
+            return mMediaCategory.get(position);
         }
 
         @Override
@@ -560,13 +594,13 @@ public abstract class MediaPresenter
         }
 
         public List<TiscaliMenuItem> getSelectedItmes() {
-            return mNewsCategory;
+            return mMediaCategory;
         }
 
         public class ViewHolder {
-            public CheckBox news_button;
-            public TextView news_category;
-            public RelativeLayout rl_news;
+            public CheckBox media_button;
+            public TextView media_category;
+            public RelativeLayout rl_media;
         }
 
         @Override
@@ -580,30 +614,30 @@ public abstract class MediaPresenter
                 holder = new ViewHolder();
                 convertView = inflater.inflate(R.layout.listview_news_dialogue_row, null);
 
-                holder.news_button = (CheckBox) convertView.findViewById(R.id.toggle_news);
-                holder.news_category = (TextView) convertView.findViewById(R.id.category_news);
-                holder.rl_news = (RelativeLayout) convertView.findViewById(R.id.row_news);
-                holder.news_button.setTag(position);
+                holder.media_button = (CheckBox) convertView.findViewById(R.id.toggle_media);
+                holder.media_category = (TextView) convertView.findViewById(R.id.category_media);
+                holder.rl_media = (RelativeLayout) convertView.findViewById(R.id.row_media);
+                holder.media_button.setTag(position);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.news_category.setText(mNewsCategory.get(position).getTitle());
+            holder.media_category.setText(mMediaCategory.get(position).getTitle());
             final ViewHolder final_Holder = holder;
 
-            if ((Boolean) mNewsCategory.get(position).getVisibility()) {
-                holder.news_button.setChecked(true);
+            if ((Boolean) mMediaCategory.get(position).getVisibility()) {
+                holder.media_button.setChecked(true);
             } else {
-                holder.news_button.setChecked(false);
+                holder.media_button.setChecked(false);
             }
 
-            holder.news_button
+            holder.media_button
                     .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                            TiscaliMenuItem item = mNewsCategory.get(position);
+                            TiscaliMenuItem item = mMediaCategory.get(position);
                             item.setVisibility(isChecked);
                             if (mListener != null) {
                                 mListener.getApiController().sectionVisibility(item.getSectionId(),
@@ -642,8 +676,7 @@ public abstract class MediaPresenter
             }
         };
 
-        public NewsAdapter() {
-        }
+        public NewsAdapter() {}
 
         public void updateData() {
             mItems.clear();
@@ -757,14 +790,20 @@ public abstract class MediaPresenter
                     itemViewHolder.mItemIconIv.setVisibility(View.GONE);
                 }
                 if (position == HOME_POSITION) {
-                    itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
-                    itemViewHolder.mItemActionTv.setText("personalizza");
-                    itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            showDialogCustomize(getCustomizableItems());
-                        }
-                    });
+                    if (Type.NEWS == getType()) {
+                        itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
+                        itemViewHolder.mItemActionTv.setText(
+                                mContext.getResources().getString(R.string.menu_item_customize));
+                        itemViewHolder.mItemActionTv.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                showDialogCustomize(getCustomizableItems());
+                            }
+                        });
+                    } else {
+                        itemViewHolder.mItemActionTv.setVisibility(View.GONE);
+                    }
+
                 }
                 // add additionally left margin depending on depth
                 if (itemViewHolder.mItemContainerRl
@@ -855,7 +894,7 @@ public abstract class MediaPresenter
         if (!mStarted) {
             return;
         }
-        removeNewsFragment();
+        removeMediaFragment();
         removeDetailFragment();
     }
 
@@ -882,21 +921,25 @@ public abstract class MediaPresenter
         mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
 
-        if (!isInitialized && mDisplayMode == DisplayMode.NEWS_VIEW) {
+        if (!isInitialized && mDisplayMode == DisplayMode.MEDIA_VIEW) {
             mIsHomePage = true;
             mCurrentPage = mMenuItems.get(HOME_POSITION_PRESENTER).getUrl();
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
+        if (mListener != null) {
+            mWalledGarden =
+                    mListener.getApiController().getMainConfig().getConfig().getWalledGarden();
+        }
 
         mNewsAdapter.updateData();
 
-        if (mDisplayMode == DisplayMode.NEWS_VIEW) {
-            if (mNewsViewFragment != null && mNewsViewFragment.getUrl() == null) {
-                mNewsViewFragment.refreshUrl();
+        if (mDisplayMode == DisplayMode.MEDIA_VIEW) {
+            if (mMediaViewFragment != null && mMediaViewFragment.getUrl() == null) {
+                mMediaViewFragment.refreshUrl();
             }
         } else {
-            if (mNewsViewFragment != null) {
-                mNewsDetailFragment.refreshUrl();
+            if (mMediaViewFragment != null) {
+                mMediaDetailFragment.refreshUrl();
             }
         }
     }
@@ -935,7 +978,7 @@ public abstract class MediaPresenter
 
         ListView listInterests = (ListView) customize.findViewById(R.id.list_catagory);
 
-        final CategoryNewsAdapter adapter = new CategoryNewsAdapter(data);
+        final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
 
         listInterests.setAdapter(adapter);
 
