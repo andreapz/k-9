@@ -1914,12 +1914,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     case 1:
                         Prefs.actionPrefs(mListener.getActivity());
                         break;
-                    // delete account
+                    // update account
                     case 2:
+                        if (mContext instanceof INavigationDrawerActivityListener) {
+                            ((INavigationDrawerActivityListener) mContext).updateAccount(mAccount);
+                        }
+                        break;
+                    // delete account
+                    case 3:
                         showDeleteAccountDialog();
                         break;
                     // informations
-                    case 3:
+                    case 4:
                         if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
                         }
@@ -2207,8 +2213,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 // set mail adapter as current list adapter
                 mFolders.clear();
                 mListener.setDrawerListAdapter(mMailAdapter);
-                // update folders list for new current account
-                onRefresh(!REFRESH_REMOTE);
+                // update folders for new current account
+                if (mContext instanceof INavigationDrawerActivityListener) {
+                    ((INavigationDrawerActivityListener) mContext).updateAccount(mAccount);
+                }
                 // show default folder for new current account
                 LocalSearch search = new LocalSearch(account.getAutoExpandFolderName());
                 search.addAllowedFolder(account.getAutoExpandFolderName());
