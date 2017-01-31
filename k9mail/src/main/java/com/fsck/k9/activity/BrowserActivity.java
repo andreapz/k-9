@@ -35,6 +35,7 @@ public class BrowserActivity extends K9Activity {
     private TextView mActionBarTitle;
     private ProgressBar mActionBarProgress;
     private HashMap<String, String> mExtraHeaders;
+    private String mUrl;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,10 +47,10 @@ public class BrowserActivity extends K9Activity {
 
 
         Bundle extras = getIntent().getExtras();
-        String url = null;
+
 
         if (extras != null) {
-            url = extras.getString(EXTRA_URL);
+            mUrl = extras.getString(EXTRA_URL);
         }
         initializeActionBar();
         mWebView = (WebView) findViewById(R.id.webview);
@@ -64,9 +65,9 @@ public class BrowserActivity extends K9Activity {
         });
 
         updateWebViewSettings();
-        if (url != null) {
+        if (mUrl != null) {
             mActionBarProgress.setVisibility(View.VISIBLE);
-            mWebView.loadUrl(url, mExtraHeaders);
+            mWebView.loadUrl(mUrl, mExtraHeaders);
         }
 
 
@@ -120,6 +121,7 @@ public class BrowserActivity extends K9Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.browser_menu_option, menu);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -132,11 +134,30 @@ public class BrowserActivity extends K9Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home: {
+                Intent returnIntent = getIntent();
+                setResult(RESULT_OK, returnIntent);
+                finish();
+                return true;
+            }
+            case R.id.menu_item_share: {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_SUBJECT,
+                        getResources().getString(R.string.webview_contextmenu_link_share_action));
+                i.putExtra(Intent.EXTRA_TEXT,
+                        getResources().getString(R.string.webview_contextmenu_link_share_text)
+                                + mUrl);
+                startActivity(Intent.createChooser(i,
+                        getResources().getString(R.string.webview_contextmenu_link_share_action)));
+                return true;
+            }
+            default: {
+                return super.onOptionsItemSelected(item);
+            }
+        }
 
-        Intent returnIntent = getIntent();
-        setResult(RESULT_OK, returnIntent);
-        finish();
-        return true;
 
     }
 
