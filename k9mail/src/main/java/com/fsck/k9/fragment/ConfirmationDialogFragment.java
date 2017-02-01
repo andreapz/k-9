@@ -1,5 +1,7 @@
 package com.fsck.k9.fragment;
 
+import com.fsck.k9.K9;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -8,12 +10,14 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-import com.fsck.k9.K9;
-
-public class ConfirmationDialogFragment extends DialogFragment implements OnClickListener,
-        OnCancelListener {
+public class ConfirmationDialogFragment extends DialogFragment
+        implements OnClickListener, OnCancelListener {
     private ConfirmationDialogFragmentListener mListener;
 
     private static final String ARG_DIALOG_ID = "dialog_id";
@@ -21,10 +25,17 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
     private static final String ARG_MESSAGE = "message";
     private static final String ARG_CONFIRM_TEXT = "confirm";
     private static final String ARG_CANCEL_TEXT = "cancel";
+    private static final String ARG_DISMISS_ON_TOUCH_OUTSIDE = "dismiss_on_touch_outside";
 
 
     public static ConfirmationDialogFragment newInstance(int dialogId, String title, String message,
             String confirmText, String cancelText) {
+
+        return newInstance(dialogId, title, message, confirmText, cancelText, true);
+    }
+
+    public static ConfirmationDialogFragment newInstance(int dialogId, String title, String message,
+            String confirmText, String cancelText, boolean dismissOnTouchOutside) {
         ConfirmationDialogFragment fragment = new ConfirmationDialogFragment();
 
         Bundle args = new Bundle();
@@ -33,6 +44,7 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
         args.putString(ARG_MESSAGE, message);
         args.putString(ARG_CONFIRM_TEXT, confirmText);
         args.putString(ARG_CANCEL_TEXT, cancelText);
+        args.putBoolean(ARG_DISMISS_ON_TOUCH_OUTSIDE, dismissOnTouchOutside);
         fragment.setArguments(args);
 
         return fragment;
@@ -46,10 +58,20 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
 
     public interface ConfirmationDialogFragmentListener {
         void doPositiveClick(int dialogId);
+
         void doNegativeClick(int dialogId);
+
         void dialogCancelled(int dialogId);
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        getDialog().setCanceledOnTouchOutside(
+                getArguments().getBoolean(ARG_DISMISS_ON_TOUCH_OUTSIDE, true));
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -109,7 +131,8 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
             mListener = (ConfirmationDialogFragmentListener) activity;
         } catch (ClassCastException e) {
             if (K9.DEBUG)
-                Log.d(K9.LOG_TAG, activity.toString() + " did not implement ConfirmationDialogFragmentListener");
+                Log.d(K9.LOG_TAG, activity.toString()
+                        + " did not implement ConfirmationDialogFragmentListener");
         }
     }
 
@@ -122,8 +145,8 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
         try {
             return (ConfirmationDialogFragmentListener) getTargetFragment();
         } catch (ClassCastException e) {
-            throw new ClassCastException(getTargetFragment().getClass() +
-                    " must implement ConfirmationDialogFragmentListener");
+            throw new ClassCastException(getTargetFragment().getClass()
+                    + " must implement ConfirmationDialogFragmentListener");
         }
     }
 }

@@ -99,6 +99,7 @@ public abstract class MediaPresenter
 
     private Bundle mSavedInstanceState;
     private boolean mStarted = false;
+    private boolean isAttached = false;
     private boolean mIsExternalBrowsing = false;
 
     public enum DisplayMode {
@@ -123,6 +124,7 @@ public abstract class MediaPresenter
 
     @Nullable
     public void onCreateView() {
+
         mStarted = true;
         mInflater = mContext.getLayoutInflater();
         FrameLayout container = mListener.getContainer();
@@ -140,8 +142,7 @@ public abstract class MediaPresenter
 
         mIsHomePage = true;
         initializeActionBar();
-        findFragments();
-
+        // findFragments();
         initializeDisplayMode(mSavedInstanceState);
 
         mListener.setDrawerListAdapter(mNewsAdapter);
@@ -162,6 +163,7 @@ public abstract class MediaPresenter
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
         outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
+        mSavedInstanceState = outState;
     }
 
     private void findFragments() {
@@ -182,12 +184,20 @@ public abstract class MediaPresenter
         if (hasNewsFragment) {
             mMediaViewFragment.setType(getType());
             mMediaViewFragment.setUrl(home);
+            mMediaViewFragment.mWebView.setVisibility(View.VISIBLE);
         } else {
-            FragmentTransaction ft = fragmentManager.beginTransaction();
             mMediaViewFragment = MediaFragment.newInstance(home, getType());
-            ft.add(R.id.news_view_container, mMediaViewFragment);
-            ft.commit();
         }
+
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+
+        if (isAttached) {
+            ft.show(mMediaViewFragment);
+        } else {
+            ft.add(R.id.news_view_container, mMediaViewFragment);
+            isAttached = true;
+        }
+        ft.commit();
 
         if (mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
             setActionBarToggle();
@@ -240,13 +250,6 @@ public abstract class MediaPresenter
     public void showMedia() {
         mDisplayMode = DisplayMode.MEDIA_VIEW;
         mViewSwitcher.showFirstView();
-        if (mMediaViewFragment != null && mMediaViewFragment.mWebView != null) {
-            enableActionBarProgress(true);
-            mMediaViewFragment.mWebView.reload();
-            if (mMediaDetailFragment != null) {
-                mMediaDetailFragment.setUrl(null);
-            }
-        }
     }
 
     private void removeFragment(Fragment fragment) {
@@ -257,10 +260,17 @@ public abstract class MediaPresenter
         manager.popBackStackImmediate();
     }
 
+    private void hideFragment(Fragment fragment) {
+        FragmentManager manager = mContext.getFragmentManager();
+        FragmentTransaction ft = manager.beginTransaction();
+        ft.hide(fragment);
+        ft.commit();
+    }
+
     private void removeMediaFragment() {
         if (mMediaViewFragment != null) {
-            removeFragment(mMediaViewFragment);
-            mMediaViewFragment = null;
+            mMediaViewFragment.mWebView.setVisibility(View.INVISIBLE);
+            hideFragment(mMediaViewFragment);
         }
     }
 
@@ -280,6 +290,8 @@ public abstract class MediaPresenter
         View customView = mActionBar.getCustomView();
         mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
         mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
+
+        mActionBarTitle.setText(DEFAULT_ACTIONBAR_TITLE);
 
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
@@ -481,10 +493,8 @@ public abstract class MediaPresenter
 
     @Override
     public void goBack() {
-        FragmentManager fragmentManager = ((Activity) mContext).getFragmentManager();
         if (mDisplayMode == DisplayMode.MEDIA_DETAIL) {
             showMedia();
-
         }
     }
 
@@ -903,8 +913,9 @@ public abstract class MediaPresenter
         mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
 
-        if (!isInitialized && mDisplayMode != DisplayMode.MEDIA_DETAIL) {
+        if (!isInitialized && mDisplayMode == DisplayMode.MEDIA_VIEW) {
             mIsHomePage = true;
+            mCurrentPage = mMenuItems.get(HOME_POSITION_PRESENTER).getUrl();
             initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
         }
         if (mListener != null) {
@@ -915,7 +926,7 @@ public abstract class MediaPresenter
         mNewsAdapter.updateData();
 
         if (mDisplayMode == DisplayMode.MEDIA_VIEW) {
-            if (mMediaViewFragment != null) {
+            if (mMediaViewFragment != null && mMediaViewFragment.getUrl() == null) {
                 mMediaViewFragment.refreshUrl();
             }
         } else {

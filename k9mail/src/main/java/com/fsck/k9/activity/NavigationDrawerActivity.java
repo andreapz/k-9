@@ -25,8 +25,8 @@ import com.fsck.k9.ApplicationComponent;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
+import com.fsck.k9.activity.misc.BottomNavigationViewHelper;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.adapter.NavDrawerMenuAdapter;
 import com.fsck.k9.api.ApiController;
 import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
@@ -38,13 +38,14 @@ import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.fragment.OffersPresenter;
 import com.fsck.k9.fragment.VideoPresenter;
-import com.fsck.k9.model.NavDrawerMenuItem;
 import com.fsck.k9.preferences.StorageEditor;
 import com.fsck.k9.preferences.WelcomePreference;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.SearchManager;
@@ -140,14 +141,8 @@ public class NavigationDrawerActivity extends K9Activity
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
 
-    private NavDrawerMenuAdapter mOffersAdapter;
-    private NavDrawerMenuAdapter mVideoAdapter;
-
     private int mSelectedTab;
     private BottomNavigationView mBottomNav;
-
-    List<NavDrawerMenuItem> mOffersTabMenuItems;
-    List<NavDrawerMenuItem> mVideoTabMenuItems;
 
     @Inject
     MailPresenter mMailPresenter;
@@ -301,10 +296,9 @@ public class NavigationDrawerActivity extends K9Activity
         params.width = getNavigationDrawerWidth();
         mDrawerList.setLayoutParams(params);
         mBottomNav = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        BottomNavigationViewHelper.disableShiftMode(mBottomNav);
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
-
-        initNavigationDrawerMenuData();
 
         // set a custom shadow that overlays the main content when the drawer opens
         // mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -418,11 +412,29 @@ public class NavigationDrawerActivity extends K9Activity
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.syncState();
+
+            mBottomNav.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    mBottomNav.setVisibility(View.VISIBLE);
+                }
+            });
+
         } else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(false);
             mDrawerToggle.syncState();
+
+            mBottomNav.animate().translationY(mBottomNav.getHeight())
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            mBottomNav.setVisibility(View.GONE);
+                        }
+                    });
         }
     }
 
@@ -595,27 +607,6 @@ public class NavigationDrawerActivity extends K9Activity
             return null;
         }
     }
-
-    // populate the drawer navigation
-    private void initNavigationDrawerMenuData() {
-
-        // news, video and offers
-        String meObjectJsonString = getJsonString(getResources().openRawResource(R.raw.me_object));
-
-        // news tab drawer menu
-        // mNewsTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "news");
-        // mNewsAdapter = new NavDrawerMenuAdapter(mNewsTabMenuItems, this,mClickListener);
-
-
-        // video tab drawer menu
-        mVideoTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "video");
-        mVideoAdapter = new NavDrawerMenuAdapter(mVideoTabMenuItems, this);
-
-        // offers tab drawer menu
-        mOffersTabMenuItems = NavDrawerMenuItem.getMenuList(meObjectJsonString, "offers");
-        mOffersAdapter = new NavDrawerMenuAdapter(mOffersTabMenuItems, this);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
