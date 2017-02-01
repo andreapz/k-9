@@ -1,7 +1,11 @@
 package com.fsck.k9.api;
 
-import android.content.Context;
-import android.util.Log;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
@@ -15,12 +19,8 @@ import com.fsck.k9.preferences.Storage;
 import com.fsck.k9.preferences.StorageEditor;
 import com.google.gson.Gson;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.Executor;
+import android.content.Context;
+import android.util.Log;
 
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -46,6 +46,7 @@ import rx.schedulers.Schedulers;
 public class ApiController {
 
     private static final String RESPONSE_ME = "RESPONSE_ME";
+    private static final String TISCALIAPP_UUID = "TISCALIAPP_UUID";
 
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String HEADER_AUTHORIZED = "Authorized";
@@ -70,7 +71,7 @@ public class ApiController {
     private final Preferences mPrefs;
     private final StorageEditor mEditor;
     private final Storage mStorage;
-    private final Account mAccount;
+    private Account mAccount;
 
     private ApiClient mApiClient;
 
@@ -236,8 +237,10 @@ public class ApiController {
         mStorage = mPrefs.getStorage();
         mEditor = mStorage.edit();
         List<Account> accounts = mPrefs.getAccounts();
-        mAccount = accounts.get(0);
-        UUID = mAccount.getUuid();
+        if (accounts != null && accounts.size() > 0) {
+            mAccount = accounts.get(0);
+        }
+        UUID = mStorage.getString(TISCALIAPP_UUID, java.util.UUID.randomUUID().toString());
         init();
     }
 
@@ -248,6 +251,7 @@ public class ApiController {
         if (mainConfig.length() > 0) {
             Gson gson = new Gson();
             mMainConfig = gson.fromJson(mainConfig, MainConfig.class);
+            refreshMainConfigListeners();
         }
 
         if (mMainConfig != null) {
@@ -281,6 +285,7 @@ public class ApiController {
                 if (mAuthorizedHeaderValue.length() == 0) {
                     authorizeApi(mUserLogin == null);
                 }
+                refreshMainConfigListeners();
             }
         });
     }
@@ -334,7 +339,8 @@ public class ApiController {
     }
 
 
-    public void sectionFave(String sectionId, boolean isSelected, Action1<UserLogin> success, Action1<UserLogin> error) {
+    public void sectionFave(String sectionId, boolean isSelected, Action1<UserLogin> success,
+                            Action1<UserLogin> error) {
         Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
 
         if (postSectionFave != null) {
@@ -399,6 +405,7 @@ public class ApiController {
                             @Override
                             public Observable<Authorize> call(MainConfig mainConfig) {
                                 mMainConfig = mainConfig;
+                                refreshMainConfigListeners();
                                 return getAuthorize();
                             }
                         }).concatMap(new Func1<Authorize, Observable<UserLogin>>() {
@@ -418,7 +425,7 @@ public class ApiController {
         public void onNext(UserLogin userLogin) {
             Log.i("APITEST", "Username: " + userLogin.getUser().getAccount());
             mUserLogin = userLogin;
-            refreshListeners();
+            refreshMeListeners();
         }
     }
 
@@ -457,9 +464,14 @@ public class ApiController {
         }
     }
 
+    private void sendMainConfig(ApiControllerInterface listener) {
+        listener.updateMainConfig(mMainConfig);
+    }
+
     public void addListener(ApiControllerInterface listener) {
         listeners.add(listener);
         sendMe(listener);
+        sendMainConfig(listener);
     }
 
     public MainConfig getMainConfig() {
@@ -488,12 +500,21 @@ public class ApiController {
 
     public interface ApiControllerInterface {
         void updateMe(Me me, String json);
+
+        void updateMainConfig(MainConfig mainConfig);
     }
 
-    public void refreshListeners() {
+    public void refreshMeListeners() {
         for (ApiControllerInterface listener : listeners) {
             sendMe(listener);
         }
     }
+
+    public void refreshMainConfigListeners() {
+        for (ApiControllerInterface listener : listeners) {
+            sendMainConfig(listener);
+        }
+    }
+
 }
 

@@ -3,4 +3,18 @@
     <color name="message_list_item_footer_background">#eeeeee</color>
 
     <color name="light_black">#444</color>
+
+    <!-- OnBoarding colors -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+
+    <!-- dots inactive colors -->
+    <color name="dot_dark_screen">#a854d4</color>
+
+    <!-- dots active colors -->
+    <color name="dot_light_screen">#e4b5fc</color>
+
+
 </resources>
