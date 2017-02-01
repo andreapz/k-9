@@ -1233,4 +1233,9 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="status_last_poll">Last poll <xliff:g id="lasttime">%s</xliff:g></string>
     <string name="customize_categories">Customize your home page</string>
     <string name="menu_item_customize">customize</string>
+
+    <string name="tab_mail">mail</string>
+    <string name="tab_news">news</string>
+    <string name="tab_video">video</string>
+    <string name="tab_offers">offers</string>
 </resources>

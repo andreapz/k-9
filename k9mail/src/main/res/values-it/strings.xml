@@ -1016,4 +1016,9 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="status_last_poll">Ultima verifica <xliff:g id="lasttime">%s</xliff:g></string>
     <string name="customize_categories">Personalizza la tua home page selezionando gli argomenti che ti interessano</string>
     <string name="menu_item_customize">personalizza</string>
+
+    <string name="tab_mail">mail</string>
+    <string name="tab_news">news</string>
+    <string name="tab_video">video</string>
+    <string name="tab_offers">offerte</string>
 </resources>
