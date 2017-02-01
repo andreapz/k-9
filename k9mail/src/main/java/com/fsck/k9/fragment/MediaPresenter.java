@@ -15,6 +15,7 @@ import com.fsck.k9.activity.INavigationDrawerActivityListener;
 import com.fsck.k9.adapter.BaseNavDrawerMenuAdapter;
 import com.fsck.k9.adapter.TiscaliMenuClickListener;
 import com.fsck.k9.api.ApiController;
+import com.fsck.k9.api.model.MainConfig;
 import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.TiscaliMenuItem;
 import com.fsck.k9.api.model.UserLogin;
@@ -885,6 +886,10 @@ public abstract class MediaPresenter
         removeDetailFragment();
     }
 
+    @Override
+    public void updateMainConfig(MainConfig mainConfig) {
+
+    }
 
     @Override
     public void updateMe(Me me, String json) {

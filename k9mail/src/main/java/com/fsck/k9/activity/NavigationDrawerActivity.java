@@ -39,6 +39,7 @@ import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.fragment.OffersPresenter;
 import com.fsck.k9.fragment.VideoPresenter;
 import com.fsck.k9.preferences.StorageEditor;
+import com.fsck.k9.preferences.WelcomePreference;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
@@ -222,7 +223,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -242,12 +243,18 @@ public class NavigationDrawerActivity extends K9Activity
         super.onCreate(savedInstanceState);
 
         Preferences pref = Preferences.getPreferences(this);
-        List<Account> accounts = pref.getAccounts();
 
+        List<Account> accounts = pref.getAccounts();
+        WelcomePreference prefManager = new WelcomePreference(this);
         Intent intent = getIntent();
         // see if we should show the welcome message
         if (ACTION_IMPORT_SETTINGS.equals(intent.getAction())) {
             onImport();
+        } else if (prefManager.isFirstTimeLaunch()) {
+            Intent welcomeIntent = new Intent(this, WelcomeActivity.class);
+            getActivity().startActivity(welcomeIntent);
+            finish();
+            return;
         } else if (accounts.size() < 1) {
             AccountSetupBasics.actionNewAccount(this);
             finish();
@@ -450,7 +457,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -770,7 +777,7 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                        && mMailPresenter.getMessageListWasDisplayed())) {
+                && mMailPresenter.getMessageListWasDisplayed())) {
             mMailPresenter.showMessageList();
         } else if (mMailPresenter != null
                 && getIntent().getStringExtra(SearchManager.QUERY) != null) {
@@ -818,6 +825,11 @@ public class NavigationDrawerActivity extends K9Activity
         StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
         editor.putInt(DEFAULT_TAB_KEY, defaultTabIndex);
         editor.commit();
+    }
+
+    @Override
+    public void updateMainConfig(MainConfig mainConfig) {
+        //Nop
     }
 
     @Override

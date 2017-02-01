@@ -93,6 +93,11 @@
             </intent-filter>
         </activity>
 
+
+        <activity android:name=".activity.WelcomeActivity">
+
+        </activity>
+
         <activity
             android:name=".activity.Accounts"
             android:configChanges="locale"

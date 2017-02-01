@@ -155,7 +155,10 @@ public class MediaFragment extends Fragment {
         updateWebViewSettings();
 
         mWebView.setWebChromeClient(new WebChromeClient());
+
+
         mWebView.setWebViewClient(new TiscaliWebClient());
+
     }
 
     @Override

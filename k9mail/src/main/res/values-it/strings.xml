@@ -1021,4 +1021,9 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="tab_news">news</string>
     <string name="tab_video">video</string>
     <string name="tab_offers">offerte</string>
+
+    <!-- From Tiscali Mail OnBoarding -->
+    <string name="welcome_name">Intro Slider</string>
+    <string name="skip">SKIP</string>
+    <string name="start">Inizia</string>
 </resources>
