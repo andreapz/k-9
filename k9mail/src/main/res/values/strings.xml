@@ -53,7 +53,7 @@ Please submit bug reports, contribute new features and ask questions at
 
 
     <!-- Default signature -->
-    <string name="default_signature">-- \nSent from my Android device with Tiscali Mail. Please excuse my brevity.</string>
+    <string name="default_signature">-- \nSent from my Android device with Tiscali.it.</string>
 
 
     <!-- General strings that include the app name -->

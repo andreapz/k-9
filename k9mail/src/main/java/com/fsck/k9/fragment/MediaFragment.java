@@ -121,7 +121,6 @@ public class MediaFragment extends Fragment {
         mHandler = new Handler();
         if (savedInstanceState == null) {
             mType = getType(getArguments().getString(ARG_TYPE));
-
         } else {
             mType = getType(savedInstanceState.getString(ARG_TYPE));
         }
