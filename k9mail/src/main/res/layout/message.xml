@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fsck.k9.ui.messageview.MessageTopView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.fsck.k9.ui.messageview.MessageTopView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:id="@+id/message_view"
@@ -21,7 +20,7 @@
             android:layout_height="fill_parent">
 
             <!-- Header area -->
-            <include layout="@layout/message_view_header"/>
+            <include layout="@layout/message_view_header" />
 
             <Button
                 android:id="@+id/show_pictures"
@@ -35,7 +34,7 @@
                 android:layout_marginTop="4dip"
                 android:text="@string/message_view_show_pictures_action"
                 android:visibility="gone"
-                tools:visibility="visible"/>
+                tools:visibility="visible" />
 
             <com.fsck.k9.view.ToolableViewAnimator
                 android:id="@+id/message_layout_animator"
@@ -63,8 +62,7 @@
                         android:id="@+id/message_progress"
                         android:max="1000"
                         tools:progress="300"
-                        style="@android:style/Widget.Holo.ProgressBar.Horizontal"
-                        />
+                        style="@android:style/Widget.Holo.ProgressBar.Horizontal" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -72,8 +70,7 @@
                         android:layout_below="@id/message_progress"
                         android:layout_centerInParent="true"
                         android:id="@+id/message_progress_text"
-                        android:text="@string/message_progress_text"
-                        />
+                        android:text="@string/message_progress_text" />
 
                 </RelativeLayout>
 
@@ -89,10 +86,34 @@
 
     </com.fsck.k9.view.NonLockingScrollView>
 
-    <Button android:id="@+id/download_remainder"
+    <Button
+        android:id="@+id/download_remainder"
         android:text="@string/message_view_download_remainder"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:layout_width="fill_parent"/>
+        android:layout_width="fill_parent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+
+        <ImageButton
+            android:id="@+id/mail_previous_btn"
+            android:layout_width="@dimen/margin_standard_56dp"
+            android:layout_height="@dimen/margin_standard_56dp"
+            android:layout_gravity="right"
+            android:src="@drawable/ic_action_previous_message_light"
+            android:background="@drawable/ic_action_previous_message_light" />
+
+        <ImageButton
+            android:id="@+id/mail_next_btn"
+            android:layout_width="@dimen/margin_standard_56dp"
+            android:layout_height="@dimen/margin_standard_56dp"
+            android:src="@drawable/ic_action_next_message_light"
+            android:background="@drawable/ic_action_next_message_light" />
+
+    </LinearLayout>
 
 </com.fsck.k9.ui.messageview.MessageTopView>

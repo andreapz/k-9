@@ -2,6 +2,7 @@ package com.fsck.k9.fragment;
 
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Timer;
@@ -114,7 +115,7 @@ public class MediaFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
@@ -347,9 +348,15 @@ public class MediaFragment extends Fragment {
         public void setTitle(String value) {
             if (value != null && value.length() > 0) {
 
-                Log.d("TiscaliWebView", "[TITLE]:" + value);
-                if (mFragmentListener != null) {
-                    mFragmentListener.setPageTitle(value);
+                String title = null;
+                try {
+                    title = URLDecoder.decode(value, "UTF8");
+                    Log.d("TiscaliWebView", "[TITLE]:" + title);
+                    if (mFragmentListener != null) {
+                        mFragmentListener.setPageTitle(title);
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
             }
         }

@@ -51,6 +51,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 
@@ -65,6 +66,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     public static final int REQUEST_MASK_LOADER_HELPER = (1 << 8);
     public static final int REQUEST_MASK_CRYPTO_PRESENTER = (1 << 9);
+    private ImageButton mNextBtn;
+    private ImageButton mPreviousBtn;
 
     public static MessageViewFragment newInstance(MessageReference reference) {
         MessageViewFragment fragment = new MessageViewFragment();
@@ -174,7 +177,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         Context context = new ContextThemeWrapper(inflater.getContext(),
                 K9.getK9ThemeResourceId(K9.getK9MessageViewTheme()));
         LayoutInflater layoutInflater = LayoutInflater.from(context);
@@ -200,6 +203,22 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         });
 
         mFragmentListener.messageHeaderViewAvailable(mMessageView.getMessageHeaderView());
+
+        mNextBtn = (ImageButton) mMessageView.findViewById(R.id.mail_next_btn);
+        mNextBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mFragmentListener.showNextMessage();
+            }
+        });
+
+        mPreviousBtn = (ImageButton) mMessageView.findViewById(R.id.mail_previous_btn);
+        mPreviousBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mFragmentListener.showPreviousMessage();
+            }
+        });
 
         return view;
     }
@@ -705,7 +724,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
         @Override
         public void startPendingIntentForCryptoPresenter(IntentSender si, Integer requestCode,
-                Intent fillIntent, int flagsMask, int flagValues, int extraFlags)
+                                                         Intent fillIntent, int flagsMask, int flagValues, int extraFlags)
                 throws SendIntentException {
             if (requestCode == null) {
                 getActivity().startIntentSender(si, fillIntent, flagsMask, flagValues, extraFlags);
@@ -750,6 +769,10 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         void setProgress(boolean b);
 
         void showNextMessageOrReturn();
+
+        boolean showNextMessage();
+
+        boolean showPreviousMessage();
 
         void messageHeaderViewAvailable(MessageHeader messageHeaderView);
 
@@ -824,7 +847,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
         @Override
         public void startIntentSenderForMessageLoaderHelper(IntentSender si, int requestCode,
-                Intent fillIntent, int flagsMask, int flagValues, int extraFlags) {
+                                                            Intent fillIntent, int flagsMask, int flagValues, int extraFlags) {
             try {
                 requestCode |= REQUEST_MASK_LOADER_HELPER;
                 getActivity().startIntentSenderForResult(si, requestCode, fillIntent, flagsMask,

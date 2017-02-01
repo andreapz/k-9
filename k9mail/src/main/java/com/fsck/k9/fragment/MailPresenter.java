@@ -1338,7 +1338,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         // return super.onKeyUp(keyCode, event);
     }
 
-    private boolean showNextMessage() {
+    @Override
+    public boolean showNextMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
             if (mMessageListFragment.openNext(ref)) {
@@ -1349,7 +1350,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return false;
     }
 
-    private boolean showPreviousMessage() {
+    @Override
+    public boolean showPreviousMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
             if (mMessageListFragment.openPrevious(ref)) {
