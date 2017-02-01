@@ -302,21 +302,15 @@ public abstract class MediaPresenter
                     @Override
                     public void onCompleted() {
                         if (mActionBarTitle != null) {
-                            String titleEncode = title.replaceAll("%20", " ");
-                            mActionBarTitle.setText(titleEncode);
+                            mActionBarTitle.setText(title);
                         }
-
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-
-            }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-
-            }
+                    public void onNext(Object o) {}
                 });
 
     }
@@ -679,6 +673,7 @@ public abstract class MediaPresenter
             for (TiscaliMenuItem item : mItems) {
                 mDepth.put(item, 0);
             }
+            notifyDataSetChanged();
         }
 
 
