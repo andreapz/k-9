@@ -925,11 +925,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 boolean canDoNext = (initialized && !mMessageListFragment.isLast(ref));
 
                 MenuItem prev = menu.findItem(R.id.previous_message);
-                prev.setEnabled(canDoPrev);
+                prev.setVisible(false);
+                prev.setEnabled(false); // canDoPrev
                 prev.getIcon().setAlpha(canDoPrev ? 255 : 127);
 
                 MenuItem next = menu.findItem(R.id.next_message);
-                next.setEnabled(canDoNext);
+                next.setVisible(false);
+                next.setEnabled(false); // canDoPrev
                 next.getIcon().setAlpha(canDoNext ? 255 : 127);
             }
 

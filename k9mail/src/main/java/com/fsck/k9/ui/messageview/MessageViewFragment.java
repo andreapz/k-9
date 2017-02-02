@@ -204,7 +204,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
         mFragmentListener.messageHeaderViewAvailable(mMessageView.getMessageHeaderView());
 
-        mNextBtn = (ImageButton) mMessageView.findViewById(R.id.mail_next_btn);
+        mNextBtn = (ImageButton) view.findViewById(R.id.mail_next_btn);
         mNextBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -212,7 +212,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
             }
         });
 
-        mPreviousBtn = (ImageButton) mMessageView.findViewById(R.id.mail_previous_btn);
+        mPreviousBtn = (ImageButton) view.findViewById(R.id.mail_previous_btn);
         mPreviousBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
