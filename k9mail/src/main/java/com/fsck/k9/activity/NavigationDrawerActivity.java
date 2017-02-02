@@ -227,7 +227,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-                                             boolean noThreading, boolean newTask, boolean clearTop) {
+            boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -480,11 +480,13 @@ public class NavigationDrawerActivity extends K9Activity
 
             mBottomNav.animate().translationY(mBottomNav.getHeight())
                     .setListener(new AnimatorListenerAdapter() {
+
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
                             mBottomNav.setVisibility(View.GONE);
                         }
+
                     });
         }
     }
@@ -508,7 +510,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -828,7 +830,7 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                && mMailPresenter.getMessageListWasDisplayed())) {
+                        && mMailPresenter.getMessageListWasDisplayed())) {
             mMailPresenter.showMessageList();
         } else if (mMailPresenter != null
                 && getIntent().getStringExtra(SearchManager.QUERY) != null) {

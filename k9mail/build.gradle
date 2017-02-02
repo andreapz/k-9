@@ -69,6 +69,7 @@ dependencies {
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.mockito:mockito-core:${mockitoVersion}"
+    compile 'com.google.android.gms:play-services-appindexing:8.4.0'
 }
 
 android {
