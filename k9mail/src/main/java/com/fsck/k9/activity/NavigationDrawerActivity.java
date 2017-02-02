@@ -107,8 +107,12 @@ public class NavigationDrawerActivity extends K9Activity
         MessageViewFragment.MessageViewFragmentGetListener, MediaFragment.MediaFragmentGetListener,
         INavigationDrawerActivityListener, ApiController.ApiControllerInterface {
 
+    private static final String ACTION_SHORTCUT = "shortcut";
+    private static final String EXTRA_SPECIAL_FOLDER = "special_folder";
+
     private static final String EXTRA_SEARCH = "search";
     private static final String EXTRA_NO_THREADING = "no_threading";
+    private static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
 
     public static final String ACTION_IMPORT_SETTINGS = "importSettings";
     public static final String EXTRA_STARTUP = "startup";
@@ -238,6 +242,24 @@ public class NavigationDrawerActivity extends K9Activity
         return intent;
     }
 
+    public static Intent shortcutIntent(Context context, String specialFolder) {
+        Intent intent = new Intent(context, NavigationDrawerActivity.class);
+        intent.setAction(ACTION_SHORTCUT);
+        intent.putExtra(EXTRA_SPECIAL_FOLDER, specialFolder);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        return intent;
+    }
+
+    public static Intent actionDisplayMessageIntent(Context context,
+                                                    MessageReference messageReference) {
+        Intent intent = new Intent(context, NavigationDrawerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
+        return intent;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -271,6 +293,12 @@ public class NavigationDrawerActivity extends K9Activity
         } else if (accountUUid != null) {
             account = pref.getAccount(accountUUid);
             mailIntent = getMailIntent(account);
+        } else if (intent.getExtras() != null && intent.getExtras().get(EXTRA_SEARCH) != null) {
+            mailIntent = intent;
+            account = getAccount(accounts, (LocalSearch) intent.getExtras().get(EXTRA_SEARCH));
+            if (account == null) {
+                account = accounts.get(0);
+            }
         } else {
             account = accounts.get(0);
             mailIntent = getMailIntent(account);
@@ -358,6 +386,29 @@ public class NavigationDrawerActivity extends K9Activity
             mBottomNav.setVisibility(View.GONE);
         }
 
+    }
+
+    private Account getAccount(List<Account> accounts, LocalSearch localSearch) {
+        for (Account cAccount : accounts) {
+            for (String uuid : localSearch.getAccountUuids()) {
+                if (uuid.equals(cAccount.getUuid())) {
+                    return cAccount;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+        if (mMailPresenter != null) {
+            mBottomNav.findViewById(mBottomNav.getMenu().getItem(MAIL_TAB_SELECTED).getItemId())
+                    .performClick();
+            mMailPresenter.onNewIntent(intent);
+        }
     }
 
     @Override
@@ -829,7 +880,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void updateMainConfig(MainConfig mainConfig) {
-        //Nop
+        // Nop
     }
 
     @Override

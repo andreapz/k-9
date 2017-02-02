@@ -103,7 +103,7 @@ public abstract class MediaPresenter
     private boolean mIsExternalBrowsing = false;
 
     public enum DisplayMode {
-        MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW
+        MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW, MEDIA_NONE
     }
 
     public enum Type {
@@ -164,6 +164,11 @@ public abstract class MediaPresenter
         outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
         outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
         mSavedInstanceState = outState;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+
     }
 
     private void findFragments() {
@@ -877,6 +882,8 @@ public abstract class MediaPresenter
         if (!mStarted) {
             return;
         }
+        mDisplayMode = DisplayMode.MEDIA_NONE;
+        mListener.getApiController().removeListener(this);
         removeMediaFragment();
         removeDetailFragment();
     }

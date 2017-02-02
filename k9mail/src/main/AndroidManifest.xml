@@ -85,6 +85,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <data
                     android:host="messages"
@@ -216,23 +219,23 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".activity.MessageList"
-            android:configChanges="locale"
-            android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow">
-            <intent-filter>
-                <!-- This action is only to allow an entry point for launcher shortcuts -->
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <data
-                    android:host="messages"
-                    android:scheme="email" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+        <!--<activity-->
+        <!--android:name=".activity.MessageList"-->
+        <!--android:configChanges="locale"-->
+        <!--android:launchMode="singleTop"-->
+        <!--android:uiOptions="splitActionBarWhenNarrow">-->
+        <!--<intent-filter>-->
+        <!--&lt;!&ndash; This action is only to allow an entry point for launcher shortcuts &ndash;&gt;-->
+        <!--<action android:name="android.intent.action.MAIN" />-->
+        <!--</intent-filter>-->
+        <!--<intent-filter>-->
+        <!--<action android:name="android.intent.action.VIEW" />-->
+        <!--<data-->
+        <!--android:host="messages"-->
+        <!--android:scheme="email" />-->
+        <!--<category android:name="android.intent.category.DEFAULT" />-->
+        <!--</intent-filter>-->
+        <!--</activity>-->
 
         <activity
             android:name=".activity.MessageCompose"
