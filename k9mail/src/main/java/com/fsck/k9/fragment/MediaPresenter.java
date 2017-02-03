@@ -932,7 +932,7 @@ public abstract class MediaPresenter
                 mMediaViewFragment.refreshUrl();
             }
         } else {
-            if (mMediaViewFragment != null) {
+            if (mMediaDetailFragment != null) {
                 mMediaDetailFragment.refreshUrl();
             }
         }

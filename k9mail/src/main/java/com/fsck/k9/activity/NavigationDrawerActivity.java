@@ -60,6 +60,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -253,7 +254,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-                                                    MessageReference messageReference) {
+            MessageReference messageReference) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -316,6 +317,10 @@ public class NavigationDrawerActivity extends K9Activity
         }
 
         setContentView(R.layout.activity_navigation_drawer);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);

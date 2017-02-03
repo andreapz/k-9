@@ -22,31 +22,47 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:openDrawer="start">
+    tools:openDrawer="start"
+    android:fitsSystemWindows="true">
 
     <!-- As the main content view, the view below consumes the entire
          space available using match_parent in both dimensions. -->
 
-    <RelativeLayout android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:design="http://schemas.android.com/apk/res-auto">
+        android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/content_frame"
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:layout_alignParentTop="true"
+            app:layout_scrollFlags="enterAlways" />
+
+        <RelativeLayout android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/bottom_navigation" />
+            xmlns:design="http://schemas.android.com/apk/res-auto">
 
-        <android.support.design.widget.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:background="@android:color/holo_blue_light"
-            design:menu="@menu/bottom_nav_items"
-            android:visibility="visible" />
+            <FrameLayout
+                android:id="@+id/content_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/bottom_navigation" />
 
-    </RelativeLayout>
+            <android.support.design.widget.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@android:color/holo_blue_light"
+                design:menu="@menu/bottom_nav_items"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
 
     <!-- android:layout_gravity="start" tells DrawerLayout to treat
          this as a sliding drawer on the left side for left-to-right
