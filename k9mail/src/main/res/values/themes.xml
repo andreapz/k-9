@@ -7,6 +7,7 @@
 
     <!-- Empty base themes that can be easily replaced by RRO (Runtime Resource Overlay) themes -->
     <style name="Theme.K9.Light.Base" parent="Theme.AppCompat.Light" />
+
     <style name="Theme.K9.Dark.Base" parent="Theme.AppCompat" />
 
     <style name="Theme.K9.Light.Common" parent="Theme.K9.Light.Base">
@@ -27,7 +28,9 @@
         <item name="iconActionSearchFolder">@drawable/action_search_folder_light</item>
         <item name="iconActionSend">@drawable/ic_action_send_light</item>
         <item name="iconActionSettings">@drawable/ic_action_settings_light</item>
-        <item name="iconActionSingleMessageOptions">@drawable/ic_action_single_message_options_light</item>
+        <item name="iconActionSingleMessageOptions">
+            @drawable/ic_action_single_message_options_light
+        </item>
         <item name="iconActionSort">@drawable/ic_action_sort_light</item>
         <item name="iconActionSpam">@drawable/ic_action_spam_light</item>
         <item name="iconActionFlag">@drawable/ic_action_flag_light</item>
@@ -42,7 +45,8 @@
         <item name="iconActionSelectAll">@drawable/ic_action_select_all_light</item>
         <item name="iconActionSave">@drawable/ic_action_save_light</item>
         <item name="iconActionCancel">@drawable/ic_action_cancel_light</item>
-        <item name="iconActionRequestReadReceipt">@drawable/ic_action_request_read_receipt_light</item>
+        <item name="iconActionRequestReadReceipt">@drawable/ic_action_request_read_receipt_light
+        </item>
         <item name="iconActionExpand">@drawable/ic_action_expand_light</item>
         <item name="iconActionCollapse">@drawable/ic_action_collapse_light</item>
         <item name="textColorPrimaryRecipientDropdown">@android:color/primary_text_light</item>
@@ -91,7 +95,9 @@
         <item name="iconActionSearchFolder">@drawable/action_search_folder_dark</item>
         <item name="iconActionSend">@drawable/ic_action_send_dark</item>
         <item name="iconActionSettings">@drawable/ic_action_settings_dark</item>
-        <item name="iconActionSingleMessageOptions">@drawable/ic_action_single_message_options_dark</item>
+        <item name="iconActionSingleMessageOptions">
+            @drawable/ic_action_single_message_options_dark
+        </item>
         <item name="iconActionSort">@drawable/ic_action_sort_dark</item>
         <item name="iconActionSpam">@drawable/ic_action_spam_dark</item>
         <item name="iconActionFlag">@drawable/ic_action_flag_dark</item>
@@ -106,7 +112,8 @@
         <item name="iconActionSelectAll">@drawable/ic_action_select_all_dark</item>
         <item name="iconActionSave">@drawable/ic_action_save_dark</item>
         <item name="iconActionCancel">@drawable/ic_action_cancel_dark</item>
-        <item name="iconActionRequestReadReceipt">@drawable/ic_action_request_read_receipt_dark</item>
+        <item name="iconActionRequestReadReceipt">@drawable/ic_action_request_read_receipt_dark
+        </item>
         <item name="iconActionExpand">@drawable/ic_action_expand_dark</item>
         <item name="iconActionCollapse">@drawable/ic_action_collapse_dark</item>
         <item name="textColorPrimaryRecipientDropdown">@android:color/primary_text_dark</item>
@@ -138,7 +145,18 @@
     </style>
 
     <style name="Theme.K9.Light" parent="Theme.K9.Light.Common" />
+
     <style name="Theme.K9.Dark" parent="Theme.K9.Dark.Common" />
+
+    <style name="Theme.K9.Light.NoActionBar" parent="Theme.K9.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.K9.Dark.NoActionBar" parent="Theme.K9.Dark.Common">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 
     <style name="Theme.K9.Dialog.Light" parent="Theme.K9.Light">
         <item name="backgroundColorChooseAccountHeader">#cccccc</item>
