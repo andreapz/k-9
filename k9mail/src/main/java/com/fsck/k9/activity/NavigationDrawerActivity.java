@@ -61,6 +61,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -406,9 +407,13 @@ public class NavigationDrawerActivity extends K9Activity
         setIntent(intent);
 
         if (mMailPresenter != null) {
+
             mBottomNav.findViewById(mBottomNav.getMenu().getItem(MAIL_TAB_SELECTED).getItemId())
                     .performClick();
-            mMailPresenter.onNewIntent(intent);
+
+            if (!Intent.ACTION_MAIN.equals(intent.getAction())) {
+                mMailPresenter.onNewIntent(intent);
+            }
         }
     }
 

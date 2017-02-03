@@ -281,6 +281,7 @@ public abstract class MediaPresenter
 
     private void removeDetailFragment() {
         if (mMediaDetailFragment != null) {
+            mMediaDetailFragment.mWebView.loadUrl("about:blank");
             removeFragment(mMediaDetailFragment);
             mMediaDetailFragment = null;
         }
@@ -317,7 +318,6 @@ public abstract class MediaPresenter
                     @Override
                     public void onNext(Object o) {}
                 });
-
     }
 
     private boolean useSplitView() {
@@ -328,7 +328,6 @@ public abstract class MediaPresenter
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
                         && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
-
 
     public void openSection(String url, boolean isHome) {
         showMedia();
@@ -375,7 +374,6 @@ public abstract class MediaPresenter
         } else {
             return mIsHomePage;
         }
-
     }
 
     @Override

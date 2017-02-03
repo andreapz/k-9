@@ -1108,7 +1108,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         onRefresh(!REFRESH_REMOTE);
 
-        MessagingController.getInstance(mContext).cancelNotificationsForAccount(mAccount);
+        if(mAccount != null) {
+            MessagingController.getInstance(mContext).cancelNotificationsForAccount(mAccount);
+        }
         mMessagingListener.onResume(mContext);
     }
 
