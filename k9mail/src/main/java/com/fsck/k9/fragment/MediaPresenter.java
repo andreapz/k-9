@@ -103,7 +103,7 @@ public abstract class MediaPresenter
     private boolean mIsExternalBrowsing = false;
 
     public enum DisplayMode {
-        MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW, MEDIA_NONE
+        MEDIA_VIEW, MEDIA_DETAIL, SPLIT_VIEW
     }
 
     public enum Type {
@@ -882,7 +882,6 @@ public abstract class MediaPresenter
         if (!mStarted) {
             return;
         }
-        mDisplayMode = DisplayMode.MEDIA_NONE;
         mListener.getApiController().removeListener(this);
         removeMediaFragment();
         removeDetailFragment();
@@ -932,7 +931,7 @@ public abstract class MediaPresenter
                 mMediaViewFragment.refreshUrl();
             }
         } else {
-            if (mMediaViewFragment != null) {
+            if (mDisplayMode == DisplayMode.MEDIA_DETAIL && mMediaDetailFragment != null) {
                 mMediaDetailFragment.refreshUrl();
             }
         }

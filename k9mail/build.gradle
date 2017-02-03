@@ -76,12 +76,18 @@ android {
     compileSdkVersion androidCompileSdkVersion.toInteger()
     buildToolsVersion androidBuildToolsVersion
 
+    int K9_VERSION_CODE = 23113
+    String K9_VERSION_NAME = '5.114'
+
+    int VERSION_CODE = 200
+    String VERSION_NAME = "2.0.0"
+
     defaultConfig {
         applicationId "com.fsck.k9"
         testApplicationId "com.fsck.k9.tests"
 
-        versionCode 23113
-        versionName '5.114'
+        versionCode VERSION_CODE
+        versionName VERSION_NAME
 
         minSdkVersion 15
         targetSdkVersion 24
@@ -102,6 +108,16 @@ android {
             }
 
             buildConfigField "boolean", "DEVELOPER_MODE", "false"
+
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+
+                    // apk file names
+                    if (output.outputFile.name.endsWith(".apk")) {
+                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc" + K9_VERSION_NAME +  ".apk")
+                    }
+                }
+            }
         }
 
         debug {
@@ -109,6 +125,18 @@ android {
             testCoverageEnabled rootProject.testCoverage
 
             buildConfigField "boolean", "DEVELOPER_MODE", "true"
+        }
+    }
+
+    productFlavors {
+        developer {
+            // multi environment, with many flags enabled
+            versionName "$VERSION_NAME-developer"
+            minSdkVersion 21
+        }
+        production {
+            // to be published on GooglePlay
+            versionName "$VERSION_NAME"
         }
     }
 

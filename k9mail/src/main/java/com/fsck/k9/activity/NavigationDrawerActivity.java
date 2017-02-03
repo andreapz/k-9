@@ -366,7 +366,8 @@ public class NavigationDrawerActivity extends K9Activity
         if (savedInstanceState == null) {
             int tempSelectedTab = DEFAULT_SELECTED_TAB;
             // open mail when coming from registration/change of password/account selection
-            if (!intent.getBooleanExtra(EXTRA_STARTUP, true)) {
+            if (!intent.getBooleanExtra(EXTRA_STARTUP, true)
+                    || (intent.getExtras() != null && intent.getExtras().get(EXTRA_SEARCH) != null)) {
                 tempSelectedTab = MAIL_TAB_SELECTED;
             }
             mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId())
