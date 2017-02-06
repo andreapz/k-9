@@ -157,8 +157,8 @@ public abstract class MediaPresenter
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-//        outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
-//        outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
+        // outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
+        // outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
     }
 
     @Override
@@ -222,17 +222,17 @@ public abstract class MediaPresenter
             return;
         }
 
-//        if (savedInstanceState != null) {
-//            DisplayMode savedDisplayMode =
-//                    (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
-//            if (savedDisplayMode != DisplayMode.SPLIT_VIEW && savedDisplayMode != null) {
-//                mDisplayMode = savedDisplayMode;
-//
-//                return;
-//            }
-//        }
+        // if (savedInstanceState != null) {
+        // DisplayMode savedDisplayMode =
+        // (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
+        // if (savedDisplayMode != DisplayMode.SPLIT_VIEW && savedDisplayMode != null) {
+        // mDisplayMode = savedDisplayMode;
+        //
+        // return;
+        // }
+        // }
 
-        if(mCurrentPage == null) {
+        if (mCurrentPage == null) {
             mDisplayMode = DisplayMode.MEDIA_VIEW;
         }
     }
@@ -444,7 +444,7 @@ public abstract class MediaPresenter
             public void call(UserLogin userLogin) {
 
                 if (mIsHomePage && mMediaViewFragment != null) {
-                    mMediaViewFragment.refreshUrl();
+                    mMediaViewFragment.setPageStatus();
                 }
 
             }
@@ -922,19 +922,18 @@ public abstract class MediaPresenter
         mNewsAdapter.updateData();
 
         if (mDisplayMode == DisplayMode.MEDIA_VIEW) {
-            if (mMediaViewFragment != null && mMediaViewFragment.getUrl() == null) {
-                mMediaViewFragment.refreshUrl();
+            if (mMediaViewFragment != null) {
+                mMediaViewFragment.setPageStatus();
             }
         } else {
             if (mMediaDetailFragment != null) {
-                mMediaDetailFragment.refreshUrl();
+                mMediaDetailFragment.setPageStatus();
             }
         }
     }
 
     @Override
-    public void setStartInstanceState(Bundle savedInstanceState) {
-    }
+    public void setStartInstanceState(Bundle savedInstanceState) {}
 
 
     public void showDialogInformations() {

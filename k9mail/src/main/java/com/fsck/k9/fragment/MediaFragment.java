@@ -116,7 +116,7 @@ public class MediaFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (WebView) v.findViewById(R.id.webview);
@@ -277,9 +277,16 @@ public class MediaFragment extends Fragment {
         loadUrl(newUrl);
     }
 
-    public void refreshUrl() {
-        if (mWebView != null) {
-            loadUrl(mUrl);
+    public void setPageStatus() {
+        if (mWebView != null && mFragmentListener != null) {
+            String value = mFragmentListener.getMeJSON();
+            try {
+                String valueEncoded = URLEncoder.encode(value, "UTF-8").replace("%", "\\x");
+                mWebView.loadUrl(
+                        JAVASCRIPT_TISCALI_APP_SET_PAGE_STATUS.replace("%D", valueEncoded));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
 
     }
