@@ -411,14 +411,23 @@ public class NavigationDrawerActivity extends K9Activity
         super.onNewIntent(intent);
         setIntent(intent);
 
-        if (mMailPresenter != null) {
+        switch (mSelectedTab) {
+            case MAIL_TAB_SELECTED:
+                if (mMailPresenter != null) {
 
-            mBottomNav.findViewById(mBottomNav.getMenu().getItem(MAIL_TAB_SELECTED).getItemId())
-                    .performClick();
+                    mBottomNav.findViewById(mBottomNav.getMenu().getItem(MAIL_TAB_SELECTED).getItemId())
+                            .performClick();
 
-            if (!Intent.ACTION_MAIN.equals(intent.getAction())) {
-                mMailPresenter.onNewIntent(intent);
-            }
+                    if (!Intent.ACTION_MAIN.equals(intent.getAction())) {
+                        mMailPresenter.onNewIntent(intent);
+                    }
+                }
+                break;
+
+            case NEWS_TAB_SELECTED:
+                mBottomNav.findViewById(mBottomNav.getMenu().getItem(NEWS_TAB_SELECTED).getItemId())
+                        .performClick();
+                break;
         }
     }
 

@@ -154,7 +154,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
 
-    private Bundle mSavedInstanceState;
+//    private Bundle mSavedInstanceState;
 
     /**
      * {@code true} when the message list was displayed once. This is used in
@@ -450,17 +450,17 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             Toast.makeText(mContext, "RETURN FRAGMENT", Toast.LENGTH_LONG);
         }
 
-        if (mSavedInstanceState != null) {
-            mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
-        } else {
+//        if (mSavedInstanceState != null) {
+//            mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
+//        } else {
             String[] accountUuids = mSearch.getAccountUuids();
             mAccountUuid = accountUuids[0];
-        }
+//        }
 
         mAccount = Preferences.getPreferences(mContext).getAccount(mAccountUuid);
 
         findFragments();
-        initializeDisplayMode(mSavedInstanceState);
+        initializeDisplayMode();
         initializeLayout();
         initializeFragments();
         displayViews();
@@ -566,23 +566,21 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      * the result depends on the availability of a {@link MessageViewFragment} instance.
      * </p>
      *
-     * @param savedInstanceState The saved instance state that was passed to the activity as
-     *        argument to {@link # onCreateView(Bundle)}. May be {@code null}.
      */
-    private void initializeDisplayMode(Bundle savedInstanceState) {
+    private void initializeDisplayMode() {
         if (useSplitView()) {
             mDisplayMode = DisplayMode.SPLIT_VIEW;
             return;
         }
 
-        if (savedInstanceState != null) {
-            DisplayMode savedDisplayMode =
-                    (DisplayMode) savedInstanceState.getSerializable(MAIL_DISPLAY_MODE);
-            if (savedDisplayMode != null && savedDisplayMode != DisplayMode.SPLIT_VIEW) {
-                mDisplayMode = savedDisplayMode;
-                return;
-            }
-        }
+//        if (savedInstanceState != null) {
+//            DisplayMode savedDisplayMode =
+//                    (DisplayMode) savedInstanceState.getSerializable(MAIL_DISPLAY_MODE);
+//            if (savedDisplayMode != null && savedDisplayMode != DisplayMode.SPLIT_VIEW) {
+//                mDisplayMode = savedDisplayMode;
+//                return;
+//            }
+//        }
 
         if (mMessageViewFragment != null || mMessageReference != null) {
             mDisplayMode = DisplayMode.MESSAGE_VIEW;
@@ -1122,16 +1120,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
-        outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
-        outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
-        outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
-        mSavedInstanceState = outState;
+//        outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
+//        outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
+//        outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
+//        outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
+//        mSavedInstanceState = outState;
     }
 
     @Override
     public void setStartInstanceState(Bundle savedInstanceState) {
-        mSavedInstanceState = savedInstanceState;
+//        mSavedInstanceState = savedInstanceState;
     }
 
 
@@ -1151,7 +1149,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
 
-        initializeDisplayMode(null);
+        initializeDisplayMode();
         initializeFragments();
         displayViews();
     }
@@ -1599,7 +1597,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void onSwitchComplete(int displayedChild) {
         if (displayedChild == 0) {
             removeMessageViewFragment();
-            setActionBarToggle();
+            if (Intent.ACTION_SEARCH.equals(mIntent.getAction())) {
+                setActionBarUp();
+            } else {
+                setActionBarToggle();
+            }
         } else {
             setActionBarUp();
         }
