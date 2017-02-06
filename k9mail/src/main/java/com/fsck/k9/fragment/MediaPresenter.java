@@ -97,7 +97,6 @@ public abstract class MediaPresenter
     private MediaPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
     private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
 
-    private Bundle mSavedInstanceState;
     private boolean mStarted = false;
     private boolean isAttached = false;
     private boolean mIsExternalBrowsing = false;
@@ -143,15 +142,12 @@ public abstract class MediaPresenter
         mIsHomePage = true;
         initializeActionBar();
         // findFragments();
-        initializeDisplayMode(mSavedInstanceState);
+        initializeDisplayMode();
 
         mListener.setDrawerListAdapter(mNewsAdapter);
 
-        if (mSavedInstanceState != null) {
-            mCurrentPage = mSavedInstanceState.getString(NEWS_STATE_CURRENT_URL);
-            if (mCurrentPage != null) {
-                initializeFragments(mCurrentPage);
-            }
+        if (mCurrentPage != null) {
+            initializeFragments(mCurrentPage);
         } else {
             if (mMenuItems.size() > 0) {
                 initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
@@ -161,9 +157,8 @@ public abstract class MediaPresenter
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
-        outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
-        mSavedInstanceState = outState;
+//        outState.putSerializable(NEWS_STATE_DISPLAY_MODE, mDisplayMode);
+//        outState.putString(NEWS_STATE_CURRENT_URL, mCurrentPage);
     }
 
     @Override
@@ -221,23 +216,25 @@ public abstract class MediaPresenter
         return true;
     }
 
-    private void initializeDisplayMode(Bundle savedInstanceState) {
+    private void initializeDisplayMode() {
         if (useSplitView()) {
             mDisplayMode = DisplayMode.SPLIT_VIEW;
             return;
         }
 
-        if (savedInstanceState != null) {
-            DisplayMode savedDisplayMode =
-                    (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
-            if (savedDisplayMode != DisplayMode.SPLIT_VIEW && savedDisplayMode != null) {
-                mDisplayMode = savedDisplayMode;
+//        if (savedInstanceState != null) {
+//            DisplayMode savedDisplayMode =
+//                    (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
+//            if (savedDisplayMode != DisplayMode.SPLIT_VIEW && savedDisplayMode != null) {
+//                mDisplayMode = savedDisplayMode;
+//
+//                return;
+//            }
+//        }
 
-                return;
-            }
+        if(mCurrentPage == null) {
+            mDisplayMode = DisplayMode.MEDIA_VIEW;
         }
-
-        mDisplayMode = DisplayMode.MEDIA_VIEW;
     }
 
     public void goBackOnHistory() {
@@ -937,7 +934,6 @@ public abstract class MediaPresenter
 
     @Override
     public void setStartInstanceState(Bundle savedInstanceState) {
-        mSavedInstanceState = savedInstanceState;
     }
 
 
