@@ -146,6 +146,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="update_account_action">Update account</string>
 
     <string name="mark_as_read_action">Mark as read</string>
+    <string name="marked_as_read_message">Message marked as read</string>
     <string name="send_alternate_action">Share</string>
     <string name="send_alternate_chooser_title">Choose sender</string>
 
@@ -164,6 +165,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="message_view_theme_action_light">Switch to light theme</string>
 
     <string name="mark_as_unread_action">Mark unread</string>
+    <string name="marked_as_unread_message">Message marked as unread</string>
     <string name="read_receipt">Read receipt</string>
     <string name="read_receipt_enabled">Will request read receipt</string>
     <string name="read_receipt_disabled">Will not request read receipt</string>

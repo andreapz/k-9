@@ -275,6 +275,7 @@ public class ApiController {
 
             @Override
             public void onError(Throwable e) {
+                // test for Captive Portal
                 if (CaptivePortalHelper.getInstance(mContext).isCaptivePortalConnection()) {
                     // show the login activity
                     CaptivePortalHelper.getInstance(mContext).showLoginWebView();

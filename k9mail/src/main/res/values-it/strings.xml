@@ -122,6 +122,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="update_account_action">Aggiorna account</string>
     <string name="clear_pending_action">Annulla tutte le azioni in corso (pericolo!)</string>
     <string name="mark_as_read_action">Marca come letto</string>
+    <string name="marked_as_read_message">Messaggio marcato come letto</string>
     <string name="send_alternate_action">Condividi</string>
     <string name="send_alternate_chooser_title">Scegli il mittente</string>
     <string name="flag_action">Aggiungi stella</string>
@@ -137,6 +138,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="message_view_theme_action_dark">Passa al tema scuro</string>
     <string name="message_view_theme_action_light">Passa al tema chiaro</string>
     <string name="mark_as_unread_action">Marca come da leggere</string>
+    <string name="marked_as_unread_message">Messaggio marcato come da leggere</string>
     <string name="read_receipt">Notifica di lettura</string>
     <string name="read_receipt_enabled">Richiesta notifica di lettura attivata</string>
     <string name="read_receipt_disabled">Richiesta notifica di lettura disattivata</string>

@@ -9,6 +9,25 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
+import com.fsck.k9.Account.SortType;
+import com.fsck.k9.activity.MessageCompose;
+import com.fsck.k9.activity.UpgradeDatabases;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.mail.Address;
+import com.fsck.k9.mail.K9MailLib;
+import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.internet.BinaryTempFileBody;
+import com.fsck.k9.mail.ssl.LocalKeyStore;
+import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.preferences.Storage;
+import com.fsck.k9.preferences.StorageEditor;
+import com.fsck.k9.provider.UnreadWidgetProvider;
+import com.fsck.k9.service.BootReceiver;
+import com.fsck.k9.service.MailService;
+import com.fsck.k9.service.ShutdownReceiver;
+import com.fsck.k9.service.StorageGoneReceiver;
+
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,39 +44,17 @@ import android.os.StrictMode;
 import android.text.format.Time;
 import android.util.Log;
 
-import com.fsck.k9.Account.SortType;
-import com.fsck.k9.activity.MessageCompose;
-import com.fsck.k9.activity.UpgradeDatabases;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.controller.MessagingListener;
-import com.fsck.k9.mail.Address;
-import com.fsck.k9.mail.K9MailLib;
-import com.fsck.k9.mail.Message;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.internet.BinaryTempFileBody;
-import com.fsck.k9.mailstore.LocalStore;
-import com.fsck.k9.preferences.Storage;
-import com.fsck.k9.preferences.StorageEditor;
-import com.fsck.k9.provider.UnreadWidgetProvider;
-import com.fsck.k9.mail.ssl.LocalKeyStore;
-import com.fsck.k9.service.BootReceiver;
-import com.fsck.k9.service.MailService;
-import com.fsck.k9.service.ShutdownReceiver;
-import com.fsck.k9.service.StorageGoneReceiver;
-
 public class K9 extends Application {
     /**
-     * Components that are interested in knowing when the K9 instance is
-     * available and ready (Android invokes Application.onCreate() after other
-     * components') should implement this interface and register using
-     * {@link K9#registerApplicationAware(ApplicationAware)}.
+     * Components that are interested in knowing when the K9 instance is available and ready
+     * (Android invokes Application.onCreate() after other components') should implement this
+     * interface and register using {@link K9#registerApplicationAware(ApplicationAware)}.
      */
     public static interface ApplicationAware {
         /**
          * Called when the Application instance is available and ready.
          *
-         * @param application
-         *            The application instance. Never <code>null</code>.
+         * @param application The application instance. Never <code>null</code>.
          * @throws Exception
          */
         void initializeComponent(Application application);
@@ -85,8 +82,7 @@ public class K9 extends Application {
     private static final String KEY_LAST_ACCOUNT_DATABASE_VERSION = "last_account_database_version";
 
     /**
-     * Components that are interested in knowing when the K9 instance is
-     * available and ready.
+     * Components that are interested in knowing when the K9 instance is available and ready.
      *
      * @see ApplicationAware
      */
@@ -94,10 +90,9 @@ public class K9 extends Application {
 
     /**
      * This will be {@code true} once the initialization is complete and {@link #notifyObservers()}
-     * was called.
-     * Afterwards calls to {@link #registerApplicationAware(com.fsck.k9.K9.ApplicationAware)} will
-     * immediately call {@link com.fsck.k9.K9.ApplicationAware#initializeComponent(K9)} for the
-     * supplied argument.
+     * was called. Afterwards calls to
+     * {@link #registerApplicationAware(com.fsck.k9.K9.ApplicationAware)} will immediately call
+     * {@link com.fsck.k9.K9.ApplicationAware#initializeComponent(K9)} for the supplied argument.
      */
     private static boolean sInitialized = false;
 
@@ -115,37 +110,34 @@ public class K9 extends Application {
 
     private static BACKGROUND_OPS backgroundOps = BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC;
     /**
-     * Some log messages can be sent to a file, so that the logs
-     * can be read using unprivileged access (eg. Terminal Emulator)
-     * on the phone, without adb.  Set to null to disable
+     * Some log messages can be sent to a file, so that the logs can be read using unprivileged
+     * access (eg. Terminal Emulator) on the phone, without adb. Set to null to disable
      */
     public static final String logFile = null;
-    //public static final String logFile = Environment.getExternalStorageDirectory() + "/k9mail/debug.log";
+    // public static final String logFile = Environment.getExternalStorageDirectory() +
+    // "/k9mail/debug.log";
 
     /**
-     * If this is enabled, various development settings will be enabled
-     * It should NEVER be on for Market builds
-     * Right now, it just governs strictmode
+     * If this is enabled, various development settings will be enabled It should NEVER be on for
+     * Market builds Right now, it just governs strictmode
      **/
     public static boolean DEVELOPER_MODE = BuildConfig.DEVELOPER_MODE;
 
 
     /**
-     * If this is enabled there will be additional logging information sent to
-     * Log.d, including protocol dumps.
-     * Controlled by Preferences at run-time
+     * If this is enabled there will be additional logging information sent to Log.d, including
+     * protocol dumps. Controlled by Preferences at run-time
      */
     public static boolean DEBUG = false;
 
     /**
-     * If this is enabled than logging that normally hides sensitive information
-     * like passwords will show that information.
+     * If this is enabled than logging that normally hides sensitive information like passwords will
+     * show that information.
      */
     public static boolean DEBUG_SENSITIVE = false;
 
     /**
-     * Can create messages containing stack traces that can be forwarded
-     * to the development team.
+     * Can create messages containing stack traces that can be forwarded to the development team.
      *
      * Feature is enabled when DEBUG == true
      */
@@ -177,9 +169,7 @@ public class K9 extends Application {
      * Controls when to hide the subject in the notification area.
      */
     public enum NotificationHideSubject {
-        ALWAYS,
-        WHEN_LOCKED,
-        NEVER
+        ALWAYS, WHEN_LOCKED, NEVER
     }
 
     private static NotificationQuickDelete sNotificationQuickDelete = NotificationQuickDelete.NEVER;
@@ -188,29 +178,21 @@ public class K9 extends Application {
      * Controls behaviour of delete button in notifications.
      */
     public enum NotificationQuickDelete {
-        ALWAYS,
-        FOR_SINGLE_MSG,
-        NEVER
+        ALWAYS, FOR_SINGLE_MSG, NEVER
     }
 
     private static LockScreenNotificationVisibility sLockScreenNotificationVisibility =
-        LockScreenNotificationVisibility.MESSAGE_COUNT;
+            LockScreenNotificationVisibility.MESSAGE_COUNT;
 
     public enum LockScreenNotificationVisibility {
-        EVERYTHING,
-        SENDERS,
-        MESSAGE_COUNT,
-        APP_NAME,
-        NOTHING
+        EVERYTHING, SENDERS, MESSAGE_COUNT, APP_NAME, NOTHING
     }
 
     /**
      * Controls when to use the message list split view.
      */
     public enum SplitViewMode {
-        ALWAYS,
-        NEVER,
-        WHEN_IN_LANDSCAPE
+        ALWAYS, NEVER, WHEN_IN_LANDSCAPE
     }
 
     private static boolean mMessageListCheckboxes = true;
@@ -224,7 +206,7 @@ public class K9 extends Application {
     private static int mContactNameColor = 0xff00008f;
     private static boolean sShowContactPicture = false;
     private static boolean mMessageViewFixedWidthFont = false;
-    private static boolean mMessageViewReturnToList = false;
+    private static boolean mMessageViewReturnToList = true;
     private static boolean mMessageViewShowNext = false;
 
     private static boolean mGesturesEnabled = true;
@@ -278,23 +260,23 @@ public class K9 extends Application {
     public static final String IDENTITY_HEADER = K9MailLib.IDENTITY_HEADER;
 
     /**
-     * Specifies how many messages will be shown in a folder by default. This number is set
-     * on each new folder and can be incremented with "Load more messages..." by the
-     * VISIBLE_LIMIT_INCREMENT
+     * Specifies how many messages will be shown in a folder by default. This number is set on each
+     * new folder and can be incremented with "Load more messages..." by the VISIBLE_LIMIT_INCREMENT
      */
     public static final int DEFAULT_VISIBLE_LIMIT = 25;
 
     /**
-     * The maximum size of an attachment we're willing to download (either View or Save)
-     * Attachments that are base64 encoded (most) will be about 1.375x their actual size
-     * so we should probably factor that in. A 5MB attachment will generally be around
-     * 6.8MB downloaded but only 5MB saved.
+     * The maximum size of an attachment we're willing to download (either View or Save) Attachments
+     * that are base64 encoded (most) will be about 1.375x their actual size so we should probably
+     * factor that in. A 5MB attachment will generally be around 6.8MB downloaded but only 5MB
+     * saved.
      */
     public static final int MAX_ATTACHMENT_DOWNLOAD_SIZE = (128 * 1024 * 1024);
 
 
-    /* How many times should K-9 try to deliver a message before giving up
-     * until the app is killed and restarted
+    /*
+     * How many times should K-9 try to deliver a message before giving up until the app is killed
+     * and restarted
      */
 
     public static final int MAX_SEND_ATTEMPTS = 5;
@@ -316,34 +298,44 @@ public class K9 extends Application {
     public static class Intents {
 
         public static class EmailReceived {
-            public static final String ACTION_EMAIL_RECEIVED = BuildConfig.APPLICATION_ID + ".intent.action.EMAIL_RECEIVED";
-            public static final String ACTION_EMAIL_DELETED = BuildConfig.APPLICATION_ID + ".intent.action.EMAIL_DELETED";
-            public static final String ACTION_REFRESH_OBSERVER = BuildConfig.APPLICATION_ID + ".intent.action.REFRESH_OBSERVER";
-            public static final String EXTRA_ACCOUNT = BuildConfig.APPLICATION_ID + ".intent.extra.ACCOUNT";
-            public static final String EXTRA_FOLDER = BuildConfig.APPLICATION_ID + ".intent.extra.FOLDER";
-            public static final String EXTRA_SENT_DATE = BuildConfig.APPLICATION_ID + ".intent.extra.SENT_DATE";
-            public static final String EXTRA_FROM = BuildConfig.APPLICATION_ID + ".intent.extra.FROM";
+            public static final String ACTION_EMAIL_RECEIVED =
+                    BuildConfig.APPLICATION_ID + ".intent.action.EMAIL_RECEIVED";
+            public static final String ACTION_EMAIL_DELETED =
+                    BuildConfig.APPLICATION_ID + ".intent.action.EMAIL_DELETED";
+            public static final String ACTION_REFRESH_OBSERVER =
+                    BuildConfig.APPLICATION_ID + ".intent.action.REFRESH_OBSERVER";
+            public static final String EXTRA_ACCOUNT =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.ACCOUNT";
+            public static final String EXTRA_FOLDER =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.FOLDER";
+            public static final String EXTRA_SENT_DATE =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.SENT_DATE";
+            public static final String EXTRA_FROM =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.FROM";
             public static final String EXTRA_TO = BuildConfig.APPLICATION_ID + ".intent.extra.TO";
             public static final String EXTRA_CC = BuildConfig.APPLICATION_ID + ".intent.extra.CC";
             public static final String EXTRA_BCC = BuildConfig.APPLICATION_ID + ".intent.extra.BCC";
-            public static final String EXTRA_SUBJECT = BuildConfig.APPLICATION_ID + ".intent.extra.SUBJECT";
-            public static final String EXTRA_FROM_SELF = BuildConfig.APPLICATION_ID + ".intent.extra.FROM_SELF";
+            public static final String EXTRA_SUBJECT =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.SUBJECT";
+            public static final String EXTRA_FROM_SELF =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.FROM_SELF";
         }
 
         public static class Share {
             /*
              * We don't want to use EmailReceived.EXTRA_FROM ("com.fsck.k9.intent.extra.FROM")
-             * because of different semantics (String array vs. string with comma separated
-             * email addresses)
+             * because of different semantics (String array vs. string with comma separated email
+             * addresses)
              */
-            public static final String EXTRA_FROM = BuildConfig.APPLICATION_ID + ".intent.extra.SENDER";
+            public static final String EXTRA_FROM =
+                    BuildConfig.APPLICATION_ID + ".intent.extra.SENDER";
         }
     }
 
     /**
      * Called throughout the application when the number of accounts has changed. This method
-     * enables or disables the Compose activity, the boot receiver and the service based on
-     * whether any accounts are configured.
+     * enables or disables the Compose activity, the boot receiver and the service based on whether
+     * any accounts are configured.
      */
     public static void setServicesEnabled(Context context) {
         int acctLength = Preferences.getPreferences(context).getAvailableAccounts().size();
@@ -356,32 +348,31 @@ public class K9 extends Application {
 
         PackageManager pm = context.getPackageManager();
 
-        if (!enabled && pm.getComponentEnabledSetting(new ComponentName(context, MailService.class)) ==
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+        if (!enabled && pm.getComponentEnabledSetting(new ComponentName(context,
+                MailService.class)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
             /*
              * If no accounts now exist but the service is still enabled we're about to disable it
              * so we'll reschedule to kill off any existing alarms.
              */
             MailService.actionReset(context, wakeLockId);
         }
-        Class<?>[] classes = { MessageCompose.class, BootReceiver.class, MailService.class };
+        Class<?>[] classes = {MessageCompose.class, BootReceiver.class, MailService.class};
 
         for (Class<?> clazz : classes) {
 
-            boolean alreadyEnabled = pm.getComponentEnabledSetting(new ComponentName(context, clazz)) ==
-                                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+            boolean alreadyEnabled = pm.getComponentEnabledSetting(new ComponentName(context,
+                    clazz)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
 
             if (enabled != alreadyEnabled) {
-                pm.setComponentEnabledSetting(
-                    new ComponentName(context, clazz),
-                    enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
+                pm.setComponentEnabledSetting(new ComponentName(context, clazz),
+                        enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
             }
         }
 
-        if (enabled && pm.getComponentEnabledSetting(new ComponentName(context, MailService.class)) ==
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+        if (enabled && pm.getComponentEnabledSetting(new ComponentName(context,
+                MailService.class)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
             /*
              * And now if accounts do exist then we've just enabled the service and we want to
              * schedule alarms for the new accounts.
@@ -392,9 +383,9 @@ public class K9 extends Application {
     }
 
     /**
-     * Register BroadcastReceivers programmaticaly because doing it from manifest
-     * would make K-9 auto-start. We don't want auto-start because the initialization
-     * sequence isn't safe while some events occur (SD card unmount).
+     * Register BroadcastReceivers programmaticaly because doing it from manifest would make K-9
+     * auto-start. We don't want auto-start because the initialization sequence isn't safe while
+     * some events occur (SD card unmount).
      */
     protected void registerReceivers() {
         final StorageGoneReceiver receiver = new StorageGoneReceiver();
@@ -442,7 +433,8 @@ public class K9 extends Application {
         editor.putBoolean("useVolumeKeysForListNavigation", mUseVolumeKeysForListNavigation);
         editor.putBoolean("autofitWidth", mAutofitWidth);
         editor.putBoolean("quietTimeEnabled", mQuietTimeEnabled);
-        editor.putBoolean("notificationDuringQuietTimeEnabled", mNotificationDuringQuietTimeEnabled);
+        editor.putBoolean("notificationDuringQuietTimeEnabled",
+                mNotificationDuringQuietTimeEnabled);
         editor.putString("quietTimeStarts", mQuietTimeStarts);
         editor.putString("quietTimeEnds", mQuietTimeEnds);
 
@@ -453,10 +445,10 @@ public class K9 extends Application {
         editor.putBoolean("hideSpecialAccounts", mHideSpecialAccounts);
         editor.putBoolean("messageListStars", mMessageListStars);
         editor.putInt("messageListPreviewLines", mMessageListPreviewLines);
-//        editor.putBoolean("messageListCheckboxes", mMessageListCheckboxes);
+        // editor.putBoolean("messageListCheckboxes", mMessageListCheckboxes);
         editor.putBoolean("showCorrespondentNames", mShowCorrespondentNames);
         editor.putBoolean("showContactName", mShowContactName);
-//        editor.putBoolean("showContactPicture", sShowContactPicture);
+        // editor.putBoolean("showContactPicture", sShowContactPicture);
         editor.putBoolean("changeRegisteredNameColor", mChangeContactNameColor);
         editor.putInt("registeredNameColor", mContactNameColor);
         editor.putBoolean("messageViewFixedWidthFont", mMessageViewFixedWidthFont);
@@ -466,11 +458,11 @@ public class K9 extends Application {
         editor.putBoolean("hideUserAgent", mHideUserAgent);
         editor.putBoolean("hideTimeZone", mHideTimeZone);
 
-//        editor.putString("language", language);
-//        editor.putInt("theme", theme.ordinal());
-//        editor.putInt("messageViewTheme", messageViewTheme.ordinal());
-//        editor.putInt("messageComposeTheme", composerTheme.ordinal());
-//        editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
+        // editor.putString("language", language);
+        // editor.putInt("theme", theme.ordinal());
+        // editor.putInt("messageViewTheme", messageViewTheme.ordinal());
+        // editor.putInt("messageComposeTheme", composerTheme.ordinal());
+        // editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
 
         editor.putBoolean("confirmDelete", mConfirmDelete);
         editor.putBoolean("confirmDiscardMessage", mConfirmDiscardMessage);
@@ -483,13 +475,14 @@ public class K9 extends Application {
 
         editor.putString("notificationHideSubject", sNotificationHideSubject.toString());
         editor.putString("notificationQuickDelete", sNotificationQuickDelete.toString());
-        editor.putString("lockScreenNotificationVisibility", sLockScreenNotificationVisibility.toString());
+        editor.putString("lockScreenNotificationVisibility",
+                sLockScreenNotificationVisibility.toString());
 
         editor.putString("attachmentdefaultpath", mAttachmentDefaultPath);
         editor.putBoolean("useBackgroundAsUnreadIndicator", sUseBackgroundAsUnreadIndicator);
         editor.putBoolean("threadedView", sThreadedViewEnabled);
-//        editor.putString("splitViewMode", sSplitViewMode.name());
-//        editor.putBoolean("colorizeMissingContactPictures", sColorizeMissingContactPictures);
+        // editor.putString("splitViewMode", sSplitViewMode.name());
+        // editor.putBoolean("colorizeMissingContactPictures", sColorizeMissingContactPictures);
 
         editor.putBoolean("messageViewArchiveActionVisible", sMessageViewArchiveActionVisible);
         editor.putBoolean("messageViewDeleteActionVisible", sMessageViewDeleteActionVisible);
@@ -515,11 +508,13 @@ public class K9 extends Application {
         Globals.setContext(this);
 
         K9MailLib.setDebugStatus(new K9MailLib.DebugStatus() {
-            @Override public boolean enabled() {
+            @Override
+            public boolean enabled() {
                 return DEBUG;
             }
 
-            @Override public boolean debugSensitive() {
+            @Override
+            public boolean debugSensitive() {
                 return DEBUG_SENSITIVE;
             }
         });
@@ -545,25 +540,30 @@ public class K9 extends Application {
         registerReceivers();
 
         MessagingController.getInstance(this).addListener(new MessagingListener() {
-            private void broadcastIntent(String action, Account account, String folder, Message message) {
-                Uri uri = Uri.parse("email://messages/" + account.getAccountNumber() + "/" + Uri.encode(folder) + "/" + Uri.encode(message.getUid()));
+            private void broadcastIntent(String action, Account account, String folder,
+                    Message message) {
+                Uri uri = Uri.parse("email://messages/" + account.getAccountNumber() + "/"
+                        + Uri.encode(folder) + "/" + Uri.encode(message.getUid()));
                 Intent intent = new Intent(action, uri);
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_ACCOUNT, account.getDescription());
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_FOLDER, folder);
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_SENT_DATE, message.getSentDate());
-                intent.putExtra(K9.Intents.EmailReceived.EXTRA_FROM, Address.toString(message.getFrom()));
-                intent.putExtra(K9.Intents.EmailReceived.EXTRA_TO, Address.toString(message.getRecipients(Message.RecipientType.TO)));
-                intent.putExtra(K9.Intents.EmailReceived.EXTRA_CC, Address.toString(message.getRecipients(Message.RecipientType.CC)));
-                intent.putExtra(K9.Intents.EmailReceived.EXTRA_BCC, Address.toString(message.getRecipients(Message.RecipientType.BCC)));
+                intent.putExtra(K9.Intents.EmailReceived.EXTRA_FROM,
+                        Address.toString(message.getFrom()));
+                intent.putExtra(K9.Intents.EmailReceived.EXTRA_TO,
+                        Address.toString(message.getRecipients(Message.RecipientType.TO)));
+                intent.putExtra(K9.Intents.EmailReceived.EXTRA_CC,
+                        Address.toString(message.getRecipients(Message.RecipientType.CC)));
+                intent.putExtra(K9.Intents.EmailReceived.EXTRA_BCC,
+                        Address.toString(message.getRecipients(Message.RecipientType.BCC)));
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_SUBJECT, message.getSubject());
-                intent.putExtra(K9.Intents.EmailReceived.EXTRA_FROM_SELF, account.isAnIdentity(message.getFrom()));
+                intent.putExtra(K9.Intents.EmailReceived.EXTRA_FROM_SELF,
+                        account.isAnIdentity(message.getFrom()));
                 K9.this.sendBroadcast(intent);
                 if (K9.DEBUG)
-                    Log.d(K9.LOG_TAG, "Broadcasted: action=" + action
-                          + " account=" + account.getDescription()
-                          + " folder=" + folder
-                          + " message uid=" + message.getUid()
-                         );
+                    Log.d(K9.LOG_TAG,
+                            "Broadcasted: action=" + action + " account=" + account.getDescription()
+                                    + " folder=" + folder + " message uid=" + message.getUid());
             }
 
             private void updateUnreadWidget() {
@@ -577,20 +577,25 @@ public class K9 extends Application {
             }
 
             @Override
-            public void synchronizeMailboxRemovedMessage(Account account, String folder, Message message) {
-                broadcastIntent(K9.Intents.EmailReceived.ACTION_EMAIL_DELETED, account, folder, message);
+            public void synchronizeMailboxRemovedMessage(Account account, String folder,
+                    Message message) {
+                broadcastIntent(K9.Intents.EmailReceived.ACTION_EMAIL_DELETED, account, folder,
+                        message);
                 updateUnreadWidget();
             }
 
             @Override
             public void messageDeleted(Account account, String folder, Message message) {
-                broadcastIntent(K9.Intents.EmailReceived.ACTION_EMAIL_DELETED, account, folder, message);
+                broadcastIntent(K9.Intents.EmailReceived.ACTION_EMAIL_DELETED, account, folder,
+                        message);
                 updateUnreadWidget();
             }
 
             @Override
-            public void synchronizeMailboxNewMessage(Account account, String folder, Message message) {
-                broadcastIntent(K9.Intents.EmailReceived.ACTION_EMAIL_RECEIVED, account, folder, message);
+            public void synchronizeMailboxNewMessage(Account account, String folder,
+                    Message message) {
+                broadcastIntent(K9.Intents.EmailReceived.ACTION_EMAIL_RECEIVED, account, folder,
+                        message);
                 updateUnreadWidget();
             }
 
@@ -613,8 +618,7 @@ public class K9 extends Application {
         notifyObservers();
 
         mComponent = DaggerApplicationComponent.builder()
-                .applicationModule(new ApplicationModule(this))
-                .build();
+                .applicationModule(new ApplicationModule(this)).build();
     }
 
     /**
@@ -622,11 +626,12 @@ public class K9 extends Application {
      * {@code SharedPreference}.
      *
      * <p>
-     * If the stored version matches {@link LocalStore#DB_VERSION} we know that the databases are
-     * up to date.<br>
+     * If the stored version matches {@link LocalStore#DB_VERSION} we know that the databases are up
+     * to date.<br>
      * Using {@code SharedPreferences} should be a lot faster than opening all SQLite databases to
      * get the current database version.
-     * </p><p>
+     * </p>
+     * <p>
      * See {@link UpgradeDatabases} for a detailed explanation of the database upgrade process.
      * </p>
      *
@@ -657,30 +662,32 @@ public class K9 extends Application {
         mAnimations = storage.getBoolean("animations", true);
         mGesturesEnabled = storage.getBoolean("gesturesEnabled", false);
         mUseVolumeKeysForNavigation = storage.getBoolean("useVolumeKeysForNavigation", false);
-        mUseVolumeKeysForListNavigation = storage.getBoolean("useVolumeKeysForListNavigation", false);
+        mUseVolumeKeysForListNavigation =
+                storage.getBoolean("useVolumeKeysForListNavigation", false);
         mStartIntegratedInbox = storage.getBoolean("startIntegratedInbox", false);
         mMeasureAccounts = storage.getBoolean("measureAccounts", true);
         mCountSearchMessages = storage.getBoolean("countSearchMessages", true);
         mHideSpecialAccounts = storage.getBoolean("hideSpecialAccounts", false);
         mMessageListSenderAboveSubject = storage.getBoolean("messageListSenderAboveSubject", false);
-//        mMessageListCheckboxes = storage.getBoolean("messageListCheckboxes", false);
+        // mMessageListCheckboxes = storage.getBoolean("messageListCheckboxes", false);
         mMessageListStars = storage.getBoolean("messageListStars", true);
         mMessageListPreviewLines = storage.getInt("messageListPreviewLines", 2);
 
         mAutofitWidth = storage.getBoolean("autofitWidth", true);
 
         mQuietTimeEnabled = storage.getBoolean("quietTimeEnabled", false);
-        mNotificationDuringQuietTimeEnabled = storage.getBoolean("notificationDuringQuietTimeEnabled", true);
+        mNotificationDuringQuietTimeEnabled =
+                storage.getBoolean("notificationDuringQuietTimeEnabled", true);
         mQuietTimeStarts = storage.getString("quietTimeStarts", "21:00");
         mQuietTimeEnds = storage.getString("quietTimeEnds", "7:00");
 
         mShowCorrespondentNames = storage.getBoolean("showCorrespondentNames", true);
         mShowContactName = storage.getBoolean("showContactName", false);
-//        sShowContactPicture = storage.getBoolean("showContactPicture", true);
+        // sShowContactPicture = storage.getBoolean("showContactPicture", true);
         mChangeContactNameColor = storage.getBoolean("changeRegisteredNameColor", false);
         mContactNameColor = storage.getInt("registeredNameColor", 0xff00008f);
         mMessageViewFixedWidthFont = storage.getBoolean("messageViewFixedWidthFont", false);
-        mMessageViewReturnToList = storage.getBoolean("messageViewReturnToList", false);
+        mMessageViewReturnToList = storage.getBoolean("messageViewReturnToList", true);
         mMessageViewShowNext = storage.getBoolean("messageViewShowNext", false);
         mWrapFolderNames = storage.getBoolean("wrapFolderNames", false);
         mHideUserAgent = storage.getBoolean("hideUserAgent", false);
@@ -706,8 +713,8 @@ public class K9 extends Application {
         if (notificationHideSubject == null) {
             // If the "notificationHideSubject" setting couldn't be found, the app was probably
             // updated. Look for the old "keyguardPrivacy" setting and map it to the new enum.
-            sNotificationHideSubject = (storage.getBoolean("keyguardPrivacy", false)) ?
-                    NotificationHideSubject.WHEN_LOCKED : NotificationHideSubject.NEVER;
+            sNotificationHideSubject = (storage.getBoolean("keyguardPrivacy", false))
+                    ? NotificationHideSubject.WHEN_LOCKED : NotificationHideSubject.NEVER;
         } else {
             sNotificationHideSubject = NotificationHideSubject.valueOf(notificationHideSubject);
         }
@@ -717,62 +724,67 @@ public class K9 extends Application {
             sNotificationQuickDelete = NotificationQuickDelete.valueOf(notificationQuickDelete);
         }
 
-        String lockScreenNotificationVisibility = storage.getString("lockScreenNotificationVisibility", null);
-        if(lockScreenNotificationVisibility != null) {
-            sLockScreenNotificationVisibility = LockScreenNotificationVisibility.valueOf(lockScreenNotificationVisibility);
+        String lockScreenNotificationVisibility =
+                storage.getString("lockScreenNotificationVisibility", null);
+        if (lockScreenNotificationVisibility != null) {
+            sLockScreenNotificationVisibility =
+                    LockScreenNotificationVisibility.valueOf(lockScreenNotificationVisibility);
         }
 
-//        String splitViewMode = storage.getString("splitViewMode", null);
-//        if (splitViewMode != null) {
-//            sSplitViewMode = SplitViewMode.valueOf(splitViewMode);
-//        }
+        // String splitViewMode = storage.getString("splitViewMode", null);
+        // if (splitViewMode != null) {
+        // sSplitViewMode = SplitViewMode.valueOf(splitViewMode);
+        // }
 
-        mAttachmentDefaultPath = storage.getString("attachmentdefaultpath",
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
-        sUseBackgroundAsUnreadIndicator = storage.getBoolean("useBackgroundAsUnreadIndicator", true);
+        mAttachmentDefaultPath = storage.getString("attachmentdefaultpath", Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+        sUseBackgroundAsUnreadIndicator =
+                storage.getBoolean("useBackgroundAsUnreadIndicator", true);
         sThreadedViewEnabled = storage.getBoolean("threadedView", true);
         fontSizes.load(storage);
 
         try {
-            setBackgroundOps(BACKGROUND_OPS.valueOf(storage.getString(
-                    "backgroundOperations",
+            setBackgroundOps(BACKGROUND_OPS.valueOf(storage.getString("backgroundOperations",
                     BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC.name())));
         } catch (Exception e) {
             setBackgroundOps(BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC);
         }
 
-//        sColorizeMissingContactPictures = storage.getBoolean("colorizeMissingContactPictures", true);
+        // sColorizeMissingContactPictures = storage.getBoolean("colorizeMissingContactPictures",
+        // true);
 
-        sMessageViewArchiveActionVisible = storage.getBoolean("messageViewArchiveActionVisible", false);
-        sMessageViewDeleteActionVisible = storage.getBoolean("messageViewDeleteActionVisible", true);
+        sMessageViewArchiveActionVisible =
+                storage.getBoolean("messageViewArchiveActionVisible", false);
+        sMessageViewDeleteActionVisible =
+                storage.getBoolean("messageViewDeleteActionVisible", true);
         sMessageViewMoveActionVisible = storage.getBoolean("messageViewMoveActionVisible", false);
         sMessageViewCopyActionVisible = storage.getBoolean("messageViewCopyActionVisible", false);
         sMessageViewSpamActionVisible = storage.getBoolean("messageViewSpamActionVisible", false);
 
         sPgpInlineDialogCounter = storage.getInt("pgpInlineDialogCounter", 0);
 
-//        K9.setK9Language(storage.getString("language", ""));
-//
-//        int themeValue = storage.getInt("theme", Theme.LIGHT.ordinal());
-//        // We used to save the resource ID of the theme. So convert that to the new format if
-//        // necessary.
-//        if (themeValue == Theme.DARK.ordinal() || themeValue == android.R.style.Theme) {
-//            K9.setK9Theme(Theme.DARK);
-//        } else {
-//            K9.setK9Theme(Theme.LIGHT);
-//        }
-//
-//        themeValue = storage.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
-//        K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
-//        themeValue = storage.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
-//        K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
-//        K9.setUseFixedMessageViewTheme(storage.getBoolean("fixedMessageViewTheme", true));
+        // K9.setK9Language(storage.getString("language", ""));
+        //
+        // int themeValue = storage.getInt("theme", Theme.LIGHT.ordinal());
+        // // We used to save the resource ID of the theme. So convert that to the new format if
+        // // necessary.
+        // if (themeValue == Theme.DARK.ordinal() || themeValue == android.R.style.Theme) {
+        // K9.setK9Theme(Theme.DARK);
+        // } else {
+        // K9.setK9Theme(Theme.LIGHT);
+        // }
+        //
+        // themeValue = storage.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
+        // K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
+        // themeValue = storage.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
+        // K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
+        // K9.setUseFixedMessageViewTheme(storage.getBoolean("fixedMessageViewTheme", true));
     }
 
     /**
-     * since Android invokes Application.onCreate() only after invoking all
-     * other components' onCreate(), here is a way to notify interested
-     * component that the application is available and ready
+     * since Android invokes Application.onCreate() only after invoking all other components'
+     * onCreate(), here is a way to notify interested component that the application is available
+     * and ready
      */
     protected void notifyObservers() {
         synchronized (observers) {
@@ -795,8 +807,7 @@ public class K9 extends Application {
     /**
      * Register a component to be notified when the {@link K9} instance is ready.
      *
-     * @param component
-     *            Never <code>null</code>.
+     * @param component Never <code>null</code>.
      */
     public static void registerApplicationAware(final ApplicationAware component) {
         synchronized (observers) {
@@ -812,21 +823,20 @@ public class K9 extends Application {
         return language;
     }
 
-//    public static void setK9Language(String nlanguage) {
-//        language = nlanguage;
-//    }
+    // public static void setK9Language(String nlanguage) {
+    // language = nlanguage;
+    // }
 
     /**
      * Possible values for the different theme settings.
      *
-     * <p><strong>Important:</strong>
-     * Do not change the order of the items! The ordinal value (position) is used when saving the
-     * settings.</p>
+     * <p>
+     * <strong>Important:</strong> Do not change the order of the items! The ordinal value
+     * (position) is used when saving the settings.
+     * </p>
      */
     public enum Theme {
-        LIGHT,
-        DARK,
-        USE_GLOBAL
+        LIGHT, DARK, USE_GLOBAL
     }
 
     public static int getK9ThemeResourceId(Theme themeId) {
@@ -863,24 +873,24 @@ public class K9 extends Application {
         }
     }
 
-//    public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
-//        messageViewTheme = nMessageViewTheme;
-//    }
+    // public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
+    // messageViewTheme = nMessageViewTheme;
+    // }
 
     public static boolean useFixedMessageViewTheme() {
         return useFixedMessageTheme;
     }
 
-//    public static void setK9ComposerThemeSetting(Theme compTheme) {
-//        composerTheme = compTheme;
-//    }
+    // public static void setK9ComposerThemeSetting(Theme compTheme) {
+    // composerTheme = compTheme;
+    // }
 
-//    public static void setUseFixedMessageViewTheme(boolean useFixed) {
-//        useFixedMessageTheme = useFixed;
-//        if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
-//            messageViewTheme = theme;
-//        }
-//    }
+    // public static void setUseFixedMessageViewTheme(boolean useFixed) {
+    // useFixedMessageTheme = useFixed;
+    // if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
+    // messageViewTheme = theme;
+    // }
+    // }
 
     public static BACKGROUND_OPS getBackgroundOps() {
         return backgroundOps;
@@ -940,7 +950,8 @@ public class K9 extends Application {
         return mNotificationDuringQuietTimeEnabled;
     }
 
-    public static void setNotificationDuringQuietTimeEnabled(boolean notificationDuringQuietTimeEnabled) {
+    public static void setNotificationDuringQuietTimeEnabled(
+            boolean notificationDuringQuietTimeEnabled) {
         mNotificationDuringQuietTimeEnabled = notificationDuringQuietTimeEnabled;
     }
 
@@ -975,7 +986,7 @@ public class K9 extends Application {
 
         Integer now = (time.hour * 60) + time.minute;
         Integer quietStarts = startHour * 60 + startMinute;
-        Integer quietEnds =  endHour * 60 + endMinute;
+        Integer quietEnds = endHour * 60 + endMinute;
 
         // If start and end times are the same, we're never quiet
         if (quietStarts.equals(quietEnds)) {
@@ -1033,9 +1044,9 @@ public class K9 extends Application {
         return mMessageListCheckboxes;
     }
 
-//    public static void setMessageListCheckboxes(boolean checkboxes) {
-//        mMessageListCheckboxes = checkboxes;
-//    }
+    // public static void setMessageListCheckboxes(boolean checkboxes) {
+    // mMessageListCheckboxes = checkboxes;
+    // }
 
     public static boolean messageListStars() {
         return mMessageListStars;
@@ -1049,13 +1060,14 @@ public class K9 extends Application {
         return mShowCorrespondentNames;
     }
 
-     public static boolean messageListSenderAboveSubject() {
-         return mMessageListSenderAboveSubject;
-     }
+    public static boolean messageListSenderAboveSubject() {
+        return mMessageListSenderAboveSubject;
+    }
 
     public static void setMessageListSenderAboveSubject(boolean sender) {
-         mMessageListSenderAboveSubject = sender;
+        mMessageListSenderAboveSubject = sender;
     }
+
     public static void setShowCorrespondentNames(boolean showCorrespondentNames) {
         mShowCorrespondentNames = showCorrespondentNames;
     }
@@ -1196,13 +1208,15 @@ public class K9 extends Application {
         return sLockScreenNotificationVisibility;
     }
 
-    public static void setLockScreenNotificationVisibility(final LockScreenNotificationVisibility visibility) {
+    public static void setLockScreenNotificationVisibility(
+            final LockScreenNotificationVisibility visibility) {
         sLockScreenNotificationVisibility = visibility;
     }
 
     public static boolean wrapFolderNames() {
         return mWrapFolderNames;
     }
+
     public static void setWrapFolderNames(final boolean state) {
         mWrapFolderNames = state;
     }
@@ -1210,6 +1224,7 @@ public class K9 extends Application {
     public static boolean hideUserAgent() {
         return mHideUserAgent;
     }
+
     public static void setHideUserAgent(final boolean state) {
         mHideUserAgent = state;
     }
@@ -1217,6 +1232,7 @@ public class K9 extends Application {
     public static boolean hideTimeZone() {
         return mHideTimeZone;
     }
+
     public static void setHideTimeZone(final boolean state) {
         mHideTimeZone = state;
     }
@@ -1268,25 +1284,25 @@ public class K9 extends Application {
         return sSplitViewMode;
     }
 
-//    public static synchronized void setSplitViewMode(SplitViewMode mode) {
-//        sSplitViewMode = mode;
-//    }
+    // public static synchronized void setSplitViewMode(SplitViewMode mode) {
+    // sSplitViewMode = mode;
+    // }
 
     public static boolean showContactPicture() {
         return sShowContactPicture;
     }
 
-//    public static void setShowContactPicture(boolean show) {
-//        sShowContactPicture = show;
-//    }
+    // public static void setShowContactPicture(boolean show) {
+    // sShowContactPicture = show;
+    // }
 
     public static boolean isColorizeMissingContactPictures() {
         return sColorizeMissingContactPictures;
     }
 
-//    public static void setColorizeMissingContactPictures(boolean enabled) {
-//        sColorizeMissingContactPictures = enabled;
-//    }
+    // public static void setColorizeMissingContactPictures(boolean enabled) {
+    // sColorizeMissingContactPictures = enabled;
+    // }
 
     public static boolean isMessageViewArchiveActionVisible() {
         return sMessageViewArchiveActionVisible;
@@ -1354,9 +1370,8 @@ public class K9 extends Application {
     /**
      * Remember that all account databases are using the most recent database schema.
      *
-     * @param save
-     *         Whether or not to write the current database version to the
-     *         {@code SharedPreferences} {@link #DATABASE_VERSION_CACHE}.
+     * @param save Whether or not to write the current database version to the
+     *        {@code SharedPreferences} {@link #DATABASE_VERSION_CACHE}.
      *
      * @see #areDatabasesUpToDate()
      */

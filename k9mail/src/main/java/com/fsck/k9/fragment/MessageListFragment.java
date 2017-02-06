@@ -525,16 +525,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             String displayName = FolderInfoHolder.getDisplayName(activity, mAccount, mFolderName);
 
             mFragmentListener.setMessageListTitle(displayName);
-
-            String operation = mListener.getOperation(activity);
-            if (isOutbox() || isErrorFolder()) {
-                mFragmentListener
-                        .setMessageListSubTitle(mContext.getString(R.string.status_syncing_off));
-            } else if (operation.length() < 1) {
-                mFragmentListener.setMessageListSubTitle(mAccount.getEmail());
-            } else {
-                mFragmentListener.setMessageListSubTitle(operation);
-            }
+            mFragmentListener.setMessageListSubTitle(null);
         } else {
             // query result display. This may be for a search folder as opposed to a user-initiated
             // search.

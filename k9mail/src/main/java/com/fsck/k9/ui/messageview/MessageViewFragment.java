@@ -41,9 +41,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -52,6 +54,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -108,6 +111,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     private Context mContext;
 
     private AttachmentViewInfo currentAttachmentViewInfo;
+
+    private Snackbar mSnackbar;
 
     private MessageViewFragmentListener getFragmentListner() {
 
@@ -177,7 +182,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         Context context = new ContextThemeWrapper(inflater.getContext(),
                 K9.getK9ThemeResourceId(K9.getK9MessageViewTheme()));
         LayoutInflater layoutInflater = LayoutInflater.from(context);
@@ -219,6 +224,15 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
                 mFragmentListener.showPreviousMessage();
             }
         });
+
+        if (getActivity() != null) {
+            mSnackbar = Snackbar.make(getActivity().findViewById(android.R.id.content), "",
+                    Snackbar.LENGTH_LONG);
+            View snackBarView = mSnackbar.getView();
+            TextView tv =
+                    (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+            tv.setGravity(Gravity.CENTER_HORIZONTAL);
+        }
 
         return view;
     }
@@ -509,6 +523,12 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
             String subject = mMessage.getSubject();
             displayMessageSubject(subject);
             mFragmentListener.updateMenu();
+            String message = isMessageRead() ? getString(R.string.marked_as_read_message)
+                    : getString(R.string.marked_as_unread_message);
+            if (mSnackbar != null) {
+                mSnackbar.setText(message);
+                mSnackbar.show();
+            }
         }
     }
 
@@ -724,7 +744,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
         @Override
         public void startPendingIntentForCryptoPresenter(IntentSender si, Integer requestCode,
-                                                         Intent fillIntent, int flagsMask, int flagValues, int extraFlags)
+                Intent fillIntent, int flagsMask, int flagValues, int extraFlags)
                 throws SendIntentException {
             if (requestCode == null) {
                 getActivity().startIntentSender(si, fillIntent, flagsMask, flagValues, extraFlags);
@@ -847,7 +867,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
         @Override
         public void startIntentSenderForMessageLoaderHelper(IntentSender si, int requestCode,
-                                                            Intent fillIntent, int flagsMask, int flagValues, int extraFlags) {
+                Intent fillIntent, int flagsMask, int flagValues, int extraFlags) {
             try {
                 requestCode |= REQUEST_MASK_LOADER_HELPER;
                 getActivity().startIntentSenderForResult(si, requestCode, fillIntent, flagsMask,
