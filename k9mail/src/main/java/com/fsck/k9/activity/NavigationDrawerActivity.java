@@ -38,6 +38,8 @@ import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.NewsPresenter;
 import com.fsck.k9.fragment.OffersPresenter;
 import com.fsck.k9.fragment.VideoPresenter;
+import com.fsck.k9.helper.CaptivePortalHelper;
+import com.fsck.k9.helper.NetworkHelper;
 import com.fsck.k9.preferences.StorageEditor;
 import com.fsck.k9.preferences.WelcomePreference;
 import com.fsck.k9.search.LocalSearch;
@@ -49,14 +51,17 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.SearchManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
@@ -70,6 +75,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.schedulers.Schedulers;
 
 
 /**
@@ -206,6 +215,7 @@ public class NavigationDrawerActivity extends K9Activity
             };
 
     private FrameLayout mViewContainer;
+    private BroadcastReceiver mBroadcastReceiver;
 
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
@@ -223,7 +233,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-                                             boolean noThreading, boolean newTask, boolean clearTop) {
+            boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -361,6 +371,58 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // TEST
+        NetworkHelper.getInstance(this);
+        // end test
+        mBroadcastReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if (NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE.equals(intent.getAction())) {
+                    if (NetworkHelper.getInstance(getApplicationContext()).isConnected()) {
+                        Observable.empty().observeOn(Schedulers.newThread())
+                                .subscribe(new Subscriber<Object>() {
+                                    @Override
+                                    public void onCompleted() {
+                                        if (CaptivePortalHelper.getInstance(getApplicationContext())
+                                                .isCaptivePortalConnection()) {
+                                            // show the login activity
+                                            CaptivePortalHelper.getInstance(getApplicationContext())
+                                                    .showLoginWebView();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {}
+
+                                    @Override
+                                    public void onNext(Object o) {}
+                                });
+
+                    }
+                }
+
+            }
+
+        };
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        NetworkHelper.resetInstance(this);
+        super.onStop();
+
+    }
+
+    @Override
     public void updateAccount(Account account) {
         if (account != null) {
             MessagingController.getInstance(getApplication()).listFoldersSynchronous(account, true,
@@ -457,7 +519,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -777,7 +839,7 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                && mMailPresenter.getMessageListWasDisplayed())) {
+                        && mMailPresenter.getMessageListWasDisplayed())) {
             mMailPresenter.showMessageList();
         } else if (mMailPresenter != null
                 && getIntent().getStringExtra(SearchManager.QUERY) != null) {
@@ -829,7 +891,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void updateMainConfig(MainConfig mainConfig) {
-        //Nop
+        // Nop
     }
 
     @Override

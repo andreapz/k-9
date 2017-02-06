@@ -15,6 +15,7 @@ import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.UserLogin;
 import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.error.RxErrorHandlingCallAdapterFactory;
+import com.fsck.k9.helper.CaptivePortalHelper;
 import com.fsck.k9.preferences.Storage;
 import com.fsck.k9.preferences.StorageEditor;
 import com.google.gson.Gson;
@@ -143,11 +144,11 @@ public class ApiController {
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .client(mHttpAuthorizeClient).callbackExecutor(new Executor() {
-                @Override
-                public void execute(Runnable runnable) {
-                    runnable.run();
-                }
-            }).build();
+                        @Override
+                        public void execute(Runnable runnable) {
+                            runnable.run();
+                        }
+                    }).build();
 
     private OkHttpClient mHttpApiClient = new OkHttpClient.Builder()
             .addInterceptor(mLoggingInterceptor).addInterceptor(mInterceptor).build();
@@ -270,11 +271,14 @@ public class ApiController {
 
         getConfig().subscribe(new Subscriber<MainConfig>() {
             @Override
-            public void onCompleted() {
-            }
+            public void onCompleted() {}
 
             @Override
             public void onError(Throwable e) {
+                if (CaptivePortalHelper.getInstance(mContext).isCaptivePortalConnection()) {
+                    // show the login activity
+                    CaptivePortalHelper.getInstance(mContext).showLoginWebView();
+                }
                 Log.i(TAG, "MainConfig ERROR: " + e);
             }
 
@@ -340,7 +344,7 @@ public class ApiController {
 
 
     public void sectionFave(String sectionId, boolean isSelected, Action1<UserLogin> success,
-                            Action1<UserLogin> error) {
+            Action1<UserLogin> error) {
         Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
 
         if (postSectionFave != null) {
@@ -436,8 +440,7 @@ public class ApiController {
 
         private ResponseHeaderListener mListener;
 
-        public ResponseHeaderInterceptor() {
-        }
+        public ResponseHeaderInterceptor() {}
 
         public ResponseHeaderInterceptor(ResponseHeaderListener listener) {
             mListener = listener;

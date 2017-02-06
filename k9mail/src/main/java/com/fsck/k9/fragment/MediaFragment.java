@@ -8,6 +8,7 @@ import java.util.Timer;
 
 import com.fsck.k9.R;
 import com.fsck.k9.activity.BrowserActivity;
+import com.fsck.k9.helper.NetworkHelper;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
@@ -240,7 +241,11 @@ public class MediaFragment extends Fragment {
                     public void run() {
                         Log.d("Reload TiscaliWebView", "[URL]:" + mUrl + " @" + this);
                         if (mUrl != null) {
-                            loadUrl(mUrl);
+                            if (getActivity() != null
+                                    && NetworkHelper.getInstance(getActivity()).isConnected()) {
+                                loadUrl(mUrl);
+                            }
+
                         }
                     }
                 }, mFragmentListener.getRefreshTimeout());
