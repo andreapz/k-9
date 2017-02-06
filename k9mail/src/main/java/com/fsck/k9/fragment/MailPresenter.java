@@ -58,6 +58,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -797,9 +798,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             mFolderName = mSearch.getFolderNames().get(0);
         }
 
-        // now we know if we are in single account mode and need a subtitle
-        mActionBarSubTitle.setVisibility((!mSingleFolderMode) ? View.GONE : View.VISIBLE);
-
         return true;
     }
 
@@ -944,13 +942,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     toggleTheme.setTitle(R.string.message_view_theme_action_dark);
                 }
                 toggleTheme.setVisible(true);
-            }
-
-            // Set title of menu item to toggle the read state of the currently displayed message
-            if (mMessageViewFragment.isMessageRead()) {
-                menu.findItem(R.id.toggle_unread).setTitle(R.string.mark_as_unread_action);
-            } else {
-                menu.findItem(R.id.toggle_unread).setTitle(R.string.mark_as_read_action);
             }
 
             // Jellybean has built-in long press selection support
@@ -1106,7 +1097,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         onRefresh(!REFRESH_REMOTE);
 
-        if(mAccount != null) {
+        if (mAccount != null) {
             MessagingController.getInstance(mContext).cancelNotificationsForAccount(mAccount);
         }
         mMessagingListener.onResume(mContext);
@@ -1620,6 +1611,18 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void updateMenu() {
         Toast.makeText(mContext, "invalidateOptionsMenu", Toast.LENGTH_LONG);
         // invalidateOptionsMenu();
+        if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
+            // Set title of menu item to toggle the read state of the currently displayed message
+            if (mMessageViewFragment.isMessageRead()) {
+                int[] attrs = new int[] {R.attr.iconActionMarkAsUnread};
+                TypedArray ta = mContext.obtainStyledAttributes(attrs);
+                mMenu.findItem(R.id.toggle_unread).setIcon(ta.getDrawable(0));
+            } else {
+                int[] attrs = new int[] {R.attr.iconActionMarkAsRead};
+                TypedArray ta = mContext.obtainStyledAttributes(attrs);
+                mMenu.findItem(R.id.toggle_unread).setIcon(ta.getDrawable(0));
+            }
+        }
     }
 
     @Override

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <RelativeLayout
         android:id="@+id/actionbar_message_list"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/title_layout"
@@ -14,6 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/actionbar_unread_count"
+            android:layout_centerVertical="true"
             android:orientation="vertical">
 
             <TextView
@@ -21,7 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="start"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
@@ -29,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="?android:attr/textColorSecondary" />
         </LinearLayout>
@@ -40,6 +41,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:visibility="gone" />
 
         <TextView
@@ -47,10 +49,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:paddingLeft="12dip"
             android:paddingRight="12dip"
             android:textColor="?android:attr/textColorTertiary"
-            android:textSize="36sp" />
+            android:textAppearance="?android:attr/textAppearanceLarge" />
     </RelativeLayout>
 
     <LinearLayout

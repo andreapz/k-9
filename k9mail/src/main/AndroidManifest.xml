@@ -274,6 +274,7 @@
             android:name=".activity.Search"
             android:configChanges="locale"
             android:label="@string/search_action"
+            android:theme="@style/Theme.K9.Light.NoActionBar"
             android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
