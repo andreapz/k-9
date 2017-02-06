@@ -1,13 +1,13 @@
 package com.fsck.k9.activity;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Parcelable;
-
 import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.R;
 import com.fsck.k9.search.SearchAccount;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
 
 public class LauncherShortcuts extends AccountList {
     @Override
@@ -32,7 +32,7 @@ public class LauncherShortcuts extends AccountList {
 
         if (account instanceof SearchAccount) {
             SearchAccount searchAccount = (SearchAccount) account;
-            shortcutIntent = MessageList.shortcutIntent(this, searchAccount.getId());
+            shortcutIntent = NavigationDrawerActivity.shortcutIntent(this, searchAccount.getId());
         } else {
             shortcutIntent = FolderList.actionHandleAccountIntent(this, (Account) account, true);
         }

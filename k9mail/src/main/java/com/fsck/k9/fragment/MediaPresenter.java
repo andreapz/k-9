@@ -166,6 +166,11 @@ public abstract class MediaPresenter
         mSavedInstanceState = outState;
     }
 
+    @Override
+    public void onNewIntent(Intent intent) {
+
+    }
+
     private void findFragments() {
         FragmentManager fragmentManager = mContext.getFragmentManager();
         mMediaViewFragment =
@@ -276,6 +281,7 @@ public abstract class MediaPresenter
 
     private void removeDetailFragment() {
         if (mMediaDetailFragment != null) {
+            mMediaDetailFragment.mWebView.loadUrl("about:blank");
             removeFragment(mMediaDetailFragment);
             mMediaDetailFragment = null;
         }
@@ -302,23 +308,16 @@ public abstract class MediaPresenter
                     @Override
                     public void onCompleted() {
                         if (mActionBarTitle != null) {
-                            String titleEncode = title.replaceAll("%20", " ");
-                            mActionBarTitle.setText(titleEncode);
+                            mActionBarTitle.setText(title);
                         }
-
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-
-            }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-
-            }
+                    public void onNext(Object o) {}
                 });
-
     }
 
     private boolean useSplitView() {
@@ -329,7 +328,6 @@ public abstract class MediaPresenter
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
                         && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
-
 
     public void openSection(String url, boolean isHome) {
         showMedia();
@@ -376,7 +374,6 @@ public abstract class MediaPresenter
         } else {
             return mIsHomePage;
         }
-
     }
 
     @Override
@@ -679,6 +676,7 @@ public abstract class MediaPresenter
             for (TiscaliMenuItem item : mItems) {
                 mDepth.put(item, 0);
             }
+            notifyDataSetChanged();
         }
 
 
@@ -882,6 +880,7 @@ public abstract class MediaPresenter
         if (!mStarted) {
             return;
         }
+        mListener.getApiController().removeListener(this);
         removeMediaFragment();
         removeDetailFragment();
     }
@@ -930,7 +929,7 @@ public abstract class MediaPresenter
                 mMediaViewFragment.refreshUrl();
             }
         } else {
-            if (mMediaViewFragment != null) {
+            if (mMediaDetailFragment != null) {
                 mMediaDetailFragment.refreshUrl();
             }
         }

@@ -227,7 +227,7 @@ public class WelcomeActivity extends AppCompatActivity
     @Override
     public void updateMainConfig(MainConfig mainConfig) {
         mMainConfig = mainConfig;
-        if (mMainConfig.getConfig() != null) {
+        if (mMainConfig != null && mMainConfig.getConfig() != null) {
             mOnBoarding = mMainConfig.getConfig().getOnboarding();
             if (mOnBoarding != null) {
                 mNumPages = mOnBoarding.getPages().size();

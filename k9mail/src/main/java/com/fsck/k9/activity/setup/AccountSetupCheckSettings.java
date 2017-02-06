@@ -9,11 +9,14 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.R;
+import com.fsck.k9.activity.BrowserActivity;
 import com.fsck.k9.activity.K9Activity;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
@@ -25,6 +28,10 @@ import com.fsck.k9.mail.Store;
 import com.fsck.k9.mail.Transport;
 import com.fsck.k9.mail.filter.Hex;
 import com.fsck.k9.mail.store.webdav.WebDavStore;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -44,7 +51,7 @@ import android.widget.TextView;
 
 /**
  * Checks the given settings to make sure that they can be used to send and receive mail.
- * 
+ * <p>
  * XXX NOTE: The manifest for this app has it ignore config changes, because it doesn't correctly
  * deal with restarting while its thread is running.
  */
@@ -52,12 +59,58 @@ public class AccountSetupCheckSettings extends K9Activity
         implements OnClickListener, ConfirmationDialogFragmentListener {
 
     public static final int ACTIVITY_REQUEST_CODE = 1;
+    private static final int ACTIVITY_CHANGE_PASSWORD = 2;
 
     private static final String EXTRA_ACCOUNT = "account";
 
     private static final String EXTRA_CHECK_DIRECTION = "checkDirection";
 
     public static final int RESULT_ERROR_INVALID_USER_PASSWORD = -3;
+
+    private static final String TISCALI_SMTP_PASSWORD_TOO_SIMPLE_MESSAGE =
+            "your password is too simple";
+    private static final String SMTP_PASSWORD_TOO_SIMPLE_CODE = "535";
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API. See
+     * https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API. See
+     * https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder().setName("AccountSetupCheckSettings Page") // TODO: Define
+                // a title for
+                // the content
+                // shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]")).build();
+        return new Action.Builder(Action.TYPE_VIEW).setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED).build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
 
     public enum CheckDirection {
         INCOMING, OUTGOING
@@ -79,8 +132,10 @@ public class AccountSetupCheckSettings extends K9Activity
 
     private CheckAccountTask mCheckAccountTask;
 
+    private String mChangePasswordUrl;
+
     public static void actionCheckSettings(Activity context, Account account,
-            CheckDirection direction) {
+                                           CheckDirection direction) {
         Intent i = new Intent(context, AccountSetupCheckSettings.class);
         i.putExtra(EXTRA_ACCOUNT, account.getUuid());
         i.putExtra(EXTRA_CHECK_DIRECTION, direction);
@@ -104,6 +159,9 @@ public class AccountSetupCheckSettings extends K9Activity
 
         mCheckAccountTask = new CheckAccountTask(mAccount);
         mCheckAccountTask.execute(mDirection);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void handleCertificateValidationException(CertificateValidationException cve) {
@@ -239,7 +297,7 @@ public class AccountSetupCheckSettings extends K9Activity
                                             .append(",...\n");
                                 } else if (name.startsWith("*.")
                                         && (storeURIHost.endsWith(name.substring(2))
-                                                || transportURIHost.endsWith(name.substring(2)))) {
+                                        || transportURIHost.endsWith(name.substring(2)))) {
                                     // TODO: localize this string
                                     altNamesText.append("Subject(alt): ").append(name)
                                             .append(",...\n");
@@ -298,7 +356,7 @@ public class AccountSetupCheckSettings extends K9Activity
     /**
      * Permanently accepts a certificate for the INCOMING or OUTGOING direction by adding it to the
      * local key store.
-     * 
+     *
      * @param certificate
      */
     private void acceptCertificate(X509Certificate certificate) {
@@ -314,7 +372,14 @@ public class AccountSetupCheckSettings extends K9Activity
 
     @Override
     public void onActivityResult(int reqCode, int resCode, Intent data) {
-        setResult(resCode);
+        switch (reqCode) {
+            case ACTIVITY_REQUEST_CODE:
+                setResult(resCode);
+                break;
+            case ACTIVITY_CHANGE_PASSWORD:
+                break;
+        }
+
         finish();
     }
 
@@ -336,7 +401,13 @@ public class AccountSetupCheckSettings extends K9Activity
     private void showErrorDialog(final int msgResId, final Object... args) {
         mHandler.post(new Runnable() {
             public void run() {
-                showDialogFragment(R.id.dialog_account_setup_error, getString(msgResId, args));
+                int errorDialogCode;
+                if (msgResId == R.string.account_setup_failed_dlg_password_too_simple_message_fmt) {
+                    errorDialogCode = R.id.dialog_account_password_too_simple_error;
+                } else {
+                    errorDialogCode = R.id.dialog_account_setup_error;
+                }
+                showDialogFragment(errorDialogCode, getString(msgResId, args));
             }
         });
     }
@@ -349,6 +420,13 @@ public class AccountSetupCheckSettings extends K9Activity
 
         DialogFragment fragment;
         switch (dialogId) {
+            case R.id.dialog_account_password_too_simple_error:
+                fragment = ConfirmationDialogFragment.newInstance(dialogId,
+                        getString(R.string.account_setup_failed_dlg_title), customMessage, null,
+                        getString(
+                                R.string.account_password_too_simple_failed_dlg_edit_details_action),
+                        false);
+                break;
             case R.id.dialog_account_setup_error: {
                 fragment = ConfirmationDialogFragment.newInstance(dialogId,
                         getString(R.string.account_setup_failed_dlg_title), customMessage, null,
@@ -382,6 +460,14 @@ public class AccountSetupCheckSettings extends K9Activity
     @Override
     public void doNegativeClick(int dialogId) {
         switch (dialogId) {
+            case R.id.dialog_account_password_too_simple_error: {
+                if (mChangePasswordUrl != null) {
+                    Intent myIntent = new Intent(this, BrowserActivity.class);
+                    myIntent.putExtra(BrowserActivity.EXTRA_URL, mChangePasswordUrl);
+                    startActivityForResult(myIntent, ACTIVITY_CHANGE_PASSWORD);
+                }
+                break;
+            }
             case R.id.dialog_account_setup_error: {
                 finish();
                 break;
@@ -447,13 +533,43 @@ public class AccountSetupCheckSettings extends K9Activity
 
             } catch (AuthenticationFailedException afe) {
                 Log.e(K9.LOG_TAG, "Error while testing settings", afe);
-                showErrorDialog(R.string.account_setup_failed_dlg_auth_message_fmt, null);
+                int errorMsgId;
+
+                if (afe.getMessage() != null
+                        && afe.getMessage().contains(SMTP_PASSWORD_TOO_SIMPLE_CODE)
+                        && afe.getMessage().contains(TISCALI_SMTP_PASSWORD_TOO_SIMPLE_MESSAGE)) {
+                    errorMsgId = R.string.account_setup_failed_dlg_password_too_simple_message_fmt;
+                    mChangePasswordUrl = extractLink(afe.getMessage());
+                } else {
+                    errorMsgId = R.string.account_setup_failed_dlg_auth_message_fmt;
+                }
+                showErrorDialog(errorMsgId, null);
             } catch (CertificateValidationException cve) {
                 handleCertificateValidationException(cve);
             } catch (Exception e) {
                 Log.e(K9.LOG_TAG, "Error while testing settings", e);
                 showErrorDialog(R.string.account_setup_failed_dlg_server_message_fmt, null);
             }
+            return null;
+        }
+
+        private String extractLink(String text) {
+            // works better than Patterns.WEB_URL
+            Pattern pattern = Pattern.compile("\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)"
+                    + "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov"
+                    + "|mil|biz|info|mobi|name|aero|jobs|museum"
+                    + "|travel|[a-z]{2}))(:[\\d]{1,5})?"
+                    + "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?"
+                    + "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?" + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)"
+                    + "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
+                    + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*"
+                    + "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b");
+
+            Matcher matcher = pattern.matcher(text);
+            if (matcher.find()) {
+                return matcher.group();
+            }
+
             return null;
         }
 

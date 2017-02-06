@@ -457,6 +457,10 @@ public class ApiController {
     }
 
     public void sendMe(ApiControllerInterface listener) {
+        if (mMainConfig == null) {
+            return;
+        }
+
         String json = mStorage.getString(mMainConfig.getEndpoints().getUserMe().getUrl(), "");
         if (json.length() == 0) {
             json = mStorage.getString(RESPONSE_ME, "");

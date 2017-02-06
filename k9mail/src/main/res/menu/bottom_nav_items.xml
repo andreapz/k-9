@@ -2,22 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_mail"
-        android:title="@string/app_name"
+        android:title="@string/tab_mail"
         android:icon="@drawable/ic_email_black_24dp" />
 
     <item
         android:id="@+id/menu_news"
-        android:title="@string/app_name"
+        android:title="@string/tab_news"
         android:icon="@drawable/ic_email_black_24dp" />
 
     <item
         android:id="@+id/menu_video"
-        android:title="@string/app_name"
+        android:title="@string/tab_video"
         android:icon="@drawable/ic_email_black_24dp" />
 
     <item
         android:id="@+id/menu_offers"
-        android:title="@string/app_name"
+        android:title="@string/tab_offers"
         android:icon="@drawable/ic_email_black_24dp" />
-
 </menu>

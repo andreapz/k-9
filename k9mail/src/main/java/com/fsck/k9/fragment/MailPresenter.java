@@ -445,7 +445,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         initializeActionBar();
 
-        if (!decodeExtras()) {
+        if (!decodeExtras(mIntent)) {
             Toast.makeText(mContext, "RETURN FRAGMENT", Toast.LENGTH_LONG);
         }
 
@@ -492,27 +492,27 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
     }
 
-    private void resetView() {
-        // if (mFirstBackStackId >= 0) {
-        // getFragmentManager().popBackStackImmediate(mFirstBackStackId,
-        // FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        // mFirstBackStackId = -1;
-        // }
-        removeMessageListFragment();
-        removeMessageViewFragment();
-
-        mMessageReference = null;
-        mSearch = null;
-        mFolderName = null;
-
-        if (!decodeExtras()) {
-            return;
-        }
-
-        initializeDisplayMode(null);
-        initializeFragments();
-        displayViews();
-    }
+    // private void resetView() {
+    // // if (mFirstBackStackId >= 0) {
+    // // getFragmentManager().popBackStackImmediate(mFirstBackStackId,
+    // // FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    // // mFirstBackStackId = -1;
+    // // }
+    // removeMessageListFragment();
+    // removeMessageViewFragment();
+    //
+    // mMessageReference = null;
+    // mSearch = null;
+    // mFolderName = null;
+    //
+    // if (!decodeExtras(mIntent)) {
+    // return;
+    // }
+    //
+    // initializeDisplayMode(null);
+    // initializeFragments();
+    // displayViews();
+    // }
 
     private void findFragments() {
         FragmentManager fragmentManager = mContext.getFragmentManager();
@@ -680,12 +680,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return mInflater.inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
     }
 
-    private boolean decodeExtras() {
+    private boolean decodeExtras(Intent intent) {
 
-        String action = mIntent.getAction();
+        String action = intent.getAction();
 
         if (Intent.ACTION_VIEW.equals(action)) {
-            Uri uri = mIntent.getData();
+            Uri uri = intent.getData();
             if (uri != null) {
                 List<String> segmentList = uri.getPathSegments();
 
@@ -704,20 +704,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         } else if (ARG_SHORTCUT.equals(action)) {
             // Handle shortcut intents
-            String specialFolder = mIntent.getStringExtra(EXTRA_SPECIAL_FOLDER);
+            String specialFolder = intent.getStringExtra(EXTRA_SPECIAL_FOLDER);
             if (SearchAccount.UNIFIED_INBOX.equals(specialFolder)) {
                 mSearch = SearchAccount.createUnifiedInboxAccount(mContext).getRelatedSearch();
             } else if (SearchAccount.ALL_MESSAGES.equals(specialFolder)) {
                 mSearch = SearchAccount.createAllMessagesAccount(mContext).getRelatedSearch();
             }
-        } else if (mIntent.getStringExtra(SearchManager.QUERY) != null) {
+        } else if (intent.getStringExtra(SearchManager.QUERY) != null) {
             // check if this intent comes from the system search ( remote )
             if (Intent.ACTION_SEARCH.equals(action)) {
                 // hide toggle
                 setActionBarUp();
 
                 // Query was received from Search Dialog
-                String query = mIntent.getStringExtra(SearchManager.QUERY).trim();
+                String query = intent.getStringExtra(SearchManager.QUERY).trim();
 
                 mSearch = new LocalSearch(mContext.getString(R.string.search_results));
                 mSearch.setManualSearch(true);
@@ -733,7 +733,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                         SearchSpecification.SearchField.MESSAGE_CONTENTS,
                         SearchSpecification.Attribute.CONTAINS, query));
 
-                Bundle appData = mIntent.getBundleExtra(SearchManager.APP_DATA);
+                Bundle appData = intent.getBundleExtra(SearchManager.APP_DATA);
                 if (appData != null) {
                     mSearch.addAccountUuid(appData.getString(EXTRA_SEARCH_ACCOUNT));
                     // searches started from a folder list activity will provide an account, but no
@@ -747,12 +747,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
         } else {
             // regular LocalSearch object was passed
-            mSearch = mIntent.getParcelableExtra(ARG_SEARCH);
-            mNoThreading = mIntent.getBooleanExtra(ARG_NO_THREADING, false);
+            mSearch = intent.getParcelableExtra(ARG_SEARCH);
+            mNoThreading = intent.getBooleanExtra(ARG_NO_THREADING, false);
         }
 
         if (mMessageReference == null) {
-            mMessageReference = mIntent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
+            mMessageReference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
         }
 
         if (mMessageReference != null) {
@@ -763,8 +763,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (mSearch == null) {
             // We've most likely been started by an old unread widget
-            String accountUuid = mIntent.getStringExtra(ARG_ACCOUNT);
-            String folderName = mIntent.getStringExtra(ARG_FOLDER);
+            String accountUuid = intent.getStringExtra(ARG_ACCOUNT);
+            String folderName = intent.getStringExtra(ARG_FOLDER);
 
             mSearch = new LocalSearch(folderName);
             mSearch.addAccountUuid((accountUuid == null) ? "invalid" : accountUuid);
@@ -925,11 +925,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 boolean canDoNext = (initialized && !mMessageListFragment.isLast(ref));
 
                 MenuItem prev = menu.findItem(R.id.previous_message);
-                prev.setEnabled(canDoPrev);
+                prev.setVisible(false);
+                prev.setEnabled(false); // canDoPrev
                 prev.getIcon().setAlpha(canDoPrev ? 255 : 127);
 
                 MenuItem next = menu.findItem(R.id.next_message);
-                next.setEnabled(canDoNext);
+                next.setVisible(false);
+                next.setEnabled(false); // canDoPrev
                 next.getIcon().setAlpha(canDoNext ? 255 : 127);
             }
 
@@ -1106,7 +1108,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         onRefresh(!REFRESH_REMOTE);
 
-        MessagingController.getInstance(mContext).cancelNotificationsForAccount(mAccount);
+        if(mAccount != null) {
+            MessagingController.getInstance(mContext).cancelNotificationsForAccount(mAccount);
+        }
         mMessagingListener.onResume(mContext);
     }
 
@@ -1117,6 +1121,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
         removeMessageListFragment();
         removeMessageViewFragment();
+
+        mMessageReference = null;
+        mSearch = null;
+        mFolderName = null;
+
         updateFragments();
     }
 
@@ -1132,6 +1141,28 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Override
     public void setStartInstanceState(Bundle savedInstanceState) {
         mSavedInstanceState = savedInstanceState;
+    }
+
+
+    @Override
+    public void onNewIntent(Intent intent) {
+
+        // mIntent = intent;
+
+        removeMessageListFragment();
+        removeMessageViewFragment();
+
+        mMessageReference = null;
+        mSearch = null;
+        mFolderName = null;
+
+        if (!decodeExtras(intent)) {
+            return;
+        }
+
+        initializeDisplayMode(null);
+        initializeFragments();
+        displayViews();
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -1338,7 +1369,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         // return super.onKeyUp(keyCode, event);
     }
 
-    private boolean showNextMessage() {
+    @Override
+    public boolean showNextMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
             if (mMessageListFragment.openNext(ref)) {
@@ -1349,7 +1381,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return false;
     }
 
-    private boolean showPreviousMessage() {
+    @Override
+    public boolean showPreviousMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
             if (mMessageListFragment.openPrevious(ref)) {
