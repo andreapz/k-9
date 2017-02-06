@@ -12,7 +12,7 @@ import android.widget.TextView;
  * action bar's title view.
  */
 public class MessageTitleView extends TextView {
-    private static final int MAX_LINES = 2;
+    private static final int MAX_LINES = 10;
     private static final String ELLIPSIS = "\u2026";
 
     private MessageHeader mHeader;
@@ -51,8 +51,8 @@ public class MessageTitleView extends TextView {
                 if (getLayout().getLineCount() > MAX_LINES) {
                     int lineEndIndex = getLayout().getLineEnd(MAX_LINES - 1);
                     setText(getText().subSequence(0, lineEndIndex - 2) + ELLIPSIS);
-                    mHeader.showSubjectLine();
                 }
+                mHeader.showSubjectLine();
                 mNeedEllipsizeCheck = false;
             }
         }

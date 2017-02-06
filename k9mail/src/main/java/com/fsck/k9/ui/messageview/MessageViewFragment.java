@@ -540,7 +540,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     private void displayMessageSubject(String subject) {
         if (mFragmentListener != null) {
-            mFragmentListener.displayMessageSubject(subject);
+            //FIXME this is a simple workaround to show empty title without clear title on message content
+            mFragmentListener.displayMessageSubject("   ");
         }
     }
 
