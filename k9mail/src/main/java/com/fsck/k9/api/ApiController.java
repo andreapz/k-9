@@ -15,6 +15,7 @@ import com.fsck.k9.api.model.Me;
 import com.fsck.k9.api.model.UserLogin;
 import com.fsck.k9.error.RetrofitException;
 import com.fsck.k9.error.RxErrorHandlingCallAdapterFactory;
+import com.fsck.k9.helper.CaptivePortalHelper;
 import com.fsck.k9.preferences.Storage;
 import com.fsck.k9.preferences.StorageEditor;
 import com.google.gson.Gson;
@@ -274,6 +275,11 @@ public class ApiController {
 
             @Override
             public void onError(Throwable e) {
+                // test for Captive Portal
+                if (CaptivePortalHelper.getInstance(mContext).isCaptivePortalConnection()) {
+                    // show the login activity
+                    CaptivePortalHelper.getInstance(mContext).showLoginWebView();
+                }
                 Log.i(TAG, "MainConfig ERROR: " + e);
             }
 
