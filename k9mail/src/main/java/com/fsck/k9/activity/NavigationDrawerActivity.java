@@ -49,17 +49,18 @@ import com.fsck.k9.ui.messageview.MessageViewFragment;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.provider.Settings;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
@@ -72,9 +73,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.FrameLayout;
 
 import rx.Observable;
@@ -143,6 +141,10 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String NEWS_TAB = "news";
     public static final String VIDEO_TAB = "video";
     public static final String OFFERS_TAB = "offerte";
+    public static final String GET_PARAMS_VERSION = "?version=";
+    public static final String GET_PARAMS_ID = "&UDID=";
+    public static final String GET_PARAMS_PLATFORM = "&platform=";
+    public static final String PLATFORM = "android";
 
     public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
     public static final String DEFAULT_TAB_KEY = "default_tab";
@@ -238,7 +240,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -264,7 +266,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-            MessageReference messageReference) {
+                                                    MessageReference messageReference) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -468,10 +470,12 @@ public class NavigationDrawerActivity extends K9Activity
                                     }
 
                                     @Override
-                                    public void onError(Throwable e) {}
+                                    public void onError(Throwable e) {
+                                    }
 
                                     @Override
-                                    public void onNext(Object o) {}
+                                    public void onNext(Object o) {
+                                    }
                                 });
 
                     }
@@ -592,7 +596,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -704,15 +708,6 @@ public class NavigationDrawerActivity extends K9Activity
         NetworkHelper.resetInstance();
         super.onDestroy();
     }
-    // private void setSelectedTab(int position) {
-    // for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
-    // if(i == position) {
-    // mBottomNav.getMenu().getItem(i).setChecked(true);
-    // } else {
-    // mBottomNav.getMenu().getItem(i).setChecked(false);
-    // }
-    // }
-    // }
 
     private void setSelectedTab(int position) {
 
@@ -917,7 +912,7 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.goBackOnHistory();
         } else if (mMailPresenter != null
                 && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                        && mMailPresenter.getMessageListWasDisplayed())) {
+                && mMailPresenter.getMessageListWasDisplayed())) {
             mMailPresenter.showMessageList();
         } else if (mMailPresenter != null
                 && getIntent().getStringExtra(SearchManager.QUERY) != null) {
@@ -979,33 +974,40 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void showInformations() {
-        final Dialog customize =
-                new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_informations);
-        customize.setCancelable(true);
-
-        WebView view = (WebView) customize.findViewById(R.id.webview);
-
-        view.getSettings().setJavaScriptEnabled(true);
         MainConfig mainConfig = null;
+        String url = null;
         if (getApiController() != null) {
             mainConfig = getApiController().getMainConfig();
         }
         if (mainConfig != null && mainConfig.getEndpoints() != null
                 && mainConfig.getEndpoints().getInfoAbout() != null) {
-            view.loadUrl(mainConfig.getEndpoints().getInfoAbout().getUrl());
+            url = (mainConfig.getEndpoints().getInfoAbout().getUrl());
         }
-        view.setWebViewClient(new WebViewClient());
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
+        if (url != null) {
+            Intent myIntent = new Intent(getActivity(), BrowserActivity.class);
+            StringBuffer bufferUrl = new StringBuffer(url);
+            String androidId = Settings.Secure.getString(
+                    getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
-            @Override
-            public void onClick(View v) {
-                customize.dismiss();
+            PackageInfo pInfo = null;
+            String version = null;
+            try {
+                pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                version = pInfo.versionName;
+                if (version != null) {
+                    bufferUrl.append(GET_PARAMS_VERSION + version);
+                    bufferUrl.append(GET_PARAMS_PLATFORM + PLATFORM);
+                    bufferUrl.append(GET_PARAMS_ID + androidId);
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
             }
-        });
+            myIntent.putExtra(BrowserActivity.EXTRA_URL, bufferUrl.toString());
 
-        customize.show();
+            this.startActivityForResult(myIntent,
+                    MediaPresenter.MEDIA_PRESENTER_INFORMATION_SETTINGS);
+        }
+
     }
 
     @Override

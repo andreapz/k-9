@@ -540,7 +540,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     private void displayMessageSubject(String subject) {
         if (mFragmentListener != null) {
-            //FIXME this is a simple workaround to show empty title without clear title on message content
+            // FIXME this is a simple workaround to show empty title without clear title on message
+            // content
             mFragmentListener.displayMessageSubject("   ");
         }
     }
@@ -775,6 +776,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     public void onClickShowCryptoKey() {
         messageCryptoPresenter.onClickShowCryptoKey();
     }
+
 
     public interface MessageViewFragmentListener {
         void onForward(MessageReference messageReference, Parcelable decryptionResultForReply);
