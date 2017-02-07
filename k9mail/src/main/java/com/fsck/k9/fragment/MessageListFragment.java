@@ -89,6 +89,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -101,6 +102,7 @@ import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -312,6 +314,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      * The value of this field is {@code 0} when no context menu is currently open.
      */
     private long mContextMenuUniqueId = 0;
+
+    private Snackbar mSnackbar;
 
 
     /**
@@ -734,6 +738,15 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         initializeFab(view);
         mListView.setVerticalFadingEdgeEnabled(false);
+
+        if (getActivity() != null) {
+            mSnackbar = Snackbar.make(getActivity().findViewById(android.R.id.content), "",
+                    Snackbar.LENGTH_LONG);
+            View snackBarView = mSnackbar.getView();
+            TextView tv =
+                    (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+            tv.setGravity(Gravity.CENTER_HORIZONTAL);
+        }
 
         return view;
     }
@@ -2796,10 +2809,20 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 }
                 case R.id.mark_as_read: {
                     setFlagForSelected(Flag.SEEN, true);
+                    String message = getString(R.string.marked_as_read_message);
+                    if (mSnackbar != null) {
+                        mSnackbar.setText(message);
+                        mSnackbar.show();
+                    }
                     break;
                 }
                 case R.id.mark_as_unread: {
                     setFlagForSelected(Flag.SEEN, false);
+                    String message = getString(R.string.marked_as_unread_message);
+                    if (mSnackbar != null) {
+                        mSnackbar.setText(message);
+                        mSnackbar.show();
+                    }
                     break;
                 }
                 case R.id.flag: {
