@@ -276,7 +276,8 @@ public class NavigationDrawerActivity extends K9Activity
         super.onCreate(savedInstanceState);
 
         Preferences pref = Preferences.getPreferences(this);
-
+        // TEST
+        NetworkHelper.getInstance(this);
         List<Account> accounts = pref.getAccounts();
         WelcomePreference prefManager = new WelcomePreference(this);
         Intent intent = getIntent();
@@ -445,8 +446,7 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onStart() {
         super.onStart();
-        // TEST
-        NetworkHelper.getInstance(this);
+
         // end test
         mBroadcastReceiver = new BroadcastReceiver() {
 
@@ -699,6 +699,11 @@ public class NavigationDrawerActivity extends K9Activity
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        NetworkHelper.resetInstance();
+        super.onDestroy();
+    }
     // private void setSelectedTab(int position) {
     // for(int i = 0; i < mBottomNav.getMenu().size(); i++) {
     // if(i == position) {
