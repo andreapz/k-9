@@ -28,10 +28,6 @@ import com.fsck.k9.mail.Store;
 import com.fsck.k9.mail.Transport;
 import com.fsck.k9.mail.filter.Hex;
 import com.fsck.k9.mail.store.webdav.WebDavStore;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -75,22 +71,22 @@ public class AccountSetupCheckSettings extends K9Activity
      * ATTENTION: This was auto-generated to implement the App Indexing API. See
      * https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
+//    private GoogleApiClient client;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API. See
      * https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder().setName("AccountSetupCheckSettings Page") // TODO: Define
-                // a title for
-                // the content
-                // shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]")).build();
-        return new Action.Builder(Action.TYPE_VIEW).setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED).build();
-    }
+//    public Action getIndexApiAction() {
+//        Thing object = new Thing.Builder().setName("AccountSetupCheckSettings Page") // TODO: Define
+//                // a title for
+//                // the content
+//                // shown.
+//                // TODO: Make sure this auto-generated URL is correct.
+//                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]")).build();
+//        return new Action.Builder(Action.TYPE_VIEW).setObject(object)
+//                .setActionStatus(Action.STATUS_TYPE_COMPLETED).build();
+//    }
 
     @Override
     public void onStart() {
@@ -98,8 +94,8 @@ public class AccountSetupCheckSettings extends K9Activity
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+//        client.connect();
+//        AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
 
     @Override
@@ -108,8 +104,8 @@ public class AccountSetupCheckSettings extends K9Activity
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        client.disconnect();
+//        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+//        client.disconnect();
     }
 
     public enum CheckDirection {
@@ -161,7 +157,7 @@ public class AccountSetupCheckSettings extends K9Activity
         mCheckAccountTask.execute(mDirection);
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+//        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void handleCertificateValidationException(CertificateValidationException cve) {
