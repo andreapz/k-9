@@ -69,6 +69,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -960,6 +961,19 @@ public class NavigationDrawerActivity extends K9Activity
         StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
         editor.putInt(DEFAULT_TAB_KEY, defaultTabIndex);
         editor.commit();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int action = event.getAction();
+        int keyCode = event.getKeyCode();
+        if (action == KeyEvent.ACTION_DOWN) {
+            if (mMailPresenter != null) {
+                return mMailPresenter.onCustomKeyDown(keyCode, event);
+
+            }
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @Override
