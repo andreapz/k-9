@@ -74,6 +74,7 @@ public abstract class MediaPresenter
     private static final int HOME_POSITION_ADAPTER = 1;
     private static final int HOME_POSITION_PRESENTER = 0;
     public static final int MEDIA_PRESENTER_BROWSING = 5;
+    public static final int MEDIA_PRESENTER_INFORMATION_SETTINGS = 6;
     public static final String DEFAULT_ACTIONBAR_TITLE = "Tiscali";
     private final Activity mContext;
     private static final String ARG_HOME = "HOME";
