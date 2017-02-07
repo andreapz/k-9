@@ -142,8 +142,8 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String VIDEO_TAB = "video";
     public static final String OFFERS_TAB = "offerte";
     public static final String GET_PARAMS_VERSION = "?version=";
-    public static final String GET_PARAMS_ID = "?UDID=";
-    public static final String GET_PARAMS_PLATFORM = "?platform=";
+    public static final String GET_PARAMS_ID = "&UDID=";
+    public static final String GET_PARAMS_PLATFORM = "&platform=";
     public static final String PLATFORM = "android";
 
     public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
@@ -986,7 +986,7 @@ public class NavigationDrawerActivity extends K9Activity
         if (url != null) {
             Intent myIntent = new Intent(getActivity(), BrowserActivity.class);
             StringBuffer bufferUrl = new StringBuffer(url);
-            String android_id = Settings.Secure.getString(
+            String androidId = Settings.Secure.getString(
                     getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
             PackageInfo pInfo = null;
@@ -997,7 +997,7 @@ public class NavigationDrawerActivity extends K9Activity
                 if (version != null) {
                     bufferUrl.append(GET_PARAMS_VERSION + version);
                     bufferUrl.append(GET_PARAMS_PLATFORM + PLATFORM);
-                    bufferUrl.append(GET_PARAMS_ID + android_id);
+                    bufferUrl.append(GET_PARAMS_ID + androidId);
                 }
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
