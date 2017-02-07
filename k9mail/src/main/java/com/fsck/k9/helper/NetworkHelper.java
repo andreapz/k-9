@@ -25,12 +25,12 @@ public class NetworkHelper {
             TAG + ".ACTION_NETWORK_CONNECTIVITY";
 
     private static NetworkHelper sInstance;
-    private final Context mContext;
+    private static Context mContext;
+
 
     private WifiManager mWifiManager;
     private WifiManager.WifiLock mWifiLock;
     private boolean mAcquired;
-
 
 
     public static NetworkHelper getInstance(Context context) {
@@ -40,9 +40,9 @@ public class NetworkHelper {
         return sInstance;
     }
 
-    public static void resetInstance(Context context) {
+    public static void resetInstance() {
         if (sInstance != null) {
-            context.unregisterReceiver(sInstance.mConnectivityBroadcastReceiver);
+            mContext.unregisterReceiver(sInstance.mConnectivityBroadcastReceiver);
             sInstance = null;
         }
     }
@@ -109,7 +109,7 @@ public class NetworkHelper {
 
     /**
      * @return For TYPE_WIFI return the SSID of the current enabled wifi network. For TYPE_MOBILE or
-     *         TYPE_WIMAX return a dummy name.
+     * TYPE_WIMAX return a dummy name.
      */
     public String getCurrentNetworkName() {
 
@@ -139,7 +139,6 @@ public class NetworkHelper {
         }
         return null;
     }
-
 
 
     public boolean release() {
