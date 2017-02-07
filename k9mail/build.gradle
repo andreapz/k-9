@@ -140,6 +140,11 @@ android {
         }
     }
 
+    dexOptions {
+        jumboMode = true
+        javaMaxHeapSize "2048M"
+    }
+
     // Do not abort build if lint finds errors
     lintOptions {
         abortOnError false
