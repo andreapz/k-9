@@ -67,7 +67,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -382,8 +381,8 @@ public class NavigationDrawerActivity extends K9Activity
         if (savedInstanceState == null) {
             int tempSelectedTab = DEFAULT_SELECTED_TAB;
             // open mail when coming from registration/change of password/account selection
-            if (!intent.getBooleanExtra(EXTRA_STARTUP, true)
-                    || (intent.getExtras() != null && intent.getExtras().get(EXTRA_SEARCH) != null)) {
+            if (!intent.getBooleanExtra(EXTRA_STARTUP, true) || (intent.getExtras() != null
+                    && intent.getExtras().get(EXTRA_SEARCH) != null)) {
                 tempSelectedTab = MAIL_TAB_SELECTED;
             }
             mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId())
@@ -425,7 +424,9 @@ public class NavigationDrawerActivity extends K9Activity
             case MAIL_TAB_SELECTED:
                 if (mMailPresenter != null) {
 
-                    mBottomNav.findViewById(mBottomNav.getMenu().getItem(MAIL_TAB_SELECTED).getItemId())
+                    mBottomNav
+                            .findViewById(
+                                    mBottomNav.getMenu().getItem(MAIL_TAB_SELECTED).getItemId())
                             .performClick();
 
                     if (!Intent.ACTION_MAIN.equals(intent.getAction())) {
@@ -488,7 +489,6 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
-        NetworkHelper.resetInstance(this);
         super.onStop();
 
     }
