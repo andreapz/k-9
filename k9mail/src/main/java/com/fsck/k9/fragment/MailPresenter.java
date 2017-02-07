@@ -1611,6 +1611,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     public void updateMenu() {
         Toast.makeText(mContext, "invalidateOptionsMenu", Toast.LENGTH_LONG);
         // invalidateOptionsMenu();
+        if(mMenu == null) {
+            return;
+        }
+
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             // Set title of menu item to toggle the read state of the currently displayed message
             if (mMessageViewFragment.isMessageRead()) {
