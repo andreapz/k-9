@@ -10,6 +10,7 @@ import java.util.Timer;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.BrowserActivity;
 import com.tiscali.appmail.helper.NetworkHelper;
+import com.tiscali.appmail.view.ObservableWebView;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
@@ -68,7 +69,7 @@ public class MediaFragment extends Fragment {
     private static final String TISCALI_APP_FAVE_FAVE_ACTION = "section_fave";
     private HashMap<String, String> mExtraHeaders;
 
-    public WebView mWebView;
+    public ObservableWebView mWebView;
     private String mUrl;
     private boolean mIsShareable = false;
     private MediaFragmentListener mFragmentListener;
@@ -119,7 +120,7 @@ public class MediaFragment extends Fragment {
             Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
-        mWebView = (WebView) v.findViewById(R.id.webview);
+        mWebView = (ObservableWebView) v.findViewById(R.id.webview);
         mHandler = new Handler();
         if (savedInstanceState == null) {
             mType = getType(getArguments().getString(ARG_TYPE));
@@ -161,6 +162,29 @@ public class MediaFragment extends Fragment {
 
         mWebView.setWebViewClient(new TiscaliWebClient());
 
+        mWebView.setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback() {
+            public boolean mIsBottomNavVisible = false;
+            public int mLastFirstVisibleItem = 1000;
+
+            @Override
+            public void onScroll(int l, int t) {
+                Log.i("APZ", "Scroll l:" + l + " t:" + t + "last:" + mLastFirstVisibleItem);
+                if (t > mLastFirstVisibleItem) {
+                    if (mIsBottomNavVisible) {
+                        mIsBottomNavVisible = false;
+                        mFragmentListener.hideBottomNav();
+                    }
+                } else if (t < mLastFirstVisibleItem) {
+                    if (!mIsBottomNavVisible) {
+                        mIsBottomNavVisible = true;
+                        mFragmentListener.showBottomNav();
+                    }
+                }
+
+                mLastFirstVisibleItem = t;
+            }
+        });
+
     }
 
     @Override
@@ -183,6 +207,7 @@ public class MediaFragment extends Fragment {
         settings.setDomStorageEnabled(true);
         settings.setLoadWithOverviewMode(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setSupportZoom(false);
 
         if (Build.VERSION.SDK_INT >= 19) {
             mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -343,6 +368,10 @@ public class MediaFragment extends Fragment {
         void setActionBarUp();
 
         void goBack();
+
+        void showBottomNav();
+
+        void hideBottomNav();
     }
 
     public interface MediaFragmentGetListener {

@@ -549,31 +549,38 @@ public class NavigationDrawerActivity extends K9Activity
             mDrawerToggle.setDrawerIndicatorEnabled(true);
             mDrawerToggle.syncState();
 
-            mBottomNav.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    mBottomNav.setVisibility(View.VISIBLE);
-                }
-            });
-
+            showBottomNav();
         } else {
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             mDrawerToggle.onDrawerStateChanged(DrawerLayout.STATE_IDLE);
             mDrawerToggle.setDrawerIndicatorEnabled(false);
             mDrawerToggle.syncState();
 
-            mBottomNav.animate().translationY(mBottomNav.getHeight())
-                    .setListener(new AnimatorListenerAdapter() {
-
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            mBottomNav.setVisibility(View.GONE);
-                        }
-
-                    });
+            hideBottomNav();
         }
+    }
+
+    public void hideBottomNav() {
+        mBottomNav.animate().translationY(mBottomNav.getHeight())
+                .setListener(new AnimatorListenerAdapter() {
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        mBottomNav.setVisibility(View.GONE);
+                    }
+
+                });
+    }
+
+    public void showBottomNav() {
+        mBottomNav.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mBottomNav.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void buildDaggerComponent(Intent intent) {

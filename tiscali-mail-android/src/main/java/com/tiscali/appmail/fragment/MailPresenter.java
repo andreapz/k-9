@@ -1645,6 +1645,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     @Override
+    public void showBottomNav() {
+        if (mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).showBottomNav();
+        }
+    }
+
+    @Override
+    public void hideBottomNav() {
+        if (mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).hideBottomNav();
+        }
+    }
+
+    @Override
     public void disableDeleteAction() {
         mMenu.findItem(R.id.delete).setEnabled(false);
     }

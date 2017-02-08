@@ -5,6 +5,7 @@
     <dimen name="margin_standard_16dp">16dp</dimen>
     <dimen name="margin_standard_24dp">24dp</dimen>
     <dimen name="margin_standard_56dp">56dp</dimen>
+    <dimen name="margin_standard_72dp">72dp</dimen>
 
     <dimen name="text_size_medium">18sp</dimen>
 
