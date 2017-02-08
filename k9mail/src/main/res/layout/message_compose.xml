@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
@@ -15,7 +14,7 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <include layout="@layout/message_compose_recipients" />
 
@@ -39,8 +38,7 @@
                     android:background="@android:color/transparent"
                     android:paddingTop="10dp"
                     android:paddingBottom="10dp"
-                    style="@style/ComposeEditTextLarge"
-                    />
+                    style="@style/ComposeEditTextLarge" />
             </LinearLayout>
 
             <View
@@ -61,7 +59,7 @@
             <!-- We have to use "wrap_content" (not "0dip") for "layout_height", otherwise the
                  EditText won't properly grow in height while the user is typing the message -->
             <view
-                class="com.fsck.k9.ui.EolConvertingEditText"
+                class="com.tiscali.appmail.ui.EolConvertingEditText"
                 android:id="@+id/message_content"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -71,11 +69,10 @@
                 android:inputType="textMultiLine|textAutoCorrect|textCapSentences"
                 android:imeOptions="actionDone|flagNoEnterAction"
                 android:minLines="3"
-                style="@style/ComposeEditTextLarge"
-                />
+                style="@style/ComposeEditTextLarge" />
 
             <view
-                class="com.fsck.k9.ui.EolConvertingEditText"
+                class="com.tiscali.appmail.ui.EolConvertingEditText"
                 android:id="@+id/upper_signature"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -92,7 +89,7 @@
                 android:padding="0dip"
                 android:layout_gravity="right"
                 android:layout_height="wrap_content"
-                android:layout_width="match_parent"/>
+                android:layout_width="match_parent" />
 
             <!-- Quoted text bar -->
             <RelativeLayout
@@ -101,7 +98,7 @@
                 android:layout_height="wrap_content">
 
                 <view
-                    class="com.fsck.k9.ui.EolConvertingEditText"
+                    class="com.tiscali.appmail.ui.EolConvertingEditText"
                     android:id="@+id/quoted_text"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
@@ -110,7 +107,7 @@
                     android:inputType="textMultiLine|textAutoCorrect|textCapSentences"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                <com.fsck.k9.view.MessageWebView
+                <com.tiscali.appmail.view.MessageWebView
                     android:id="@+id/quoted_html"
                     android:layout_height="wrap_content"
                     android:layout_width="fill_parent" />
@@ -142,7 +139,7 @@
             </RelativeLayout>
 
             <view
-                class="com.fsck.k9.ui.EolConvertingEditText"
+                class="com.tiscali.appmail.ui.EolConvertingEditText"
                 android:id="@+id/lower_signature"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"

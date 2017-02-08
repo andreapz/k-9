@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fsck.k9.view.MessageCryptoStatusView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.tiscali.appmail.view.MessageCryptoStatusView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/crypto_status_icon"
@@ -17,8 +17,7 @@
         android:layout_gravity="left|center_vertical"
         android:id="@+id/crypto_status_dots_bg"
         android:src="@drawable/status_dots"
-        android:tint="?attr/openpgp_grey"
-        />
+        android:tint="?attr/openpgp_grey" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -26,8 +25,7 @@
         android:layout_gravity="left|center_vertical"
         android:id="@+id/crypto_status_combined_2"
         tools:src="@drawable/status_none_dots_1"
-        tools:tint="?attr/openpgp_blue"
-        />
+        tools:tint="?attr/openpgp_blue" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -35,8 +33,7 @@
         android:layout_gravity="left|center_vertical"
         android:id="@+id/crypto_status_combined_1"
         tools:src="@drawable/status_signature_verified_cutout"
-        tools:tint="?attr/openpgp_blue"
-        />
+        tools:tint="?attr/openpgp_blue" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -45,7 +42,6 @@
         android:id="@+id/crypto_status_single"
         android:visibility="gone"
         tools:src="@drawable/status_signature_verified_cutout"
-        tools:tint="?attr/openpgp_blue"
-        />
+        tools:tint="?attr/openpgp_blue" />
 
-</com.fsck.k9.view.MessageCryptoStatusView>
+</com.tiscali.appmail.view.MessageCryptoStatusView>

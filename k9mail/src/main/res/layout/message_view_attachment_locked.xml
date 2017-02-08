@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fsck.k9.ui.messageview.LockedAttachmentView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.tiscali.appmail.ui.messageview.LockedAttachmentView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,21 +8,17 @@
     android:inAnimation="@anim/fade_in"
     android:outAnimation="@anim/fade_out"
     custom:previewInitialChild="0"
-    tools:layout_height="80dp"
-    >
+    tools:layout_height="80dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="4dp"
-            android:background="?attr/messageViewAttachmentBackground"
-            >
-        </FrameLayout>
+            android:background="?attr/messageViewAttachmentBackground"></FrameLayout>
 
         <ImageView
             android:id="@+id/lock_icon"
@@ -35,8 +30,7 @@
             android:layout_marginTop="8dip"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:padding="14dp"
-            />
+            android:padding="14dp" />
 
         <TextView
             android:id="@+id/locked_name"
@@ -51,7 +45,7 @@
             android:textColor="?android:attr/textColorSecondary"
             android:singleLine="true"
             android:ellipsize="middle"
-            android:text="@string/locked_attach_title"/>
+            android:text="@string/locked_attach_title" />
 
         <Button
             android:layout_width="wrap_content"
@@ -65,8 +59,7 @@
             android:paddingRight="20dip"
             android:singleLine="true"
             android:text="@string/locked_attach_unlock"
-            style="?android:attr/buttonStyleSmall"
-            />
+            style="?android:attr/buttonStyleSmall" />
 
         <TextView
             android:id="@+id/locked_info"
@@ -93,7 +86,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/attachment_stub"
         android:layout="@layout/message_view_attachment"
-        android:inflatedId="@+id/attachment"
-        />
+        android:inflatedId="@+id/attachment" />
 
-</com.fsck.k9.ui.messageview.LockedAttachmentView>
+</com.tiscali.appmail.ui.messageview.LockedAttachmentView>

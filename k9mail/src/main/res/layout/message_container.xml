@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fsck.k9.ui.messageview.MessageContainerView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.tiscali.appmail.ui.messageview.MessageContainerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <!-- Content area -->
-    <com.fsck.k9.view.MessageWebView
+    <com.tiscali.appmail.view.MessageWebView
         android:id="@+id/message_content"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent" />
@@ -18,22 +18,19 @@
         android:orientation="vertical"
         android:id="@+id/message_unsigned_container"
         android:visibility="gone"
-        tools:visibility="visible"
-        >
+        tools:visibility="visible">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            >
+            android:layout_marginTop="4dp">
 
             <View
                 android:layout_width="16dp"
                 android:layout_height="4dp"
                 android:layout_marginTop="1dp"
                 android:layout_gravity="center_vertical"
-                android:background="#d55"
-                />
+                android:background="#d55" />
 
             <TextView
                 android:layout_height="wrap_content"
@@ -42,8 +39,7 @@
                 android:layout_marginRight="8dp"
                 android:textAppearance="?android:textAppearanceSmall"
                 android:text="Unsigned Text"
-                android:textColor="#d55"
-                />
+                android:textColor="#d55" />
 
             <View
                 android:layout_width="wrap_content"
@@ -59,8 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
             android:padding="8dp"
-            tools:text="Unsigned text content"
-            />
+            tools:text="Unsigned text content" />
 
     </LinearLayout>
 
@@ -75,8 +70,7 @@
             android:id="@+id/attachments"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            />
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
-</com.fsck.k9.ui.messageview.MessageContainerView>
+</com.tiscali.appmail.ui.messageview.MessageContainerView>

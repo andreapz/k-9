@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fsck.k9">
+    package="com.tiscali.appmail">
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -60,7 +60,7 @@
 
 
     <application
-        android:name="K9"
+        android:name="com.tiscali.appmail.K9"
         android:allowTaskReparenting="false"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
@@ -73,7 +73,7 @@
             android:value="com.fsck.k9.activity.Search" />
 
         <activity
-            android:name=".activity.NavigationDrawerActivity"
+            android:name="com.tiscali.appmail.activity.NavigationDrawerActivity"
             android:configChanges="locale|keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
             android:label="@string/app_name"
             android:launchMode="singleTop"
@@ -99,98 +99,98 @@
         </activity>
 
 
-        <activity android:name=".activity.CaptivPortalActivity" />
+        <activity android:name="com.tiscali.appmail.activity.CaptivPortalActivity" />
 
         <activity
-            android:name=".activity.WelcomeActivity"
+            android:name="com.tiscali.appmail.activity.WelcomeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
 
         <activity
-            android:name=".activity.Accounts"
+            android:name="com.tiscali.appmail.activity.Accounts"
             android:configChanges="locale"
             android:label="@string/app_name" />
         <activity
-            android:name=".activity.BrowserActivity"
+            android:name="com.tiscali.appmail.activity.BrowserActivity"
             android:configChanges="orientation|screenSize" />
 
         <activity
-            android:name=".activity.setup.Prefs"
+            android:name="com.tiscali.appmail.activity.setup.Prefs"
             android:configChanges="locale"
             android:excludeFromRecents="true"
             android:label="@string/prefs_title"
             android:taskAffinity="${applicationId}.activity.setup.Prefs" />
 
         <activity
-            android:name=".activity.setup.WelcomeMessage"
+            android:name="com.tiscali.appmail.activity.setup.WelcomeMessage"
             android:configChanges="locale"
             android:label="@string/welcome_message_title" />
 
         <activity
-            android:name=".activity.setup.FontSizeSettings"
+            android:name="com.tiscali.appmail.activity.setup.FontSizeSettings"
             android:configChanges="locale"
             android:label="@string/font_size_settings_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupBasics"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupBasics"
             android:configChanges="locale"
             android:label="@string/account_setup_basics_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupAccountType"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupAccountType"
             android:configChanges="locale"
             android:label="@string/account_setup_account_type_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupIncoming"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupIncoming"
             android:configChanges="locale"
             android:label="@string/account_setup_incoming_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupComposition"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupComposition"
             android:configChanges="locale"
             android:label="@string/account_settings_composition_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupOutgoing"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupOutgoing"
             android:configChanges="locale"
             android:label="@string/account_setup_outgoing_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupOptions"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupOptions"
             android:configChanges="locale"
             android:label="@string/account_setup_options_title" />
 
         <activity
-            android:name=".activity.setup.AccountSetupNames"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupNames"
             android:configChanges="locale"
             android:label="@string/account_setup_names_title" />
 
         <activity
-            android:name=".activity.ChooseFolder"
+            android:name="com.tiscali.appmail.activity.ChooseFolder"
             android:configChanges="locale"
             android:label="@string/choose_folder_title"
             android:noHistory="true"
             android:theme="@style/Theme.K9Dialog" />
 
         <activity
-            android:name=".activity.ChooseIdentity"
+            android:name="com.tiscali.appmail.activity.ChooseIdentity"
             android:configChanges="locale"
             android:label="@string/choose_identity_title"
             android:theme="@style/Theme.K9Dialog" />
 
         <activity
-            android:name=".activity.ManageIdentities"
+            android:name="com.tiscali.appmail.activity.ManageIdentities"
             android:configChanges="locale"
             android:label="@string/manage_identities_title" />
 
         <activity
-            android:name=".activity.EditIdentity"
+            android:name="com.tiscali.appmail.activity.EditIdentity"
             android:configChanges="locale"
             android:label="@string/edit_identity_title" />
 
         <activity
-            android:name=".activity.NotificationDeleteConfirmation"
+            android:name="com.tiscali.appmail.activity.NotificationDeleteConfirmation"
             android:excludeFromRecents="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
@@ -199,23 +199,23 @@
         <!-- XXX Note: this activity is hacked to ignore config changes,
              since it doesn't currently handle them correctly in code. -->
         <activity
-            android:name=".activity.setup.AccountSetupCheckSettings"
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupCheckSettings"
             android:configChanges="keyboardHidden|orientation|locale"
             android:label="@string/account_setup_check_settings_title" />
 
         <activity
-            android:name=".activity.setup.AccountSettings"
+            android:name="com.tiscali.appmail.activity.setup.AccountSettings"
             android:configChanges="locale"
             android:label="@string/account_settings_title_fmt" />
 
         <activity
-            android:name=".activity.setup.FolderSettings"
+            android:name="com.tiscali.appmail.activity.setup.FolderSettings"
             android:configChanges="locale"
             android:label="@string/folder_settings_title"
             android:theme="@android:style/Theme.Dialog" />
 
         <activity
-            android:name=".activity.FolderList"
+            android:name="com.tiscali.appmail.activity.FolderList"
             android:configChanges="locale"
             android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
@@ -243,7 +243,7 @@
         <!--</activity>-->
 
         <activity
-            android:name=".activity.MessageCompose"
+            android:name="com.tiscali.appmail.activity.MessageCompose"
             android:configChanges="locale"
             android:enabled="false"
             android:label="@string/app_name">
@@ -273,7 +273,7 @@
 
         <!-- Search Activity - searchable -->
         <activity
-            android:name=".activity.Search"
+            android:name="com.tiscali.appmail.activity.Search"
             android:configChanges="locale"
             android:label="@string/search_action"
             android:theme="@style/Theme.K9.Light.NoActionBar.Base"
@@ -288,7 +288,7 @@
         </activity>
 
         <activity
-            android:name=".activity.LauncherShortcuts"
+            android:name="com.tiscali.appmail.activity.LauncherShortcuts"
             android:configChanges="locale"
             android:label="@string/shortcuts_title">
             <intent-filter>
@@ -298,26 +298,26 @@
         </activity>
 
         <activity
-            android:name=".activity.EmailAddressList"
+            android:name="com.tiscali.appmail.activity.EmailAddressList"
             android:configChanges="locale" />
 
-        <activity android:name=".activity.UnreadWidgetConfiguration">
+        <activity android:name="com.tiscali.appmail.activity.UnreadWidgetConfiguration">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".activity.UpgradeDatabases"
+            android:name="com.tiscali.appmail.activity.UpgradeDatabases"
             android:label="@string/upgrade_databases_title" />
 
         <activity
-            android:name=".activity.setup.TiscaliAccountSetupUserPassword"
+            android:name="com.tiscali.appmail.activity.setup.TiscaliAccountSetupUserPassword"
             android:label="@string/account_setup_user_password_title_tiscali"
             android:configChanges="locale" />
 
         <receiver
-            android:name=".service.BootReceiver"
+            android:name="com.tiscali.appmail.service.BootReceiver"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -340,7 +340,7 @@
         </receiver>
 
         <receiver
-            android:name=".service.RemoteControlReceiver"
+            android:name="com.tiscali.appmail.service.RemoteControlReceiver"
             android:enabled="true"
             android:permission="${applicationId}.permission.REMOTE_CONTROL">
             <intent-filter>
@@ -352,11 +352,11 @@
         </receiver>
 
         <receiver
-            android:name=".service.CoreReceiver"
+            android:name="com.tiscali.appmail.service.CoreReceiver"
             android:exported="false" />
 
         <receiver
-            android:name=".service.StorageReceiver"
+            android:name="com.tiscali.appmail.service.StorageReceiver"
             android:enabled="true">
             <intent-filter>
                 <!--
@@ -380,7 +380,7 @@
         </receiver>
 
         <receiver
-            android:name=".provider.UnreadWidgetProvider"
+            android:name="com.tiscali.appmail.provider.UnreadWidgetProvider"
             android:icon="@drawable/icon"
             android:label="@string/unread_widget_label">
             <intent-filter>
@@ -392,36 +392,36 @@
         </receiver>
 
         <service
-            android:name=".service.MailService"
+            android:name="com.tiscali.appmail.service.MailService"
             android:enabled="true" />
 
         <service
-            android:name=".notification.NotificationActionService"
+            android:name="com.tiscali.appmail.notification.NotificationActionService"
             android:enabled="true" />
 
         <service
-            android:name=".service.PushService"
+            android:name="com.tiscali.appmail.service.PushService"
             android:enabled="true" />
 
         <service
-            android:name=".service.PollService"
+            android:name="com.tiscali.appmail.service.PollService"
             android:enabled="true" />
 
         <service
-            android:name=".service.RemoteControlService"
+            android:name="com.tiscali.appmail.service.RemoteControlService"
             android:enabled="true"
             android:permission="${applicationId}.permission.REMOTE_CONTROL" />
 
         <service
-            android:name=".service.SleepService"
+            android:name="com.tiscali.appmail.service.SleepService"
             android:enabled="true" />
 
         <service
-            android:name=".service.DatabaseUpgradeService"
+            android:name="com.tiscali.appmail.service.DatabaseUpgradeService"
             android:exported="false" />
 
         <provider
-            android:name=".provider.AttachmentProvider"
+            android:name="com.tiscali.appmail.provider.AttachmentProvider"
             android:authorities="${applicationId}.attachmentprovider"
             android:exported="true"
             android:grantUriPermissions="true"
@@ -435,7 +435,7 @@
         </provider>
 
         <provider
-            android:name=".provider.MessageProvider"
+            android:name="com.tiscali.appmail.provider.MessageProvider"
             android:authorities="${applicationId}.messageprovider"
             android:exported="true"
             android:grantUriPermissions="true"
@@ -444,12 +444,12 @@
             android:writePermission="${applicationId}.permission.DELETE_MESSAGES" />
 
         <provider
-            android:name=".provider.EmailProvider"
+            android:name="com.tiscali.appmail.provider.EmailProvider"
             android:authorities="${applicationId}.provider.email"
             android:exported="false" />
 
         <provider
-            android:name=".provider.DecryptedFileProvider"
+            android:name="com.tiscali.appmail.provider.DecryptedFileProvider"
             android:authorities="${applicationId}.decryptedfileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

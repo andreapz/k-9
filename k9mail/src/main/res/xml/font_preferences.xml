@@ -3,7 +3,7 @@
 <!--
   Make sure to add android:persistent="false" to all preferences to disable saving
   the preference values to SharedPreferences. We use our own storage mechanism for
-  the preferences. See com.fsck.k9.preferences.Storage.
+  the preferences. See tiscaliali.appmail.preferences.Storage.
 
   Also note that every sub-PreferenceScreen needs an "android:key" parameter so the correct screen
   can be displayed after the device has been rotated.
@@ -145,7 +145,7 @@
             android:entryValues="@array/font_values"
             android:dialogTitle="@string/font_size_message_view_additional_headers" />
 
-        <com.fsck.k9.activity.setup.SliderPreference
+        <com.tiscali.appmail.activity.setup.SliderPreference
             android:persistent="false"
             android:key="message_view_content_font_slider"
             android:title="@string/font_size_message_view_content"

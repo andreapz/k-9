@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2008 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2008 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
 <!--
   Make sure to add android:persistent="false" to all preferences to disable saving
   the preference values to SharedPreferences. We use our own storage mechanism for
-  the preferences. See com.fsck.k9.preferences.Storage.
+  the preferences. See tiscaliali.appmail.preferences.Storage.
 
   Also note that every sub-PreferenceScreen needs an "android:key" parameter so the correct screen
   can be displayed after the device has been rotated.
@@ -25,8 +24,7 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory
-        android:key="folder_settings">
+    <PreferenceCategory android:key="folder_settings">
 
     </PreferenceCategory>
 

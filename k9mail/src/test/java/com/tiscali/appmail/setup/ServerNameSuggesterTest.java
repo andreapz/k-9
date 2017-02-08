@@ -1,0 +1,65 @@
+package com.tiscali.appmail.setup;
+
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import com.tiscali.appmail.mail.ServerSettings.Type;
+
+
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE, sdk = 21)
+public class ServerNameSuggesterTest {
+    private ServerNameSuggester serverNameSuggester;
+
+
+    @Before
+    public void setUp() throws Exception {
+        serverNameSuggester = new ServerNameSuggester();
+    }
+
+    @Test
+    public void suggestServerName_forImapServer() throws Exception {
+        Type serverType = Type.IMAP;
+        String domainPart = "example.org";
+
+        String result = serverNameSuggester.suggestServerName(serverType, domainPart);
+
+        assertEquals("imap.example.org", result);
+    }
+
+    @Test
+    public void suggestServerName_forPop3Server() throws Exception {
+        Type serverType = Type.POP3;
+        String domainPart = "example.org";
+
+        String result = serverNameSuggester.suggestServerName(serverType, domainPart);
+
+        assertEquals("pop3.example.org", result);
+    }
+
+    @Test
+    public void suggestServerName_forWebDavServer() throws Exception {
+        Type serverType = Type.WebDAV;
+        String domainPart = "example.org";
+
+        String result = serverNameSuggester.suggestServerName(serverType, domainPart);
+
+        assertEquals("exchange.example.org", result);
+    }
+
+    @Test
+    public void suggestServerName_forSmtpServer() throws Exception {
+        Type serverType = Type.SMTP;
+        String domainPart = "example.org";
+
+        String result = serverNameSuggester.suggestServerName(serverType, domainPart);
+
+        assertEquals("smtp.example.org", result);
+    }
+}

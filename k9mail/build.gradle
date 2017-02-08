@@ -92,8 +92,8 @@ android {
     String VERSION_NAME = "2.0.0"
 
     defaultConfig {
-        applicationId "com.fsck.k9"
-        testApplicationId "com.fsck.k9.tests"
+        applicationId "com.tiscali.appmail"
+        testApplicationId "com.tiscali.appmail.tests"
 
         versionCode VERSION_CODE
         versionName VERSION_NAME
@@ -101,7 +101,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 24
 
-        generatedDensities = ['mdpi', 'hdpi', 'xhdpi']
+        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi']
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
