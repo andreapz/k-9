@@ -253,6 +253,9 @@ public abstract class MediaPresenter
     public void showMedia() {
         mDisplayMode = DisplayMode.MEDIA_VIEW;
         mViewSwitcher.showFirstView();
+        if (mMediaViewFragment != null) {
+            mMediaViewFragment.getTitle();
+        }
     }
 
     private void removeFragment(Fragment fragment) {
@@ -279,7 +282,7 @@ public abstract class MediaPresenter
 
     private void removeDetailFragment() {
         if (mMediaDetailFragment != null) {
-            mMediaDetailFragment.mWebView.loadUrl("about:blank");
+            // mMediaDetailFragment.mWebView.loadUrl("about:blank");
             removeFragment(mMediaDetailFragment);
             mMediaDetailFragment = null;
         }
