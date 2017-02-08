@@ -95,7 +95,7 @@ public abstract class MediaPresenter
     private boolean mIsHomePage;
     private ProgressBar mActionBarProgress;
     private List<String> mWalledGarden = new ArrayList<>();
-    private MediaPresenter.NewsAdapter mNewsAdapter = new NewsAdapter();
+    private MediaAdapter mNewsAdapter = new MediaAdapter();
     private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
 
     private boolean mStarted = false;
@@ -636,7 +636,7 @@ public abstract class MediaPresenter
         }
     }
 
-    public class NewsAdapter extends BaseNavDrawerMenuAdapter {
+    public class MediaAdapter extends BaseNavDrawerMenuAdapter {
 
         private static final int HOME_POSITION = 1;
         // data set
@@ -661,7 +661,7 @@ public abstract class MediaPresenter
             }
         };
 
-        public NewsAdapter() {}
+        public MediaAdapter() {}
 
         public void updateData() {
             mItems.clear();

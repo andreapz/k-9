@@ -24,8 +24,8 @@
             android:id="@+id/actionbar_progress"
             style="?android:attr/indeterminateProgressStyle"
             android:layout_alignParentRight="true"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_marginRight="@dimen/margin_standard_16dp"
             android:visibility="gone" />
 
