@@ -3,6 +3,11 @@ package com.fsck.k9.view;
 
 import java.io.InputStream;
 
+import com.fsck.k9.K9;
+import com.fsck.k9.activity.BrowserActivity;
+import com.fsck.k9.mailstore.AttachmentResolver;
+import com.fsck.k9.view.MessageWebView.OnPageFinishedListener;
+
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -20,18 +25,16 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.fsck.k9.K9;
-import com.fsck.k9.mailstore.AttachmentResolver;
-import com.fsck.k9.view.MessageWebView.OnPageFinishedListener;
-
 
 /**
- * {@link WebViewClient} that intercepts requests for {@code cid:} URIs to load the respective body part.
+ * {@link WebViewClient} that intercepts requests for {@code cid:} URIs to load the respective body
+ * part.
  */
 abstract class K9WebViewClient extends WebViewClient {
     private static final String CID_SCHEME = "cid";
     private static final WebResourceResponse RESULT_DO_NOT_INTERCEPT = null;
-    private static final WebResourceResponse RESULT_DUMMY_RESPONSE = new WebResourceResponse(null, null, null);
+    private static final WebResourceResponse RESULT_DUMMY_RESPONSE =
+            new WebResourceResponse(null, null, null);
     private OnPageFinishedListener onPageFinishedListener;
 
 
@@ -60,8 +63,13 @@ abstract class K9WebViewClient extends WebViewClient {
         }
 
         Context context = webView.getContext();
-        Intent intent = createBrowserViewIntent(uri, context);
-        addActivityFlags(intent);
+
+        Intent intent = new Intent(context, BrowserActivity.class);
+        intent.putExtra(BrowserActivity.EXTRA_URL, url); // Optional parameters
+
+        // OLD VERSION
+        // Intent intent = createBrowserViewIntent(uri, context);
+        // addActivityFlags(intent);
 
         boolean overridingUrlLoading = false;
         try {
@@ -152,7 +160,8 @@ abstract class K9WebViewClient extends WebViewClient {
         }
 
         @Override
-        public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
+        public WebResourceResponse shouldInterceptRequest(WebView webView,
+                WebResourceRequest request) {
             return shouldInterceptRequest(webView, request.getUrl());
         }
 

@@ -154,7 +154,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
 
-//    private Bundle mSavedInstanceState;
+    // private Bundle mSavedInstanceState;
 
     /**
      * {@code true} when the message list was displayed once. This is used in
@@ -450,12 +450,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             Toast.makeText(mContext, "RETURN FRAGMENT", Toast.LENGTH_LONG);
         }
 
-//        if (mSavedInstanceState != null) {
-//            mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
-//        } else {
-            String[] accountUuids = mSearch.getAccountUuids();
-            mAccountUuid = accountUuids[0];
-//        }
+        // if (mSavedInstanceState != null) {
+        // mAccountUuid = mSavedInstanceState.getString(MAIL_ACCOUNT_UUID);
+        // } else {
+        String[] accountUuids = mSearch.getAccountUuids();
+        mAccountUuid = accountUuids[0];
+        // }
 
         mAccount = Preferences.getPreferences(mContext).getAccount(mAccountUuid);
 
@@ -573,14 +573,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
 
-//        if (savedInstanceState != null) {
-//            DisplayMode savedDisplayMode =
-//                    (DisplayMode) savedInstanceState.getSerializable(MAIL_DISPLAY_MODE);
-//            if (savedDisplayMode != null && savedDisplayMode != DisplayMode.SPLIT_VIEW) {
-//                mDisplayMode = savedDisplayMode;
-//                return;
-//            }
-//        }
+        // if (savedInstanceState != null) {
+        // DisplayMode savedDisplayMode =
+        // (DisplayMode) savedInstanceState.getSerializable(MAIL_DISPLAY_MODE);
+        // if (savedDisplayMode != null && savedDisplayMode != DisplayMode.SPLIT_VIEW) {
+        // mDisplayMode = savedDisplayMode;
+        // return;
+        // }
+        // }
 
         if (mMessageViewFragment != null || mMessageReference != null) {
             mDisplayMode = DisplayMode.MESSAGE_VIEW;
@@ -1120,16 +1120,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-//        outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
-//        outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
-//        outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
-//        outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
-//        mSavedInstanceState = outState;
+        // outState.putSerializable(MAIL_DISPLAY_MODE, mDisplayMode);
+        // outState.putBoolean(MAIL_MESSAGE_LIST_WAS_DISPLAYED, mMessageListWasDisplayed);
+        // outState.putInt(MAIL_FIRST_BACKSTACK_ID, mFirstBackStackId);
+        // outState.putString(MAIL_ACCOUNT_UUID, mAccountUuid);
+        // mSavedInstanceState = outState;
     }
 
     @Override
     public void setStartInstanceState(Bundle savedInstanceState) {
-//        mSavedInstanceState = savedInstanceState;
+        // mSavedInstanceState = savedInstanceState;
     }
 
 
@@ -1170,6 +1170,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     // super.onBackPressed();
     // }
     // }
+
 
     /**
      * Handle hotkeys
@@ -2212,6 +2213,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
     }
 
+
     public class AccountsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private static final int HEADER = 0;
@@ -2337,6 +2339,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_add_white_24dp);
                     accountViewHolder.mAccountNameTv.setText(R.string.add_account_action);
                     accountViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+
                         @Override
                         public void onClick(View view) {
                             mClickListener.onAddAccountClick();
@@ -2379,6 +2382,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return position == 0 ? HEADER : ACCOUNT;
         }
     }
+
 
     class MailPresenterHandler extends Handler {
 
