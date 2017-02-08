@@ -282,7 +282,6 @@ public abstract class MediaPresenter
 
     private void removeDetailFragment() {
         if (mMediaDetailFragment != null) {
-            // mMediaDetailFragment.mWebView.loadUrl("about:blank");
             removeFragment(mMediaDetailFragment);
             mMediaDetailFragment = null;
         }
