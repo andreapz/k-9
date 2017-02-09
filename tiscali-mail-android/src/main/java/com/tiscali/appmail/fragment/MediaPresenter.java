@@ -1,6 +1,8 @@
 package com.tiscali.appmail.fragment;
 
 
+import static com.tiscali.appmail.fragment.MediaPresenter.DisplayMode.MEDIA_VIEW;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -187,7 +189,7 @@ public abstract class MediaPresenter
             mMediaViewFragment.setUrl(home);
             mMediaViewFragment.mWebView.setVisibility(View.VISIBLE);
         } else {
-            mMediaViewFragment = MediaFragment.newInstance(home, getType());
+            mMediaViewFragment = MediaFragment.newInstance(home, getType(), true);
         }
 
         FragmentTransaction ft = fragmentManager.beginTransaction();
@@ -200,7 +202,7 @@ public abstract class MediaPresenter
         }
         ft.commit();
 
-        if (mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
+        if (mDisplayMode.equals(MEDIA_VIEW)) {
             setActionBarToggle();
             showMedia();
         } else {
@@ -234,7 +236,7 @@ public abstract class MediaPresenter
         // }
 
         if (mCurrentPage == null) {
-            mDisplayMode = DisplayMode.MEDIA_VIEW;
+            mDisplayMode = MEDIA_VIEW;
         }
     }
 
@@ -251,7 +253,7 @@ public abstract class MediaPresenter
     }
 
     public void showMedia() {
-        mDisplayMode = DisplayMode.MEDIA_VIEW;
+        mDisplayMode = MEDIA_VIEW;
         mViewSwitcher.showFirstView();
         if (mMediaViewFragment != null) {
             mMediaViewFragment.getTitle();
@@ -458,7 +460,7 @@ public abstract class MediaPresenter
     public void detailPageLoad(String url) {
         mCurrentPage = url;
         if (mMediaDetailFragment == null) {
-            MediaFragment fragment = MediaFragment.newInstance(url, getType());
+            MediaFragment fragment = MediaFragment.newInstance(url, getType(), false);
             FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
             ft.replace(R.id.news_detail_container, fragment);
             mMediaDetailFragment = fragment;
@@ -912,10 +914,10 @@ public abstract class MediaPresenter
         mTimeoutRefresh = me.getNews().getRefreshTimeout() * 1000;
         mMeJson = json;
 
-        if (!isInitialized && mDisplayMode == DisplayMode.MEDIA_VIEW) {
+        if (!isInitialized && mDisplayMode == MEDIA_VIEW) {
             mIsHomePage = true;
             mCurrentPage = mMenuItems.get(HOME_POSITION_PRESENTER).getUrl();
-            initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
+            initializeFragments(mCurrentPage);
         }
         if (mListener != null) {
             mWalledGarden =
@@ -924,7 +926,7 @@ public abstract class MediaPresenter
 
         mNewsAdapter.updateData();
 
-        if (mDisplayMode == DisplayMode.MEDIA_VIEW) {
+        if (mDisplayMode == MEDIA_VIEW) {
             if (mMediaViewFragment != null) {
                 mMediaViewFragment.setPageStatus();
             }
