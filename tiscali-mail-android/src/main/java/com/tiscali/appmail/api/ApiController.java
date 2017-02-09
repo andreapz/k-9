@@ -405,6 +405,7 @@ public class ApiController {
                     mAccount.save(mPrefs);
                     TiscaliAccountSetupUserPassword.actionEditUserPasswordSettings(mActivity,
                             mAccount);
+                    mActivity.finish();
                 } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
 
                     Observable<MainConfig> config = getConfig();
