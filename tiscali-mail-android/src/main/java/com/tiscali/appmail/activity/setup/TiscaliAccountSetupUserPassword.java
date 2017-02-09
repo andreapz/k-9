@@ -191,6 +191,7 @@ public class TiscaliAccountSetupUserPassword extends K9Activity implements OnCli
                             usernameEnc + ":" + passwordEnc + ":CRAM_MD5", oldUri.getHost(),
                             oldUri.getPort(), null, null, null);
 
+                    mAccount.setPassword(mPasswordView.getText().toString());
                     mAccount.setTransportUri(uri.toString());
                 } catch (UnsupportedEncodingException enc) {
                     // This really shouldn't happen since the encoding is hardcoded to UTF-8
