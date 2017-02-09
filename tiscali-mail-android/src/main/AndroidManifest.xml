@@ -409,7 +409,7 @@
             </intent-filter>
         </service>
 
-        <service android:name=".service.TiscaliAppFirebaseInstanceIDService">
+        <service android:name="com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
