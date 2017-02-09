@@ -25,7 +25,6 @@ import com.tiscali.appmail.ApplicationComponent;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
-import com.tiscali.appmail.TiscaliAppFirebaseInstanceIDService;
 import com.tiscali.appmail.activity.misc.BottomNavigationViewHelper;
 import com.tiscali.appmail.activity.setup.AccountSetupBasics;
 import com.tiscali.appmail.api.ApiController;
@@ -45,6 +44,7 @@ import com.tiscali.appmail.preferences.StorageEditor;
 import com.tiscali.appmail.preferences.WelcomePreference;
 import com.tiscali.appmail.search.LocalSearch;
 import com.tiscali.appmail.search.SearchSpecification;
+import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
 import com.tiscali.appmail.ui.messageview.MessageViewFragment;
 
 import android.animation.Animator;

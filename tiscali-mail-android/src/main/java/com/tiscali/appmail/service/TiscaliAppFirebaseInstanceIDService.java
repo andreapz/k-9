@@ -1,4 +1,4 @@
-package com.tiscali.appmail;
+package com.tiscali.appmail.service;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
@@ -22,6 +22,7 @@ public class TiscaliAppFirebaseInstanceIDService extends FirebaseInstanceIdServi
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 
         getApplicationContext().sendBroadcast(new Intent(TOKEN_BROADCAST));
+        // TODO send token to server
         storeToken(refreshedToken);
     }
 
