@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.tiscali.appmail.view.ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container_news"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <FrameLayout
+        android:id="@+id/news_view_container"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/news_detail_container"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"></FrameLayout>
+
+</com.tiscali.appmail.view.ViewSwitcher>

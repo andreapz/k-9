@@ -9,8 +9,8 @@ K-9 Mail is an open-source email client for Android.
 
 K-9 Mail can be downloaded from a couple of sources:
 
-- [Google Play](https://play.google.com/store/apps/details?id=com.fsck.k9)
-- [F-Droid](https://f-droid.org/repository/browse/?fdid=com.fsck.k9)
+- [Google Play](https://play.google.com/store/apps/details?id=tiscali.k9)
+- [F-Droid](https://f-droid.org/repository/browse/?fdid=tiscali.k9)
 - [Github Releases](https://github.com/k9mail/k-9/releases)
 - [Amazon Appstore for Android](http://www.amazon.com/dp/B004JK61K0)
 

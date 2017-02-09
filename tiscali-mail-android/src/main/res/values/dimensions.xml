@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_standard_4dp">4dp</dimen>
+    <dimen name="margin_standard_8dp">8dp</dimen>
+    <dimen name="margin_standard_16dp">16dp</dimen>
+    <dimen name="margin_standard_24dp">24dp</dimen>
+    <dimen name="margin_standard_48dp">48dp</dimen>
+    <dimen name="margin_standard_56dp">56dp</dimen>
+    <dimen name="margin_standard_72dp">72dp</dimen>
+
+    <dimen name="text_size_medium">18sp</dimen>
+
+    <dimen name="button_minWidth">100sp</dimen>
+
+    <!-- OnBoarding -->
+    <dimen name="dots_height">30dp</dimen>
+    <dimen name="dots_margin_bottom">20dp</dimen>
+
+
+</resources>

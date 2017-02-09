@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.tiscali.appmail">
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true" />
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+
+    <!-- Needed to mark a contact as contacted -->
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <permission
+        android:name="${applicationId}.permission.READ_ATTACHMENT"
+        android:description="@string/read_attachment_desc"
+        android:label="@string/read_attachment_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <uses-permission android:name="${applicationId}.permission.READ_ATTACHMENT" />
+
+    <permission
+        android:name="${applicationId}.permission.REMOTE_CONTROL"
+        android:description="@string/remote_control_desc"
+        android:label="@string/remote_control_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <uses-permission android:name="${applicationId}.permission.REMOTE_CONTROL" />
+
+    <permission
+        android:name="${applicationId}.permission.READ_MESSAGES"
+        android:description="@string/read_messages_desc"
+        android:label="@string/read_messages_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <uses-permission android:name="${applicationId}.permission.READ_MESSAGES" />
+
+    <permission
+        android:name="${applicationId}.permission.DELETE_MESSAGES"
+        android:description="@string/delete_messages_desc"
+        android:label="@string/delete_messages_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <uses-permission android:name="${applicationId}.permission.DELETE_MESSAGES" />
+
+
+    <application
+        android:name="com.tiscali.appmail.K9"
+        android:allowTaskReparenting="false"
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.K9.Light"
+        android:allowBackup="false"
+        android:hardwareAccelerated="true">
+
+        <meta-data
+            android:name="android.app.default_searchable"
+            android:value="com.fsck.k9.activity.Search" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.NavigationDrawerActivity"
+            android:configChanges="locale|keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.K9.Light.NoActionBar.Base"
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:hardwareAccelerated="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data
+                    android:host="messages"
+                    android:scheme="email" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+
+        <activity android:name="com.tiscali.appmail.activity.CaptivPortalActivity" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.WelcomeActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+
+        <activity
+            android:name="com.tiscali.appmail.activity.Accounts"
+            android:configChanges="locale"
+            android:label="@string/app_name" />
+        <activity
+            android:name="com.tiscali.appmail.activity.BrowserActivity"
+            android:configChanges="orientation|screenSize" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.Prefs"
+            android:configChanges="locale"
+            android:excludeFromRecents="true"
+            android:label="@string/prefs_title"
+            android:taskAffinity="${applicationId}.activity.setup.Prefs" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.WelcomeMessage"
+            android:configChanges="locale"
+            android:label="@string/welcome_message_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.FontSizeSettings"
+            android:configChanges="locale"
+            android:label="@string/font_size_settings_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupBasics"
+            android:configChanges="locale"
+            android:label="@string/account_setup_basics_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupAccountType"
+            android:configChanges="locale"
+            android:label="@string/account_setup_account_type_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupIncoming"
+            android:configChanges="locale"
+            android:label="@string/account_setup_incoming_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupComposition"
+            android:configChanges="locale"
+            android:label="@string/account_settings_composition_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupOutgoing"
+            android:configChanges="locale"
+            android:label="@string/account_setup_outgoing_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupOptions"
+            android:configChanges="locale"
+            android:label="@string/account_setup_options_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupNames"
+            android:configChanges="locale"
+            android:label="@string/account_setup_names_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.ChooseFolder"
+            android:configChanges="locale"
+            android:label="@string/choose_folder_title"
+            android:noHistory="true"
+            android:theme="@style/Theme.K9Dialog" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.ChooseIdentity"
+            android:configChanges="locale"
+            android:label="@string/choose_identity_title"
+            android:theme="@style/Theme.K9Dialog" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.ManageIdentities"
+            android:configChanges="locale"
+            android:label="@string/manage_identities_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.EditIdentity"
+            android:configChanges="locale"
+            android:label="@string/edit_identity_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.NotificationDeleteConfirmation"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- XXX Note: this activity is hacked to ignore config changes,
+             since it doesn't currently handle them correctly in code. -->
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSetupCheckSettings"
+            android:configChanges="keyboardHidden|orientation|locale"
+            android:label="@string/account_setup_check_settings_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.AccountSettings"
+            android:configChanges="locale"
+            android:label="@string/account_settings_title_fmt" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.FolderSettings"
+            android:configChanges="locale"
+            android:label="@string/folder_settings_title"
+            android:theme="@android:style/Theme.Dialog" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.FolderList"
+            android:configChanges="locale"
+            android:uiOptions="splitActionBarWhenNarrow">
+            <intent-filter>
+                <!-- This action is only to allow an entry point for launcher shortcuts -->
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+        <!--<activity-->
+        <!--android:name=".activity.MessageList"-->
+        <!--android:configChanges="locale"-->
+        <!--android:launchMode="singleTop"-->
+        <!--android:uiOptions="splitActionBarWhenNarrow">-->
+        <!--<intent-filter>-->
+        <!--&lt;!&ndash; This action is only to allow an entry point for launcher shortcuts &ndash;&gt;-->
+        <!--<action android:name="android.intent.action.MAIN" />-->
+        <!--</intent-filter>-->
+        <!--<intent-filter>-->
+        <!--<action android:name="android.intent.action.VIEW" />-->
+        <!--<data-->
+        <!--android:host="messages"-->
+        <!--android:scheme="email" />-->
+        <!--<category android:name="android.intent.category.DEFAULT" />-->
+        <!--</intent-filter>-->
+        <!--</activity>-->
+
+        <activity
+            android:name="com.tiscali.appmail.activity.MessageCompose"
+            android:configChanges="locale"
+            android:enabled="false"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.SENDTO" />
+                <data android:scheme="mailto" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <data android:mimeType="*/*" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <data android:mimeType="*/*" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data android:scheme="mailto" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Search Activity - searchable -->
+        <activity
+            android:name="com.tiscali.appmail.activity.Search"
+            android:configChanges="locale"
+            android:label="@string/search_action"
+            android:theme="@style/Theme.K9.Light.NoActionBar.Base"
+            android:uiOptions="splitActionBarWhenNarrow">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+
+        <activity
+            android:name="com.tiscali.appmail.activity.LauncherShortcuts"
+            android:configChanges="locale"
+            android:label="@string/shortcuts_title">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.tiscali.appmail.activity.EmailAddressList"
+            android:configChanges="locale" />
+
+        <activity android:name="com.tiscali.appmail.activity.UnreadWidgetConfiguration">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.tiscali.appmail.activity.UpgradeDatabases"
+            android:label="@string/upgrade_databases_title" />
+
+        <activity
+            android:name="com.tiscali.appmail.activity.setup.TiscaliAccountSetupUserPassword"
+            android:label="@string/account_setup_user_password_title_tiscali"
+            android:configChanges="locale" />
+
+        <receiver
+            android:name="com.tiscali.appmail.service.BootReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.android.sync.SYNC_CONN_STATUS_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.tiscali.appmail.service.RemoteControlReceiver"
+            android:enabled="true"
+            android:permission="${applicationId}.permission.REMOTE_CONTROL">
+            <intent-filter>
+                <action android:name="${applicationId}.K9RemoteControl.set" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="${applicationId}.K9RemoteControl.requestAccounts" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.tiscali.appmail.service.CoreReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.tiscali.appmail.service.StorageReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <!--
+                android.intent.action.MEDIA_MOUNTED
+
+                     * Broadcast Action:  External media is present and mounted at its mount point.
+                     * The path to the mount point for the removed media is contained in the Intent.mData field.
+                     * The Intent contains an extra with name "read-only" and Boolean value to indicate if the
+                     * media was mounted read only.
+
+                 -->
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
+                <!--
+
+                MEDIA_EJECT and MEDIA_UNMOUNTED are not defined here: they have to be dynamically registered
+                otherwise it would make K-9 start at the wrong time
+
+                 -->
+                <data android:scheme="file" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.tiscali.appmail.provider.UnreadWidgetProvider"
+            android:icon="@drawable/icon"
+            android:label="@string/unread_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/unread_widget_info" />
+        </receiver>
+
+        <service
+            android:name="com.tiscali.appmail.service.MailService"
+            android:enabled="true" />
+
+        <service
+            android:name="com.tiscali.appmail.notification.NotificationActionService"
+            android:enabled="true" />
+
+        <service
+            android:name="com.tiscali.appmail.service.PushService"
+            android:enabled="true" />
+
+        <service
+            android:name="com.tiscali.appmail.service.PollService"
+            android:enabled="true" />
+
+        <service
+            android:name="com.tiscali.appmail.service.RemoteControlService"
+            android:enabled="true"
+            android:permission="${applicationId}.permission.REMOTE_CONTROL" />
+
+        <service
+            android:name="com.tiscali.appmail.service.SleepService"
+            android:enabled="true" />
+
+        <service
+            android:name="com.tiscali.appmail.service.DatabaseUpgradeService"
+            android:exported="false" />
+
+        <provider
+            android:name="com.tiscali.appmail.provider.AttachmentProvider"
+            android:authorities="${applicationId}.attachmentprovider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:multiprocess="true"
+            android:readPermission="${applicationId}.permission.READ_ATTACHMENT">
+
+            <meta-data
+                android:name="de.cketti.safecontentresolver.ALLOW_INTERNAL_ACCESS"
+                android:value="true" />
+
+        </provider>
+
+        <provider
+            android:name="com.tiscali.appmail.provider.MessageProvider"
+            android:authorities="${applicationId}.messageprovider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:multiprocess="true"
+            android:readPermission="${applicationId}.permission.READ_MESSAGES"
+            android:writePermission="${applicationId}.permission.DELETE_MESSAGES" />
+
+        <provider
+            android:name="com.tiscali.appmail.provider.EmailProvider"
+            android:authorities="${applicationId}.provider.email"
+            android:exported="false" />
+
+        <provider
+            android:name="com.tiscali.appmail.provider.DecryptedFileProvider"
+            android:authorities="${applicationId}.decryptedfileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/decrypted_file_provider_paths" />
+
+        </provider>
+        <!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="e094d1acf424650decbb7fdfbbec577d78842958" />
+    </application>
+</manifest>
