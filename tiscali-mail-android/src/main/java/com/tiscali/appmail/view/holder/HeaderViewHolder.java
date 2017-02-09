@@ -1,6 +1,7 @@
 package com.tiscali.appmail.view.holder;
 
 import com.tiscali.appmail.R;
+import com.tiscali.appmail.ui.CapitalizedTextView;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -19,6 +20,7 @@ public class HeaderViewHolder extends RecyclerView.ViewHolder {
     public TextView mAccountDisplayNameTv;
     public ImageView mExpandMenuIconIv;
     public RelativeLayout mAccountContainer;
+    public CapitalizedTextView mSectionName;
 
     public HeaderViewHolder(View itemView) {
 
@@ -28,5 +30,6 @@ public class HeaderViewHolder extends RecyclerView.ViewHolder {
         mAccountDisplayNameTv = (TextView) itemView.findViewById(R.id.account_display_name);
         mAccountTv = (TextView) itemView.findViewById(R.id.account);
         mAccountContainer = (RelativeLayout) itemView.findViewById(R.id.account_container);
+        mSectionName = (CapitalizedTextView) itemView.findViewById(R.id.section_name);
     }
 }

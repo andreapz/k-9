@@ -117,6 +117,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     // Used for navigating to next/previous message
     private static final int PREVIOUS = 1;
     private static final int NEXT = 2;
+
+    private static final int MAX_MESSAGES_COUNT = 99;
     private final Activity mContext;
     private final INavigationDrawerActivityListener mListener;
     private Intent mIntent;
@@ -468,6 +470,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         mMailAdapter = new MailAdapter();
         mListener.setDrawerListAdapter(mMailAdapter);
+        String folderName = null;
+        if (mSearch.getFolderNames() != null && mSearch.getFolderNames().size() > 0) {
+            folderName = mSearch.getFolderNames().get(0);
+        }
+
+        mMailAdapter.setSelectedPos(folderName);
 
         mAccountsAdapter = new AccountsAdapter();
     }
@@ -2049,6 +2057,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         private static final int FOLDER = 1;
 
         List<FolderInfoHolder> mItems = new ArrayList<>();
+        private int mSelectedPos = 1; // default inbox
 
         class HeaderMenu extends FolderInfoHolder {
 
@@ -2068,9 +2077,25 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 search.addAllowedFolder(folder.name);
                 search.addAccountUuid(account.getUuid());
                 showFolder(search);
+                setSelectedPos(folder.name);
+                notifyDataSetChanged();
                 mListener.closeDrawer();
             }
         };
+
+        public void setSelectedPos(String folderName) {
+
+            if (folderName == null) {
+                return;
+            }
+
+            for (int i = 0; i < mItems.size(); i++) {
+                FolderInfoHolder folder = mItems.get(i);
+                if (folderName.equals(folder.name)) {
+                    mSelectedPos = i;
+                }
+            }
+        }
 
         public void updateData() {
             mItems.clear();
@@ -2100,11 +2125,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             if (holder instanceof HeaderViewHolder) {
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
                 if (mAccount != null) {
+                    headerViewHolder.mSectionName.setText(mContext.getString(R.string.tab_mail),
+                            TextView.BufferType.NORMAL);
                     headerViewHolder.mAccountTv.setText(mAccount.getEmail());
                     headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
                 }
                 headerViewHolder.mExpandMenuIconIv
-                        .setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+                        .setImageResource(R.drawable.ic_arrow_drop_down_white_24dp);
 
                 headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -2122,9 +2149,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             } else if (holder instanceof FolderViewHolder) {
                 final FolderInfoHolder folder = getItem(position);
                 FolderViewHolder mailViewHolder = (FolderViewHolder) holder;
+                mailViewHolder.itemView.setSelected(mSelectedPos == position);
 
                 // icon
-                mailViewHolder.mFolderIconIv.setImageResource(R.drawable.ic_email_white_24dp);
+                if (mailViewHolder.itemView.isSelected()) {
+                    mailViewHolder.mFolderIconIv.setImageAlpha(255);
+                } else {
+                    mailViewHolder.mFolderIconIv.setImageAlpha(138);
+                }
 
                 // Title
                 if (folder.displayName != null) {
@@ -2141,8 +2173,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                                 + mAccount.getDescription() + ":" + folder.name);
                     }
                 }
-                mailViewHolder.mNewMessageCountTv
-                        .setText(String.format("%d", folder.unreadMessageCount));
+                setWidthForMaxCount(mailViewHolder.mNewMessageCountTv);
+                if (folder.unreadMessageCount <= MAX_MESSAGES_COUNT) {
+                    mailViewHolder.mNewMessageCountTv
+                            .setText(String.format("%d", folder.unreadMessageCount));
+                }
+
                 // new messages icon gone
                 mailViewHolder.mNewMessageCountIconIv.setVisibility(View.GONE);
                 // mailViewHolder.mNewMessageCountIconIv.setBackgroundDrawable(
@@ -2169,8 +2205,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     }
 
                 }
-                mailViewHolder.mFlaggedMessageCountTv
-                        .setText(String.format("%d", folder.flaggedMessageCount));
+                if (folder.flaggedMessageCount <= MAX_MESSAGES_COUNT) {
+                    mailViewHolder.mFlaggedMessageCountTv
+                            .setText(String.format("%d", folder.flaggedMessageCount));
+                } else {
+                    mailViewHolder.mFlaggedMessageCountTv
+                            .setText(String.format("+%d", MAX_MESSAGES_COUNT));
+                }
+
                 mailViewHolder.mFlaggedMessageCountIconIv.setBackgroundDrawable(
                         mAccount.generateColorChip(false, false, false, false, true).drawable());
                 mailViewHolder.mFlaggedMessageCountWrapperV
@@ -2191,6 +2233,15 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     }
                 });
             }
+        }
+
+        private void setWidthForMaxCount(TextView tv) {
+            String maxCount = String.format("+%d", MAX_MESSAGES_COUNT);
+            tv.setText(maxCount);
+            tv.measure(0, 0);
+            ViewGroup.LayoutParams params = tv.getLayoutParams();
+            params.width = tv.getMeasuredWidth();
+            tv.setLayoutParams(params);
         }
 
         @Override
@@ -2330,7 +2381,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
                 }
                 headerViewHolder.mExpandMenuIconIv
-                        .setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+                        .setImageResource(R.drawable.ic_arrow_drop_up_white_24dp);
 
                 headerViewHolder.mAccountContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -2350,7 +2401,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
                 if (position == ADD_ACCOUNT_POSITION) {
                     // icon
-                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_add_white_24dp);
+                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_add_black_24dp);
                     accountViewHolder.mAccountNameTv.setText(R.string.add_account_action);
                     accountViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
 
@@ -2364,7 +2415,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     final Account account = getItem(position);
                     // icon
                     accountViewHolder.mAccountIconIv
-                            .setImageResource(R.drawable.ic_email_white_24dp);
+                            .setImageResource(R.drawable.ic_email_black_24dp);
 
                     // Name
                     if (mAccount.getEmail() != null) {

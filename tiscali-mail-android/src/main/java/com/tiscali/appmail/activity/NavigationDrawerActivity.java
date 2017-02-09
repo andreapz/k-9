@@ -44,6 +44,7 @@ import com.tiscali.appmail.preferences.StorageEditor;
 import com.tiscali.appmail.preferences.WelcomePreference;
 import com.tiscali.appmail.search.LocalSearch;
 import com.tiscali.appmail.search.SearchSpecification;
+import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
 import com.tiscali.appmail.ui.messageview.MessageViewFragment;
 
 import android.animation.Animator;
@@ -487,11 +488,14 @@ public class NavigationDrawerActivity extends K9Activity
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE);
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, intentFilter);
+        registerReceiver(mBroadcastReceiver,
+                new IntentFilter(TiscaliAppFirebaseInstanceIDService.TOKEN_BROADCAST));
     }
 
     @Override
     protected void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        unregisterReceiver(mBroadcastReceiver);
         super.onStop();
 
     }
