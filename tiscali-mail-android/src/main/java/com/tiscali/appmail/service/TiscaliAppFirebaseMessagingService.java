@@ -65,7 +65,8 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         android.support.v4.app.NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_action_compose_dark)
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.notification_icon_new_mail)
                         .setContentTitle("FCM Message").setContentText(messageBody)
                         .setAutoCancel(true).setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
