@@ -70,7 +70,7 @@
 
         <meta-data
             android:name="android.app.default_searchable"
-            android:value="com.fsck.k9.activity.Search" />
+            android:value="com.tiscali.appmail.activity.Search" />
 
         <activity
             android:name="com.tiscali.appmail.activity.NavigationDrawerActivity"
