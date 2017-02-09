@@ -10,6 +10,7 @@ import java.util.concurrent.Executor;
 import com.google.gson.Gson;
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.Preferences;
+import com.tiscali.appmail.activity.setup.TiscaliAccountSetupUserPassword;
 import com.tiscali.appmail.api.model.Authorize;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
@@ -20,7 +21,7 @@ import com.tiscali.appmail.helper.CaptivePortalHelper;
 import com.tiscali.appmail.preferences.Storage;
 import com.tiscali.appmail.preferences.StorageEditor;
 
-import android.content.Context;
+import android.app.Activity;
 import android.util.Log;
 
 import okhttp3.Headers;
@@ -68,7 +69,7 @@ public class ApiController {
     private Authorize mAuthorize;
     private UserLogin mUserLogin;
 
-    private final Context mContext;
+    private final Activity mActivity;
     private final Preferences mPrefs;
     private final StorageEditor mEditor;
     private final Storage mStorage;
@@ -232,9 +233,9 @@ public class ApiController {
     }
 
 
-    public ApiController(Context context) {
-        mContext = context;
-        mPrefs = Preferences.getPreferences(mContext);
+    public ApiController(Activity activity) {
+        mActivity = activity;
+        mPrefs = Preferences.getPreferences(activity);
         mStorage = mPrefs.getStorage();
         mEditor = mStorage.edit();
         List<Account> accounts = mPrefs.getAccounts();
@@ -276,9 +277,9 @@ public class ApiController {
             @Override
             public void onError(Throwable e) {
                 // test for Captive Portal
-                if (CaptivePortalHelper.getInstance(mContext).isCaptivePortalConnection()) {
+                if (CaptivePortalHelper.getInstance(mActivity).isCaptivePortalConnection()) {
                     // show the login activity
-                    CaptivePortalHelper.getInstance(mContext).showLoginWebView();
+                    CaptivePortalHelper.getInstance(mActivity).showLoginWebView();
                 }
                 Log.i(TAG, "MainConfig ERROR: " + e);
             }
@@ -402,6 +403,8 @@ public class ApiController {
                 } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_403) {
                     mAccount.setPassword("");
                     mAccount.save(mPrefs);
+                    TiscaliAccountSetupUserPassword.actionEditUserPasswordSettings(mActivity,
+                            mAccount);
                 } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
 
                     Observable<MainConfig> config = getConfig();
