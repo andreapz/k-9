@@ -18,7 +18,7 @@ import android.util.Log;
 /**
  * Created by thomascastangia on 09/02/17.
  */
-public class TiscaliFirebaseMessagingService extends FirebaseMessagingService {
+public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FBMessagingService";
 
     /**

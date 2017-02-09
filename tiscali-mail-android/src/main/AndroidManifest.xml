@@ -403,13 +403,13 @@
             android:name="com.tiscali.appmail.service.PushService"
             android:enabled="true" />
 
-        <service android:name="com.tiscali.appmail.service.TiscaliFirebaseMessagingService">
+        <service android:name="com.tiscali.appmail.service.TiscaliAppFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
-        <service android:name=".TiscaliFirebaseInstanceIDService">
+        <service android:name=".TiscaliAppFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>

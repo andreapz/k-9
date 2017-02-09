@@ -10,7 +10,7 @@ import android.util.Log;
 /**
  * Created by thomascastangia on 09/02/17.
  */
-public class TiscaliFirebaseInstanceIDService extends FirebaseInstanceIdService {
+public class TiscaliAppFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     private static final String TAG = "FBMsgServiceID";
     public static final String TOKEN_BROADCAST = "token_broadcast";
