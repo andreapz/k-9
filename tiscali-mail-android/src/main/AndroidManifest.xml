@@ -402,6 +402,11 @@
         <service
             android:name="com.tiscali.appmail.service.PushService"
             android:enabled="true" />
+        <service android:name="com.tiscali.appmail.service.TiscaliFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <service
             android:name="com.tiscali.appmail.service.PollService"
