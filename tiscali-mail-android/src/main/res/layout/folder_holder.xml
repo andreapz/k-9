@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/item_container"
-    android:padding="16dp"
+    android:paddingLeft="@dimen/margin_standard_16dp"
+    android:paddingRight="@dimen/margin_standard_16dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="@dimen/margin_standard_48dp">
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:id="@+id/folder_icon"
+        android:src="@drawable/mail_nav_drawer_list_item_icon"
         android:layout_alignParentLeft="true" />
 
     <TextView
         android:id="@+id/folder_name"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
+        style="@style/RobotoMedium14"
+        android:textColor="@drawable/nav_drawer_list_item_text_color"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:layout_marginLeft="@dimen/margin_standard_56dp"
         android:gravity="center_vertical"
+        android:ellipsize="end"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
@@ -33,12 +35,12 @@
         android:layout_toLeftOf="@+id/new_message_count_wrapper"
         android:gravity="center_vertical"
         android:clickable="true"
-        android:layout_marginRight="@dimen/margin_standard_8dp" >
+        android:layout_marginRight="@dimen/margin_standard_8dp">
 
         <ImageView
             android:id="@+id/flagged_message_count_icon"
-            android:layout_width="@dimen/margin_standard_24dp"
-            android:layout_height="@dimen/margin_standard_24dp" />
+            android:layout_width="@dimen/margin_standard_16dp"
+            android:layout_height="@dimen/margin_standard_16dp" />
 
         <TextView
             android:id="@+id/flagged_message_count"
@@ -46,9 +48,9 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:gravity="center_vertical" />
+            style="@style/RobotoMedium14"
+            android:textColor="@drawable/nav_drawer_list_item_text_color"
+            android:gravity="right|center_vertical" />
 
     </LinearLayout>
 
@@ -64,8 +66,8 @@
 
         <ImageView
             android:id="@+id/new_message_count_icon"
-            android:layout_width="@dimen/margin_standard_24dp"
-            android:layout_height="@dimen/margin_standard_24dp"/>
+            android:layout_width="@dimen/margin_standard_16dp"
+            android:layout_height="@dimen/margin_standard_16dp" />
 
         <TextView
             android:id="@+id/new_message_count"
@@ -73,9 +75,9 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:gravity="center_vertical" />
+            style="@style/RobotoMedium14"
+            android:textColor="@drawable/nav_drawer_list_item_text_color"
+            android:gravity="right|center_vertical" />
 
     </LinearLayout>
 

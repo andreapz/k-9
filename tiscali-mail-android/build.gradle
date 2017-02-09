@@ -101,7 +101,8 @@ android {
         minSdkVersion 15
         targetSdkVersion 24
 
-        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi']
+
+        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

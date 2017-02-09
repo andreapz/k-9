@@ -54,11 +54,11 @@ public abstract class BaseNavDrawerMenuAdapter
     }
 
     protected int getCollapseIconResource() {
-        return R.drawable.ic_expand_less_white_24dp;
+        return R.drawable.ic_expand_less_black_24dp;
     }
 
     protected int getExpandIconResource() {
-        return R.drawable.ic_expand_more_white_24dp;
+        return R.drawable.ic_expand_more_black_24dp;
     }
 
     // abstract methods
