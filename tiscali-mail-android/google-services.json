@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "795481775220",
+    "firebase_url": "https://tiscali-mail-android.firebaseio.com",
+    "project_id": "tiscali-mail-android",
+    "storage_bucket": "tiscali-mail-android.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795481775220:android:a4bde7beb8598ff7",
+        "android_client_info": {
+          "package_name": "com.tiscali.appmail.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "795481775220-62t4qm823rc77j09sn304rk1r8toje4o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB81D66whE0unu_ZMMhW6oGqNI7nkU2JsM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "795481775220-62t4qm823rc77j09sn304rk1r8toje4o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
