@@ -1091,7 +1091,13 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                         "Scroll f:" + firstVisibleItem + " v:" + visibleItemCount + " t:"
                                 + totalItemCount + " last:" + mLastFirstVisibleItem + " visible:"
                                 + mIsBottomNavVisible);
-                if (firstVisibleItem > mLastFirstVisibleItem) {
+                if (firstVisibleItem == 0) {
+                    mIsBottomNavVisible = true;
+                    mFragmentListener.showBottomNav();
+                } else if (firstVisibleItem + visibleItemCount == totalItemCount) {
+                    mIsBottomNavVisible = false;
+                    mFragmentListener.hideBottomNav();
+                } else if (firstVisibleItem > mLastFirstVisibleItem) {
                     if (mIsBottomNavVisible) {
                         mIsBottomNavVisible = false;
                         mFragmentListener.hideBottomNav();
@@ -1101,11 +1107,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                         mIsBottomNavVisible = true;
                         mFragmentListener.showBottomNav();
                     }
-                }
-
-                if (firstVisibleItem + visibleItemCount == totalItemCount) {
-                    mIsBottomNavVisible = false;
-                    mFragmentListener.hideBottomNav();
                 }
 
                 mLastFirstVisibleItem = firstVisibleItem;
