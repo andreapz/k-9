@@ -1,9 +1,7 @@
 package com.tiscali.appmail.view.holder;
 
 import com.tiscali.appmail.R;
-
-import com.fsck.k9.R;
-import com.fsck.k9.ui.CapitalizedTextView;
+import com.tiscali.appmail.ui.CapitalizedTextView;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

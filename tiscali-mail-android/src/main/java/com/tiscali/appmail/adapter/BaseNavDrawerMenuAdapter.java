@@ -4,10 +4,6 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.view.holder.HeaderViewHolder;
 import com.tiscali.appmail.view.holder.ItemViewHolder;
 
-import com.fsck.k9.R;
-import com.fsck.k9.view.holder.HeaderViewHolder;
-import com.fsck.k9.view.holder.ItemViewHolder;
-
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
