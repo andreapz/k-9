@@ -111,6 +111,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
@@ -160,7 +161,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             Arrays.copyOf(THREADED_PROJECTION, THREAD_COUNT_COLUMN);
 
 
-
     public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay,
             boolean threadedList) {
         MessageListFragment fragment = new MessageListFragment();
@@ -171,7 +171,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         fragment.setArguments(args);
         return fragment;
     }
-
 
 
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
@@ -305,12 +304,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     /**
      * Stores the unique ID of the message the context menu was opened for.
-     *
+     * <p>
      * We have to save this because the message list might change between the time the menu was
      * opened and when the user clicks on a menu item. When this happens the 'adapter position' that
      * is accessible via the {@code ContextMenu} object might correspond to another list item and we
      * would end up using/modifying the wrong message.
-     *
+     * <p>
      * The value of this field is {@code 0} when no context menu is currently open.
      */
     private long mContextMenuUniqueId = 0;
@@ -320,12 +319,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     /**
      * This class is used to run operations that modify UI elements in the UI thread.
-     *
+     * <p>
      * <p>
      * We are using convenience methods that add a {@link android.os.Message} instance or a
      * {@link Runnable} to the message queue.
      * </p>
-     *
+     * <p>
      * <p>
      * <strong>Note:</strong> If you add a method to this class make sure you don't accidentally
      * perform the operation in the calling thread.
@@ -1076,6 +1075,42 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mListView.setScrollingCacheEnabled(false);
         mListView.setOnItemClickListener(this);
 
+        mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public boolean mIsBottomNavVisible = false;
+            public int mLastFirstVisibleItem = 1;
+
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int state) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int firstVisibleItem,
+                    int visibleItemCount, int totalItemCount) {
+                Log.i("APZ",
+                        "Scroll f:" + firstVisibleItem + " v:" + visibleItemCount + " t:"
+                                + totalItemCount + " last:" + mLastFirstVisibleItem + " visible:"
+                                + mIsBottomNavVisible);
+                if (firstVisibleItem > mLastFirstVisibleItem) {
+                    if (mIsBottomNavVisible) {
+                        mIsBottomNavVisible = false;
+                        mFragmentListener.hideBottomNav();
+                    }
+                } else if (firstVisibleItem < mLastFirstVisibleItem) {
+                    if (!mIsBottomNavVisible) {
+                        mIsBottomNavVisible = true;
+                        mFragmentListener.showBottomNav();
+                    }
+                }
+
+                if (firstVisibleItem + visibleItemCount == totalItemCount) {
+                    mIsBottomNavVisible = false;
+                    mFragmentListener.hideBottomNav();
+                }
+
+                mLastFirstVisibleItem = firstVisibleItem;
+            }
+        });
         registerForContextMenu(mListView);
     }
 
@@ -1832,11 +1867,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
             holder.threadCount = (TextView) view.findViewById(R.id.thread_count);
             mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject()); // thread
-                                                                                                // count
-                                                                                                // is
-                                                                                                // next
-                                                                                                // to
-                                                                                                // subject
+            // count
+            // is
+            // next
+            // to
+            // subject
             view.findViewById(R.id.selected_checkbox_wrapper)
                     .setVisibility((mCheckboxes) ? View.VISIBLE : View.GONE);
 
@@ -2438,7 +2473,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      *
      * @param requestCode If {@code >= 0}, this code will be returned in {@code onActivityResult()}
      *        when the activity exits.
-     *
      * @see #startActivityForResult(Intent, int)
      */
     private void displayFolderChoice(int requestCode, String sourceFolderName, String accountUuid,
@@ -2533,7 +2567,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      *
      * @param messages The messages to copy or move. Never {@code null}.
      * @param operation The type of operation to perform. Never {@code null}.
-     *
      * @return {@code true}, if operation is possible.
      */
     private boolean checkCopyOrMovePossible(final List<MessageReference> messages,
@@ -2932,7 +2965,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 Log.i(K9.LOG_TAG, "Remote search in progress, attempting to abort...");
                 // Canceling the future stops any message fetches in progress.
                 final boolean cancelSuccess = mRemoteSearchFuture.cancel(true); // mayInterruptIfRunning
-                                                                                // = true
+                // = true
                 if (!cancelSuccess) {
                     Log.e(K9.LOG_TAG, "Could not cancel remote search future.");
                 }
@@ -3085,6 +3118,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         void updateMenu();
 
         void setActionBarToggle();
+
+        void showBottomNav();
+
+        void hideBottomNav();
     }
 
     public interface MessageListFragmentGetListener {
@@ -3524,7 +3561,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     /**
      * Recalculates the selection count.
-     *
+     * <p>
      * <p>
      * For non-threaded lists this is simply the number of visibly selected messages. If threaded
      * view is enabled this method counts the number of messages in the selected threads.
@@ -3565,7 +3602,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     /**
      * Mark a message as 'active'.
-     *
+     * <p>
      * <p>
      * The active message is the one currently displayed in the message view portion of the split
      * view.

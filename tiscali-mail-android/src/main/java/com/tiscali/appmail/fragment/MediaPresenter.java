@@ -993,4 +993,18 @@ public abstract class MediaPresenter
         return visibilityItems;
 
     }
+
+    @Override
+    public void showBottomNav() {
+        if (mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).showBottomNav();
+        }
+    }
+
+    @Override
+    public void hideBottomNav() {
+        if (mContext instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mContext).hideBottomNav();
+        }
+    }
 }

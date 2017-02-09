@@ -23,6 +23,10 @@ public interface INavigationDrawerActivityListener {
 
     void setDrawerEnable(boolean isEnabled);
 
+    void showBottomNav();
+
+    void hideBottomNav();
+
     ApiController getApiController();
 
     void showInformations();
