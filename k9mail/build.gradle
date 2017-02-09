@@ -94,7 +94,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 24
 
-        generatedDensities = ['mdpi', 'hdpi', 'xhdpi']
+        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -116,7 +116,7 @@ android {
 
                     // apk file names
                     if (output.outputFile.name.endsWith(".apk")) {
-                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc" + K9_VERSION_NAME +  ".apk")
+                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc" + K9_VERSION_NAME + ".apk")
                     }
                 }
             }

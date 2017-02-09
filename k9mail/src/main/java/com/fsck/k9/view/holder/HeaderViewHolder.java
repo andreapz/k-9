@@ -1,12 +1,13 @@
 package com.fsck.k9.view.holder;
 
+import com.fsck.k9.R;
+import com.fsck.k9.ui.CapitalizedTextView;
+
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.fsck.k9.R;
 
 /**
  * Created by andreaputzu on 21/12/16.
@@ -19,6 +20,7 @@ public class HeaderViewHolder extends RecyclerView.ViewHolder {
     public TextView mAccountDisplayNameTv;
     public ImageView mExpandMenuIconIv;
     public RelativeLayout mAccountContainer;
+    public CapitalizedTextView mSectionName;
 
     public HeaderViewHolder(View itemView) {
 
@@ -28,5 +30,6 @@ public class HeaderViewHolder extends RecyclerView.ViewHolder {
         mAccountDisplayNameTv = (TextView) itemView.findViewById(R.id.account_display_name);
         mAccountTv = (TextView) itemView.findViewById(R.id.account);
         mAccountContainer = (RelativeLayout) itemView.findViewById(R.id.account_container);
+        mSectionName = (CapitalizedTextView) itemView.findViewById(R.id.section_name);
     }
 }

@@ -643,6 +643,7 @@ public abstract class MediaPresenter
         private Map<TiscaliMenuItem, Integer> mDepth = new HashMap<>();
         private TiscaliMenuItem mRoot = new TiscaliMenuItem();
         private MenuHeader mMenuHeader = new MenuHeader();
+        private int mSelectedPos = 1; // default first element below header
 
         TiscaliMenuClickListener mClickListener = new TiscaliMenuClickListener() {
             @Override
@@ -660,6 +661,20 @@ public abstract class MediaPresenter
         };
 
         public NewsAdapter() {}
+
+        public void setSelectedPos(String sectionId) {
+
+            if (sectionId == null) {
+                return;
+            }
+
+            for (int i = 0; i < mItems.size(); i++) {
+                TiscaliMenuItem menuItem = mItems.get(i);
+                if (sectionId.equals(menuItem.getSectionId())) {
+                    mSelectedPos = i;
+                }
+            }
+        }
 
         public void updateData() {
             mItems.clear();
@@ -750,10 +765,23 @@ public abstract class MediaPresenter
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             if (holder instanceof HeaderViewHolder) {
-                // TODO
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
-                headerViewHolder.mAccountTv.setVisibility(View.VISIBLE);
-                headerViewHolder.mAccountTv.setText("Name Surname");
+                String sectionName = null;
+                switch (getType()) {
+                    case NEWS:
+                        sectionName = mContext.getString(R.string.tab_news);
+                        break;
+                    case VIDEO:
+                        sectionName = mContext.getString(R.string.tab_video);
+                        break;
+                    case OFFERS:
+                        sectionName = mContext.getString(R.string.tab_offers);
+                        break;
+                }
+                if (sectionName != null) {
+                    headerViewHolder.mSectionName.setText(sectionName, TextView.BufferType.NORMAL);
+                }
+                headerViewHolder.mAccountContainer.setVisibility(View.GONE);
 
                 headerViewHolder.mSettingsIv.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -764,15 +792,29 @@ public abstract class MediaPresenter
             } else if (holder instanceof ItemViewHolder) {
                 final TiscaliMenuItem item = getItem(position);
                 ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
+                itemViewHolder.itemView.setSelected(mSelectedPos == position);
 
+                RelativeLayout.LayoutParams params =
+                        (RelativeLayout.LayoutParams) itemViewHolder.mItemTitleTv.getLayoutParams();
+                int materialMarginLeft =
+                        mContext.getResources().getDimensionPixelSize(R.dimen.margin_standard_56dp);
                 // Icon
                 if (item.getIco() != null) {
                     itemViewHolder.mItemIconIv.setVisibility(View.VISIBLE);
+                    if (itemViewHolder.itemView.isSelected()) {
+                        itemViewHolder.mItemIconIv.setImageAlpha(255);
+                    } else {
+                        itemViewHolder.mItemIconIv.setImageAlpha(138);
+                    }
                     Glide.with(mContext).load(item.getIco()).into(itemViewHolder.mItemIconIv);
-
                 } else {
                     itemViewHolder.mItemIconIv.setVisibility(View.GONE);
+                    materialMarginLeft = 0;
                 }
+                params.setMargins(materialMarginLeft, params.topMargin, params.rightMargin,
+                        params.bottomMargin);
+                itemViewHolder.mItemTitleTv.setLayoutParams(params);
+
                 if (position == HOME_POSITION) {
                     if (Type.NEWS == getType()) {
                         itemViewHolder.mItemActionTv.setVisibility(View.VISIBLE);
@@ -787,8 +829,10 @@ public abstract class MediaPresenter
                     } else {
                         itemViewHolder.mItemActionTv.setVisibility(View.GONE);
                     }
-
+                } else {
+                    itemViewHolder.mItemActionTv.setVisibility(View.GONE);
                 }
+
                 // add additionally left margin depending on depth
                 if (itemViewHolder.mItemContainerRl
                         .getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
@@ -831,12 +875,13 @@ public abstract class MediaPresenter
                                 // isCollapsed
                                 addSubTree(item, item.getSections(), position);
                             }
-                            notifyDataSetChanged();
                             openSection(item.getUrl(),
                                     item.equals(mItems.get(HOME_POSITION_ADAPTER)));
                         } else {
                             mClickListener.onMenuClick(item);
                         }
+                        setSelectedPos(item.getSectionId());
+                        notifyDataSetChanged();
                     }
                 });
             }
