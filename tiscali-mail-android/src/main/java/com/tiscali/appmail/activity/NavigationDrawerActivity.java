@@ -25,6 +25,7 @@ import com.tiscali.appmail.ApplicationComponent;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
+import com.tiscali.appmail.TiscaliFirebaseInstanceIDService;
 import com.tiscali.appmail.activity.misc.BottomNavigationViewHelper;
 import com.tiscali.appmail.activity.setup.AccountSetupBasics;
 import com.tiscali.appmail.api.ApiController;
@@ -487,11 +488,14 @@ public class NavigationDrawerActivity extends K9Activity
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE);
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, intentFilter);
+        registerReceiver(mBroadcastReceiver,
+                new IntentFilter(TiscaliFirebaseInstanceIDService.TOKEN_BROADCAST));
     }
 
     @Override
     protected void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        unregisterReceiver(mBroadcastReceiver);
         super.onStop();
 
     }
