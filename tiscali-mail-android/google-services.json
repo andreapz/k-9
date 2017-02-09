@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:795481775220:android:a4bde7beb8598ff7",
+        "mobilesdk_app_id": "1:795481775220:android:a1c8b9a966dc1e64",
         "android_client_info": {
-          "package_name": "com.tiscali.appmail.debug"
+          "package_name": "com.tiscali.appmail"
         }
       },
       "oauth_client": [
