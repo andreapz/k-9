@@ -92,8 +92,8 @@ android {
     int K9_VERSION_CODE = 23113
     String K9_VERSION_NAME = '5.114'
 
-    int VERSION_CODE = 201
-    String VERSION_NAME = "2.0.1"
+    int VERSION_CODE = 202
+    String VERSION_NAME = "2.0.2"
 
     defaultConfig {
         applicationId "com.tiscali.appmail"
