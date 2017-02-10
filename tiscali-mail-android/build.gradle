@@ -49,7 +49,6 @@ dependencies {
 //    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 //    compile 'io.reactivex.rxjava2:rxjava:2.0.4'
 
-
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.mockito:mockito-core:${mockitoVersion}"

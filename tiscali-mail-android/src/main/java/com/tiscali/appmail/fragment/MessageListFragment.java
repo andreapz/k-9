@@ -160,7 +160,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private static final String[] PROJECTION =
             Arrays.copyOf(THREADED_PROJECTION, THREAD_COUNT_COLUMN);
 
-
     public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay,
             boolean threadedList) {
         MessageListFragment fragment = new MessageListFragment();
@@ -1046,10 +1045,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             // "Pull to refresh"
             mPullToRefreshView
                     .setOnRefreshListener(new PullToRefreshBase.OnRefreshListener<ListView>() {
+
                         @Override
                         public void onRefresh(PullToRefreshBase<ListView> refreshView) {
                             checkMail();
                         }
+
                     });
         }
 
@@ -1793,7 +1794,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
 
-    class MessageListAdapter extends CursorAdapter {
+    public class MessageListAdapter extends CursorAdapter {
 
         private Drawable mAttachmentIcon;
         private Drawable mForwardedIcon;
