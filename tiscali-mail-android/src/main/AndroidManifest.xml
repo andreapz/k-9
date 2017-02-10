@@ -214,15 +214,15 @@
             android:label="@string/folder_settings_title"
             android:theme="@android:style/Theme.Dialog" />
 
-        <activity
-            android:name="com.tiscali.appmail.activity.FolderList"
-            android:configChanges="locale"
-            android:uiOptions="splitActionBarWhenNarrow">
-            <intent-filter>
-                <!-- This action is only to allow an entry point for launcher shortcuts -->
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
+        <!--<activity-->
+        <!--android:name="com.tiscali.appmail.activity.FolderList"-->
+        <!--android:configChanges="locale"-->
+        <!--android:uiOptions="splitActionBarWhenNarrow">-->
+        <!--<intent-filter>-->
+        <!--&lt;!&ndash; This action is only to allow an entry point for launcher shortcuts &ndash;&gt;-->
+        <!--<action android:name="android.intent.action.MAIN" />-->
+        <!--</intent-filter>-->
+        <!--</activity>-->
 
         <!--<activity-->
         <!--android:name=".activity.MessageList"-->
