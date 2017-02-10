@@ -54,8 +54,9 @@ public class Migrations {
             case 48:
                 MigrationTo49.createMsgCompositeIndex(db);
             case 49:
-                MigrationTo50.foldersAddNotifyClassColumn(db, migrationsHelper);
             case 50:
+                // in old tiscali mail version notify_class not created
+                MigrationTo50.foldersAddNotifyClassColumn(db, migrationsHelper);
                 MigrationTo51.db51MigrateMessageFormat(db, migrationsHelper);
             case 51:
                 MigrationTo52.addMoreMessagesColumnToFoldersTable(db);

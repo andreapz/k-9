@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 class MigrationTo52 {
     public static void addMoreMessagesColumnToFoldersTable(SQLiteDatabase db) {
-        db.execSQL("ALTER TABLE folders ADD more_messages TEXT default \"unknown\"");
+        // old tiscali mail version already include this change
+        // db.execSQL("ALTER TABLE folders ADD more_messages TEXT default \"unknown\"");
     }
 }

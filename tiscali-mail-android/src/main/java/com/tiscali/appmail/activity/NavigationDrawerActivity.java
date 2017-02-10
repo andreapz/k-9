@@ -299,6 +299,11 @@ public class NavigationDrawerActivity extends K9Activity
             return;
         }
 
+        if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
+            finish();
+            return;
+        }
+
         String accountUUid = intent.getStringExtra(EXTRA_ACCOUNT);
         Intent mailIntent;
         Account account = null;
@@ -324,11 +329,6 @@ public class NavigationDrawerActivity extends K9Activity
 
         if (mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
-        }
-
-        if (UpgradeDatabases.actionUpgradeDatabases(this, intent)) {
-            finish();
-            return;
         }
 
         setContentView(R.layout.activity_navigation_drawer);
