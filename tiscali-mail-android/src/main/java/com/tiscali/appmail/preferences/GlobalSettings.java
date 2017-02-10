@@ -55,7 +55,7 @@ public class GlobalSettings {
                         .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)))));
         s.put("backgroundOperations", Settings
                 .versions(new V(1, new EnumSetting<K9.BACKGROUND_OPS>(K9.BACKGROUND_OPS.class,
-                        K9.BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC))));
+                        K9.BACKGROUND_OPS.ALWAYS))));
         s.put("changeRegisteredNameColor", Settings.versions(new V(1, new BooleanSetting(false))));
         s.put("confirmDelete", Settings.versions(new V(1, new BooleanSetting(false))));
         s.put("confirmDeleteStarred", Settings.versions(new V(2, new BooleanSetting(false))));

@@ -112,7 +112,7 @@ public class K9 extends Application {
 
     private static final FontSizes fontSizes = new FontSizes();
 
-    private static BACKGROUND_OPS backgroundOps = BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC;
+    private static BACKGROUND_OPS backgroundOps = BACKGROUND_OPS.ALWAYS;
     /**
      * Some log messages can be sent to a file, so that the logs can be read using unprivileged
      * access (eg. Terminal Emulator) on the phone, without adb. Set to null to disable
@@ -673,7 +673,7 @@ public class K9 extends Application {
         mMeasureAccounts = storage.getBoolean("measureAccounts", true);
         mCountSearchMessages = storage.getBoolean("countSearchMessages", true);
         mHideSpecialAccounts = storage.getBoolean("hideSpecialAccounts", false);
-        mMessageListSenderAboveSubject = storage.getBoolean("messageListSenderAboveSubject", false);
+        mMessageListSenderAboveSubject = storage.getBoolean("messageListSenderAboveSubject", true);
         // mMessageListCheckboxes = storage.getBoolean("messageListCheckboxes", false);
         mMessageListStars = storage.getBoolean("messageListStars", true);
         mMessageListPreviewLines = storage.getInt("messageListPreviewLines", 2);
@@ -749,10 +749,10 @@ public class K9 extends Application {
         fontSizes.load(storage);
 
         try {
-            setBackgroundOps(BACKGROUND_OPS.valueOf(storage.getString("backgroundOperations",
-                    BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC.name())));
+            setBackgroundOps(BACKGROUND_OPS.valueOf(
+                    storage.getString("backgroundOperations", BACKGROUND_OPS.ALWAYS.name())));
         } catch (Exception e) {
-            setBackgroundOps(BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC);
+            setBackgroundOps(BACKGROUND_OPS.ALWAYS);
         }
 
         // sColorizeMissingContactPictures = storage.getBoolean("colorizeMissingContactPictures",
