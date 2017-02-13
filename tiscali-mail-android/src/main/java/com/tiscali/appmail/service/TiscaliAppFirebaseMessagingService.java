@@ -1,6 +1,5 @@
 package com.tiscali.appmail.service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -56,9 +55,9 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
         }
 
         // TEST
-        Map<String, String> data = new HashMap<String, String>();
-        data.put(NOTIFICATION_SECTION, NOTIFICATION_SECTION_NEWS);
-        data.put(NOTIFICATION_MESSAGE, "ciao");
+        // Map<String, String> data = new HashMap<String, String>();
+        // data.put(NOTIFICATION_SECTION, NOTIFICATION_SECTION_NEWS);
+        // data.put(NOTIFICATION_MESSAGE, "ciao");
         // detailtest
         // data.put(NOTIFICATION_URL, "http://www.tiscali.it");
         // // home test
@@ -66,9 +65,9 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
         // // ultimora test
         // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/ultimora/");
         // section internal home
-        data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/regioni/liguria/");
-
-        sendNotification(remoteMessage.getNotification().getBody(), data);
+        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/regioni/liguria/");
+        //
+        // sendNotification(remoteMessage.getNotification().getBody(), data);
         // FINE TEST
 
 

@@ -1088,10 +1088,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             @Override
             public void onScroll(AbsListView absListView, int firstVisibleItem,
                     int visibleItemCount, int totalItemCount) {
-                Log.i("APZ",
-                        "Scroll f:" + firstVisibleItem + " v:" + visibleItemCount + " t:"
-                                + totalItemCount + " last:" + mLastFirstVisibleItem + " visible:"
-                                + mIsBottomNavVisible);
                 if (firstVisibleItem == 0) {
                     mIsBottomNavVisible = true;
                     mFragmentListener.showBottomNav();

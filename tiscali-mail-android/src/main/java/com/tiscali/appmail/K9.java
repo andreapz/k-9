@@ -93,7 +93,7 @@ public class K9 extends Application {
 
     /**
      * This will be {@code true} once the initialization is complete and {@link #notifyObservers()}
-     * was called. Afterwards calls to
+     * was called. Afterwards calls to was called. Afterwards calls to
      * {@link #registerApplicationAware(com.tiscali.appmail.K9.ApplicationAware)} will immediately
      * call {@link com.tiscali.appmail.K9.ApplicationAware#initializeComponent(K9)} for the supplied
      * argument.
@@ -150,6 +150,8 @@ public class K9 extends Application {
 
     public static final String ERROR_FOLDER_NAME = "K9mail-errors";
 
+    public static final int DEFAULT_MAIL_PREVIEW_LINES = 2;
+
     /**
      * A reference to the {@link SharedPreferences} used for caching the last known database
      * version.
@@ -201,7 +203,7 @@ public class K9 extends Application {
 
     private static boolean mMessageListCheckboxes = true;
     private static boolean mMessageListStars = true;
-    private static int mMessageListPreviewLines = 3;
+    private static int mMessageListPreviewLines = DEFAULT_MAIL_PREVIEW_LINES;
 
     private static boolean mShowCorrespondentNames = true;
     private static boolean mMessageListSenderAboveSubject = true;
@@ -297,7 +299,6 @@ public class K9 extends Application {
     public static final int MAIL_SERVICE_WAKE_LOCK_TIMEOUT = 60000;
 
     public static final int BOOT_RECEIVER_WAKE_LOCK_TIMEOUT = 60000;
-
 
     public static class Intents {
 
@@ -676,7 +677,8 @@ public class K9 extends Application {
         mMessageListSenderAboveSubject = storage.getBoolean("messageListSenderAboveSubject", true);
         // mMessageListCheckboxes = storage.getBoolean("messageListCheckboxes", false);
         mMessageListStars = storage.getBoolean("messageListStars", true);
-        mMessageListPreviewLines = storage.getInt("messageListPreviewLines", 2);
+        mMessageListPreviewLines =
+                storage.getInt("messageListPreviewLines", DEFAULT_MAIL_PREVIEW_LINES);
 
         mAutofitWidth = storage.getBoolean("autofitWidth", true);
 

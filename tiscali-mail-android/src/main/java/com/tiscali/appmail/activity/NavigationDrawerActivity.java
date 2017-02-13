@@ -27,6 +27,7 @@ import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.misc.BottomNavigationViewHelper;
 import com.tiscali.appmail.activity.setup.AccountSetupBasics;
+import com.tiscali.appmail.activity.setup.migrations.SettingsMigrations;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
@@ -282,6 +283,7 @@ public class NavigationDrawerActivity extends K9Activity
         super.onCreate(savedInstanceState);
 
         Preferences pref = Preferences.getPreferences(this);
+
         // TEST
         NetworkHelper.getInstance(this);
         List<Account> accounts = pref.getAccounts();
@@ -327,6 +329,8 @@ public class NavigationDrawerActivity extends K9Activity
             mailIntent = getMailIntent(account);
         }
 
+        // upgrade settings from old Tiscali Mail to new Tiscali.it
+        SettingsMigrations.upgradeSettings(pref, account);
         updateAccount(account);
 
         if (mNewsPresenter == null) {

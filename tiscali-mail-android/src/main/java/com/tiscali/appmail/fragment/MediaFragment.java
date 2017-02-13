@@ -181,7 +181,6 @@ public class MediaFragment extends Fragment {
 
                 @Override
                 public void onScroll(int l, int t) {
-                    Log.i("APZ", "Scroll l:" + l + " t:" + t + "last:" + mLastFirstVisibleItem);
                     if (t > mLastFirstVisibleItem) {
                         if (mIsBottomNavVisible) {
                             mIsBottomNavVisible = false;
