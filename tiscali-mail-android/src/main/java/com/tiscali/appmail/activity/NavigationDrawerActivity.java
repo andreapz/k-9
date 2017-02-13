@@ -45,6 +45,7 @@ import com.tiscali.appmail.preferences.WelcomePreference;
 import com.tiscali.appmail.search.LocalSearch;
 import com.tiscali.appmail.search.SearchSpecification;
 import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
+import com.tiscali.appmail.service.TiscaliAppFirebaseMessagingService;
 import com.tiscali.appmail.ui.messageview.MessageViewFragment;
 
 import android.animation.Animator;
@@ -424,6 +425,41 @@ public class NavigationDrawerActivity extends K9Activity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+
+        if (intent.getExtras() != null && intent.getExtras()
+                .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION) != null) {
+            String extrasSection = intent.getExtras()
+                    .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION);
+            if (extrasSection != null) {
+                if (extrasSection
+                        .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_NEWS)) {
+                    mBottomNav
+                            .findViewById(
+                                    mBottomNav.getMenu().getItem(NEWS_TAB_SELECTED).getItemId())
+                            .performClick();
+                    mNewsPresenter.onNewIntent(intent);
+                    return;
+                } else if (extrasSection
+                        .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_VIDEO)) {
+                    mBottomNav
+                            .findViewById(
+                                    mBottomNav.getMenu().getItem(VIDEO_TAB_SELECTED).getItemId())
+                            .performClick();
+                    mVideoPresenter.onNewIntent(intent);
+                    return;
+                } else if (extrasSection
+                        .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_OFFERS)) {
+                    mBottomNav
+                            .findViewById(
+                                    mBottomNav.getMenu().getItem(OFFERS_TAB_SELECTED).getItemId())
+                            .performClick();
+                    mOffersPresenter.onNewIntent(intent);
+                    return;
+                }
+
+
+            }
+        }
 
         switch (mSelectedTab) {
             case MAIL_TAB_SELECTED:
