@@ -70,6 +70,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -174,6 +175,9 @@ public class NavigationDrawerActivity extends K9Activity
     @Inject
     OffersPresenter mOffersPresenter;
 
+    private FrameLayout mViewContainer;
+    private BroadcastReceiver mBroadcastReceiver;
+    private LocalBroadcastManager mLocalBroadcastManager;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -224,9 +228,6 @@ public class NavigationDrawerActivity extends K9Activity
                 }
             };
 
-    private FrameLayout mViewContainer;
-    private BroadcastReceiver mBroadcastReceiver;
-
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.setAction(ACTION_IMPORT_SETTINGS);
@@ -243,7 +244,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -269,7 +270,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-            MessageReference messageReference) {
+                                                    MessageReference messageReference) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -408,6 +409,46 @@ public class NavigationDrawerActivity extends K9Activity
             mBottomNav.setVisibility(View.GONE);
         }
 
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        mBroadcastReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if (NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE.equals(intent.getAction())) {
+                    if (NetworkHelper.getInstance(getApplicationContext()).isConnected()) {
+                        Observable.empty().observeOn(Schedulers.newThread())
+                                .subscribe(new Subscriber<Object>() {
+                                    @Override
+                                    public void onCompleted() {
+                                        if (CaptivePortalHelper.getInstance(getApplicationContext())
+                                                .isCaptivePortalConnection()) {
+                                            // show the login activity
+                                            CaptivePortalHelper.getInstance(getApplicationContext())
+                                                    .showLoginWebView();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+                                    }
+
+                                    @Override
+                                    public void onNext(Object o) {
+                                    }
+                                });
+
+                    }
+                } else if (TiscaliAppFirebaseInstanceIDService.TOKEN_BROADCAST.equals(intent.getAction())) {
+                    if (intent.getStringExtra(TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN) != null) {
+                        String token = intent.getStringExtra(TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN);
+                        Log.i("APZ", "Push token: " + token);
+                    }
+                }
+
+            }
+
+        };
     }
 
     private Account getAccount(List<Account> accounts, LocalSearch localSearch) {
@@ -430,34 +471,27 @@ public class NavigationDrawerActivity extends K9Activity
                 .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION) != null) {
             String extrasSection = intent.getExtras()
                     .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION);
-            if (extrasSection != null) {
-                if (extrasSection
-                        .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_NEWS)) {
-                    mBottomNav
-                            .findViewById(
-                                    mBottomNav.getMenu().getItem(NEWS_TAB_SELECTED).getItemId())
-                            .performClick();
-                    mNewsPresenter.onNewIntent(intent);
-                    return;
-                } else if (extrasSection
-                        .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_VIDEO)) {
-                    mBottomNav
-                            .findViewById(
-                                    mBottomNav.getMenu().getItem(VIDEO_TAB_SELECTED).getItemId())
-                            .performClick();
-                    mVideoPresenter.onNewIntent(intent);
-                    return;
-                } else if (extrasSection
-                        .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_OFFERS)) {
-                    mBottomNav
-                            .findViewById(
-                                    mBottomNav.getMenu().getItem(OFFERS_TAB_SELECTED).getItemId())
-                            .performClick();
-                    mOffersPresenter.onNewIntent(intent);
-                    return;
-                }
 
-
+            if (extrasSection
+                    .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_NEWS)) {
+                mBottomNav.findViewById(mBottomNav.getMenu().getItem(NEWS_TAB_SELECTED).getItemId())
+                        .performClick();
+                mNewsPresenter.onNewIntent(intent);
+                return;
+            } else if (extrasSection
+                    .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_VIDEO)) {
+                mBottomNav
+                        .findViewById(mBottomNav.getMenu().getItem(VIDEO_TAB_SELECTED).getItemId())
+                        .performClick();
+                mVideoPresenter.onNewIntent(intent);
+                return;
+            } else if (extrasSection
+                    .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_OFFERS)) {
+                mBottomNav
+                        .findViewById(mBottomNav.getMenu().getItem(OFFERS_TAB_SELECTED).getItemId())
+                        .performClick();
+                mOffersPresenter.onNewIntent(intent);
+                return;
             }
         }
 
@@ -487,51 +521,19 @@ public class NavigationDrawerActivity extends K9Activity
     protected void onStart() {
         super.onStart();
 
-        // end test
-        mBroadcastReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                if (NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE.equals(intent.getAction())) {
-                    if (NetworkHelper.getInstance(getApplicationContext()).isConnected()) {
-                        Observable.empty().observeOn(Schedulers.newThread())
-                                .subscribe(new Subscriber<Object>() {
-                                    @Override
-                                    public void onCompleted() {
-                                        if (CaptivePortalHelper.getInstance(getApplicationContext())
-                                                .isCaptivePortalConnection()) {
-                                            // show the login activity
-                                            CaptivePortalHelper.getInstance(getApplicationContext())
-                                                    .showLoginWebView();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable e) {}
-
-                                    @Override
-                                    public void onNext(Object o) {}
-                                });
-
-                    }
-                }
-
-            }
-
-        };
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(NetworkHelper.ACTION_NETWORK_CONNECTIVITY_CHANGE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, intentFilter);
-        registerReceiver(mBroadcastReceiver,
+
+        mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, intentFilter);
+        mLocalBroadcastManager.registerReceiver(mBroadcastReceiver,
                 new IntentFilter(TiscaliAppFirebaseInstanceIDService.TOKEN_BROADCAST));
     }
 
     @Override
     protected void onStop() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
-        unregisterReceiver(mBroadcastReceiver);
+        mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+        mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         super.onStop();
 
     }
@@ -642,7 +644,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -1001,7 +1003,7 @@ public class NavigationDrawerActivity extends K9Activity
                 mOffersPresenter.goBackOnHistory();
             } else if (mMailPresenter != null
                     && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                            && mMailPresenter.getMessageListWasDisplayed())) {
+                    && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
             } else if (mMailPresenter != null
                     && getIntent().getStringExtra(SearchManager.QUERY) != null) {

@@ -54,6 +54,7 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
         if (remoteMessage.getData().size() > 0 && remoteMessage.getNotification() != null) {
             sendNotification(remoteMessage.getNotification().getBody(), remoteMessage.getData());
         }
+
         // TEST
         Map<String, String> data = new HashMap<String, String>();
         data.put(NOTIFICATION_SECTION, NOTIFICATION_SECTION_NEWS);
