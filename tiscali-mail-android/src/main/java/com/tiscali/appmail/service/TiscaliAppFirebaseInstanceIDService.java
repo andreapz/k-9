@@ -22,8 +22,9 @@ public class TiscaliAppFirebaseInstanceIDService extends FirebaseInstanceIdServi
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 
         getApplicationContext().sendBroadcast(new Intent(TOKEN_BROADCAST));
-        // TODO send token to server
         storeToken(refreshedToken);
+        // TODO send token to server
+
     }
 
     private void storeToken(String token) {
