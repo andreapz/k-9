@@ -80,6 +80,7 @@ public class UI_NavigationDrawerActivity_Test {
     public void selectTabMailTest() {
 //        openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
 
+        //Select Tab Mail
         onView(withId(R.id.menu_mail)).perform(click());
 
         K9PullToRefreshListView pullToRefreshListView = (K9PullToRefreshListView) mActivityRule
@@ -87,16 +88,19 @@ public class UI_NavigationDrawerActivity_Test {
 
         ListView listView = pullToRefreshListView.getRefreshableView();
 
-
+        //Select 3rd mail
         onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(3).perform(click());
 
+        //next email from next button
         onView(withId(R.id.mail_next_btn)).perform(click());
 
+        //back to the mail list
         Espresso.pressBack();
         // int count = listView.getCount();
         //
         // Assert.assertTrue(count == MESSAGE_LIST_STEP_NUMBER);
 
+        //select 3rd and 4th mail
         onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(3)
                 .onChildView(withId(R.id.selected_checkbox)).perform(click());
 
@@ -105,7 +109,7 @@ public class UI_NavigationDrawerActivity_Test {
 
 //        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
 
-
+        //tap unread icon and force selected mail as unread
         onView(withId(R.id.mark_as_unread)).perform(click());
     }
 

@@ -13,6 +13,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class EditIdentity extends K9Activity {
 
@@ -32,6 +33,8 @@ public class EditIdentity extends K9Activity {
     // private EditText mAlwaysBccView;
     private EditText mNameView;
     private EditText mReplyTo;
+
+    private String mEmailDomain;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +65,15 @@ public class EditIdentity extends K9Activity {
         mNameView.setText(mIdentity.getName());
 
         mEmailView = (EditText) findViewById(R.id.email);
-        mEmailView.setText(mIdentity.getEmail());
+        TextView emailDomainTv = (TextView) findViewById(R.id.account_domain);
+        String email = mAccount.getEmail();
+        String username = "";
+        if (!email.isEmpty()) {
+            username = email.substring(0, email.lastIndexOf("@"));
+        }
+        mEmailDomain = getResources().getString(R.string.account_setup_basics_domain_tiscali);
+        mEmailView.setText(username);
+        emailDomainTv.setText(mEmailDomain);
 
         mReplyTo = (EditText) findViewById(R.id.reply_to);
         mReplyTo.setText(mIdentity.getReplyTo());
@@ -95,7 +106,12 @@ public class EditIdentity extends K9Activity {
     private void saveIdentity() {
 
         mIdentity.setDescription(mDescriptionView.getText().toString());
-        mIdentity.setEmail(mEmailView.getText().toString());
+        String email = mEmailView.getText().toString()
+                .replaceAll(System.getProperty("line.separator"), "");
+        if (!email.isEmpty()) {
+            email = email + mEmailDomain;
+        }
+        mIdentity.setEmail(email);
         // mIdentity.setAlwaysBcc(mAccountAlwaysBcc.getText().toString());
         mIdentity.setName(mNameView.getText().toString());
         mIdentity.setSignatureUse(mSignatureUse.isChecked());

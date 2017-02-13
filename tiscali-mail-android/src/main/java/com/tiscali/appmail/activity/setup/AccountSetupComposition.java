@@ -14,6 +14,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.TextView;
 
 public class AccountSetupComposition extends K9Activity {
 
@@ -29,6 +30,8 @@ public class AccountSetupComposition extends K9Activity {
     private RadioButton mAccountSignatureBeforeLocation;
     private RadioButton mAccountSignatureAfterLocation;
     private LinearLayout mAccountSignatureLayout;
+
+    private String mEmailDomain;
 
     public static void actionEditCompositionSettings(Activity context, Account account) {
         Intent i = new Intent(context, AccountSetupComposition.class);
@@ -59,7 +62,15 @@ public class AccountSetupComposition extends K9Activity {
         mAccountName.setText(mAccount.getName());
 
         mAccountEmail = (EditText) findViewById(R.id.account_email);
-        mAccountEmail.setText(mAccount.getEmail());
+        TextView emailDomainTv = (TextView) findViewById(R.id.account_domain);
+        String email = mAccount.getEmail();
+        String username = "";
+        if (!email.isEmpty()) {
+            username = email.substring(0, email.lastIndexOf("@"));
+        }
+        mEmailDomain = getResources().getString(R.string.account_setup_basics_domain_tiscali);
+        mAccountEmail.setText(username);
+        emailDomainTv.setText(mEmailDomain);
 
         mAccountAlwaysBcc = (EditText) findViewById(R.id.account_always_bcc);
         mAccountAlwaysBcc.setText(mAccount.getAlwaysBcc());
@@ -104,7 +115,12 @@ public class AccountSetupComposition extends K9Activity {
     }
 
     private void saveSettings() {
-        mAccount.setEmail(mAccountEmail.getText().toString());
+        String email = mAccountEmail.getText().toString()
+                .replaceAll(System.getProperty("line.separator"), "");
+        if (!email.isEmpty()) {
+            email = email + mEmailDomain;
+        }
+        mAccount.setEmail(email);
         mAccount.setAlwaysBcc(mAccountAlwaysBcc.getText().toString());
         mAccount.setName(mAccountName.getText().toString());
         mAccount.setSignatureUse(mAccountSignatureUse.isChecked());
