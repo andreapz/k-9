@@ -68,6 +68,12 @@ public class MediaFragment extends Fragment {
     private static final String TISCALI_APP_FAVE_SECTIONID_PARAMS = "section_id";
     private static final String TISCALI_APP_FAVE_FAV_PARAMS = "fav";
     private static final String TISCALI_APP_FAVE_FAVE_ACTION = "section_fave";
+
+    private static final String URL_ADV_MARGIN_100 =
+            "javascript:(function(){$(\"#adv-footer-container\").css(\"margin-bottom\",\"100px\");})";
+    private static final String URL_ADV_MARGIN_0 =
+            "javascript:(function(){$(\"#adv-footer-container\").css(\"margin-bottom\",\"0px\");})";
+
     private HashMap<String, String> mExtraHeaders;
 
     public ObservableWebView mWebView;
@@ -86,7 +92,8 @@ public class MediaFragment extends Fragment {
     private boolean mIsBarVisible;
 
 
-    public static MediaFragment newInstance(String home, MediaPresenter.Type type, boolean isBarVisible) {
+    public static MediaFragment newInstance(String home, MediaPresenter.Type type,
+            boolean isBarVisible) {
 
         MediaFragment fragment = new MediaFragment();
         Bundle args = new Bundle();
@@ -120,18 +127,18 @@ public class MediaFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (ObservableWebView) v.findViewById(R.id.webview);
         mHandler = new Handler();
-//        if (savedInstanceState == null) {
+        // if (savedInstanceState == null) {
         mType = getType(getArguments().getString(ARG_TYPE));
         mIsBarVisible = getArguments().getBoolean(ARG_BOTTOM_BAR);
-//        } else {
-//            mType = getType(savedInstanceState.getString(ARG_TYPE));
-//            mIsBarVisible = savedInstanceState.getBoolean(ARG_BOTTOM_BAR);
-//        }
+        // } else {
+        // mType = getType(savedInstanceState.getString(ARG_TYPE));
+        // mIsBarVisible = savedInstanceState.getBoolean(ARG_BOTTOM_BAR);
+        // }
         mFragmentListener = getFragmentListner();
 
         init();
@@ -179,11 +186,13 @@ public class MediaFragment extends Fragment {
                         if (mIsBottomNavVisible) {
                             mIsBottomNavVisible = false;
                             mFragmentListener.hideBottomNav();
+                            mWebView.loadUrl(URL_ADV_MARGIN_0);
                         }
                     } else if (t < mLastFirstVisibleItem) {
                         if (!mIsBottomNavVisible) {
                             mIsBottomNavVisible = true;
                             mFragmentListener.showBottomNav();
+                            mWebView.loadUrl(URL_ADV_MARGIN_100);
                         }
                     }
 
@@ -195,11 +204,11 @@ public class MediaFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        outState.putString(CURRENT_URL, mUrl);
-//        outState.putString(ARG_TYPE, mType.name());
-//        outState.putBoolean(ARG_BOTTOM_BAR, mIsBarVisible);
-//        mWebView.saveState(outState);
+        // super.onSaveInstanceState(outState);
+        // outState.putString(CURRENT_URL, mUrl);
+        // outState.putString(ARG_TYPE, mType.name());
+        // outState.putBoolean(ARG_BOTTOM_BAR, mIsBarVisible);
+        // mWebView.saveState(outState);
     }
 
     private void updateWebViewSettings() {
