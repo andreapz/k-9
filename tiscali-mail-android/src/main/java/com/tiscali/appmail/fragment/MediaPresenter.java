@@ -186,7 +186,7 @@ public abstract class MediaPresenter
                     }
                     if (item.getSections() != null && item.getSections().size() > 0) {
                         for (int j = 0; j < item.getSections().size(); j++) {
-                            TiscaliMenuItem section = mMenuItems.get(i);
+                            TiscaliMenuItem section = item.getSections().get(j);
                             if (section.getUrl().equals(extrasUrl)) {
                                 openSection(extrasUrl, false);
                                 return;
