@@ -22,6 +22,7 @@ import com.tiscali.appmail.api.model.Me;
 import com.tiscali.appmail.api.model.TiscaliMenuItem;
 import com.tiscali.appmail.api.model.UserLogin;
 import com.tiscali.appmail.presenter.PresenterLifeCycle;
+import com.tiscali.appmail.service.TiscaliAppFirebaseMessagingService;
 import com.tiscali.appmail.view.ViewSwitcher;
 import com.tiscali.appmail.view.holder.HeaderViewHolder;
 import com.tiscali.appmail.view.holder.ItemViewHolder;
@@ -166,6 +167,37 @@ public abstract class MediaPresenter
 
     @Override
     public void onNewIntent(Intent intent) {
+        if (intent.getExtras() != null) {
+            String extrasUrl = intent.getExtras()
+                    .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_URL);
+            if (extrasUrl != null) {
+
+                for (int i = 0; i < mMenuItems.size(); i++) {
+                    TiscaliMenuItem item = mMenuItems.get(i);
+                    if (item.getUrl().equals(extrasUrl)) {
+                        if (item.getUrl().equals(mMenuItems.get(0).getUrl())) {
+                            openSection(extrasUrl, true);
+                            return;
+                        } else {
+                            openSection(extrasUrl, false);
+                            return;
+                        }
+
+                    }
+                    if (item.getSections() != null && item.getSections().size() > 0) {
+                        for (int j = 0; j < item.getSections().size(); j++) {
+                            TiscaliMenuItem section = item.getSections().get(j);
+                            if (section.getUrl().equals(extrasUrl)) {
+                                openSection(extrasUrl, false);
+                                return;
+                            }
+                        }
+
+                    }
+                }
+                detailPageLoad(extrasUrl);
+            }
+        }
 
     }
 
@@ -224,16 +256,6 @@ public abstract class MediaPresenter
             mDisplayMode = DisplayMode.SPLIT_VIEW;
             return;
         }
-
-        // if (savedInstanceState != null) {
-        // DisplayMode savedDisplayMode =
-        // (DisplayMode) savedInstanceState.getSerializable(NEWS_STATE_DISPLAY_MODE);
-        // if (savedDisplayMode != DisplayMode.SPLIT_VIEW && savedDisplayMode != null) {
-        // mDisplayMode = savedDisplayMode;
-        //
-        // return;
-        // }
-        // }
 
         if (mCurrentPage == null) {
             mDisplayMode = MEDIA_VIEW;
@@ -315,10 +337,12 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {}
+                    public void onError(Throwable e) {
+                    }
 
                     @Override
-                    public void onNext(Object o) {}
+                    public void onNext(Object o) {
+                    }
                 });
     }
 
@@ -328,7 +352,7 @@ public abstract class MediaPresenter
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     public void openSection(String url, boolean isHome) {
@@ -355,10 +379,12 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {}
+                    public void onError(Throwable e) {
+                    }
 
                     @Override
-                    public void onNext(Object o) {}
+                    public void onNext(Object o) {
+                    }
                 });
 
     }
@@ -664,7 +690,8 @@ public abstract class MediaPresenter
             }
         };
 
-        public MediaAdapter() {}
+        public MediaAdapter() {
+        }
 
         public void setSelectedPos(String sectionId) {
 
@@ -983,7 +1010,8 @@ public abstract class MediaPresenter
     }
 
     @Override
-    public void setStartInstanceState(Bundle savedInstanceState) {}
+    public void setStartInstanceState(Bundle savedInstanceState) {
+    }
 
 
     public void showDialogInformations() {

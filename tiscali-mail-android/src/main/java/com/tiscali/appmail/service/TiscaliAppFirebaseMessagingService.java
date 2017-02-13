@@ -1,5 +1,7 @@
 package com.tiscali.appmail.service;
 
+import java.util.Map;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.tiscali.appmail.R;
@@ -20,6 +22,12 @@ import android.util.Log;
  */
 public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FBMessagingService";
+    public static final String NOTIFICATION_SECTION = "t";
+    public static final String NOTIFICATION_URL = "v";
+    public static final String NOTIFICATION_MESSAGE = "m";
+    public static final String NOTIFICATION_SECTION_NEWS = "n";
+    public static final String NOTIFICATION_SECTION_VIDEO = "v";
+    public static final String NOTIFICATION_SECTION_OFFERS = "o";
 
     /**
      * Called when message is received.
@@ -41,11 +49,26 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
         }
 
-        // Check if message contains a notification payload.
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            sendNotification(remoteMessage.getNotification().getBody());
+
+        if (remoteMessage.getData().size() > 0 && remoteMessage.getNotification() != null) {
+            sendNotification(remoteMessage.getNotification().getBody(), remoteMessage.getData());
         }
+        // TEST
+        // Map<String, String> data = new HashMap<String, String>();
+        // data.put(NOTIFICATION_SECTION, NOTIFICATION_SECTION_NEWS);
+        // data.put(NOTIFICATION_MESSAGE, "ciao");
+        // detailtest
+        // data.put(NOTIFICATION_URL, "http://www.tiscali.it");
+        // // home test
+        // data.put(NOTIFICATION_URL, "http://m.tiscali.it/tiscaliapp/");
+        // // ultimora test
+        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/ultimora/");
+        // section internal home
+        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/regioni/liguria/");
+        //
+        // sendNotification(remoteMessage.getNotification().getBody(), data);
+        // FINE TEST
+
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
@@ -57,9 +80,15 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String messageBody) {
+    private void sendNotification(String messageBody, Map<String, String> data) {
         Intent intent = new Intent(this, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        String section = data.get(NOTIFICATION_SECTION);
+        String url = data.get(NOTIFICATION_URL);
+        String message = data.get(NOTIFICATION_MESSAGE);
+        intent.putExtra(NOTIFICATION_SECTION, section);
+        intent.putExtra(NOTIFICATION_URL, url);
+        // end test
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
@@ -67,9 +96,8 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
         android.support.v4.app.NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.notification_icon_new_mail)
-                        .setContentTitle("FCM Message").setContentText(messageBody)
-                        .setAutoCancel(true).setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+                        .setContentTitle(message).setContentText(url).setAutoCancel(true)
+                        .setSound(defaultSoundUri).setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
