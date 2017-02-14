@@ -3,9 +3,12 @@ package com.tiscali.appmail.activity;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.DrawerActions.open;
 import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
+import static android.support.test.espresso.matcher.RootMatchers.isDialog;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -22,6 +25,7 @@ import org.junit.runner.RunWith;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.view.K9PullToRefreshListView;
 
+import android.os.SystemClock;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
@@ -97,24 +101,58 @@ public class UI_NavigationDrawerActivity_Test {
 
         onView(withId(R.id.expand_menu)).perform(click());
 
-//        onView(allOf(withId(R.id.left_drawer), withText("Aggiungi account")))
-//                .check(matches(isDisplayed())).perform(click());
+        onView(withId(R.id.left_drawer))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
+
+        onView(withId(R.id.account_email)).perform(click());
+        onView(withId(R.id.account_email)).perform(typeText("testappmail"));
+        onView(withId(R.id.account_password)).perform(click());
+        onView(withId(R.id.account_password)).perform(typeText("123456"));
+        onView(withId(R.id.show_password)).perform(click());
+        onView(withId(R.id.show_password)).check(matches(isChecked()));
+        onView(withId(R.id.next)).perform(click());
+
+        SystemClock.sleep(1000);
+
+//        onView(withText("CAMBIA PASSWORD"))
+//        onView(withId(android.R.id.button1))
+//                .inRoot(isDialog())
+//                .check(matches(isDisplayed()));
+
+        onView(withId(android.R.id.button3))
+                .perform(click());
+
+        Espresso.pressBack();
+        Espresso.pressBack();
+    }
+
+    @Test
+    public void addSecondAccountPassword() {
+        onView(withId(R.id.menu_mail)).perform(click());
+
+
+        onView(withId(R.id.drawer_layout))
+                .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
+                .perform(open()); // Open Drawer
+
+        onView(withId(R.id.expand_menu)).perform(click());
 
         onView(withId(R.id.left_drawer))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
 
-//        onData(anything()).inAdapterView(withId(R.id.left_drawer)).atPosition(2).perform(click());
-//        onView(withId(R.id.left_drawer)).perform(NavigationViewActions.navigateTo(R.id.nav_slideshow));
-//
-//        // Start the screen of your activity.
-//        onView(withId(R.id.nav_view))
-//                .perform(NavigationViewActions.navigateTo(R.id.your_navigation_menu_item));
-//
-//        // Check that you Activity was opened.
-//        String expectedNoStatisticsText = InstrumentationRegistry.getTargetContext()
-//                .getString(R.string.no_item_available);
-//        onView(withId(R.id.no_statistics)).check(matches(withText(expectedNoStatisticsText)));
+        onView(withId(R.id.account_email)).perform(click());
+        onView(withId(R.id.account_email)).perform(typeText("furrillu"));
+        onView(withId(R.id.account_password)).perform(click());
+        onView(withId(R.id.account_password)).perform(typeText("Casetta11"));
+        onView(withId(R.id.show_password)).perform(click());
+        onView(withId(R.id.show_password)).check(matches(isChecked()));
+        onView(withId(R.id.next)).perform(click());
+
+        onView(withId(R.id.account_name)).perform(click());
+        onView(withId(R.id.account_name)).perform(typeText("Furrillu Account"));
+        onView(withId(R.id.done)).perform(click());
     }
+
 
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
