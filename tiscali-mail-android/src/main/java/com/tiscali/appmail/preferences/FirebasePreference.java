@@ -35,6 +35,15 @@ public class FirebasePreference {
         return true;
     }
 
+    public void resetToken() {
+        SharedPreferences preferences =
+                mContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(ACCESS_TOKEN_KEY);
+        editor.apply();
+
+    }
+
     public String getToken() {
         SharedPreferences preferences =
                 mContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

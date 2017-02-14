@@ -12,6 +12,7 @@ import com.tiscali.appmail.Account;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.activity.setup.TiscaliAccountSetupUserPassword;
 import com.tiscali.appmail.api.model.Authorize;
+import com.tiscali.appmail.api.model.DeviceRegister;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
 import com.tiscali.appmail.api.model.UserLogin;
@@ -145,11 +146,11 @@ public class ApiController {
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .client(mHttpAuthorizeClient).callbackExecutor(new Executor() {
-                        @Override
-                        public void execute(Runnable runnable) {
-                            runnable.run();
-                        }
-                    }).build();
+                @Override
+                public void execute(Runnable runnable) {
+                    runnable.run();
+                }
+            }).build();
 
     private OkHttpClient mHttpApiClient = new OkHttpClient.Builder()
             .addInterceptor(mLoggingInterceptor).addInterceptor(mInterceptor).build();
@@ -223,7 +224,21 @@ public class ApiController {
                 .retry(RETRY_COUNT);
     }
 
+    public Observable<DeviceRegister> postPushActivate(String otp) {
+        if (mMainConfig == null) {
+            return null;
+        }
+        return apiClient().postPushActivate(
+                mMainConfig.getEndpoints().getPushnotificationActivate().getUrl(), otp).retry(RETRY_COUNT);
+    }
 
+    public Observable<DeviceRegister> postPushRegister(String token, String platform, String environment) {
+        if (mMainConfig == null) {
+            return null;
+        }
+        return apiClient().postPushRegister(mMainConfig.getEndpoints().getAccountRegister().getUrl(),
+                token, platform, environment).retry(RETRY_COUNT);
+    }
 
     private Observable<UserLogin> getMe() {
         if (mMainConfig == null) {
@@ -274,7 +289,8 @@ public class ApiController {
 
         getConfig().subscribe(new Subscriber<MainConfig>() {
             @Override
-            public void onCompleted() {}
+            public void onCompleted() {
+            }
 
             @Override
             public void onError(Throwable e) {
@@ -338,20 +354,21 @@ public class ApiController {
         }
     }
 
-    public void pushActivate(String otp) {
-        if (mMainConfig == null) {
-            return;
+
+    public void pushRegister(String token, String platform, String environment, Action1<DeviceRegister> success) {
+        Observable<DeviceRegister> postPushRegister = postPushRegister(token, platform, environment);
+
+        if (postPushRegister != null) {
+            postPushRegister.subscribe(new SubscriberDeviceRegister(success));
         }
-        apiClient().postPushActivate(
-                mMainConfig.getEndpoints().getPushnotificationActivate().getUrl(), otp);
     }
 
-    public void pushRegister(String token, String platform, String environment) {
-        if (mMainConfig == null) {
-            return;
+    public void pushActivate(String otp, Action1<DeviceRegister> success) {
+        Observable<DeviceRegister> postPushActivate = postPushActivate(otp);
+
+        if (postPushActivate != null) {
+            postPushActivate.subscribe(new SubscriberDeviceRegister(success));
         }
-        apiClient().postPushRegister(mMainConfig.getEndpoints().getAccountRegister().getUrl(),
-                token, platform, environment);
     }
 
     public void sectionVisibility(String sectionId, boolean isSelected) {
@@ -364,11 +381,35 @@ public class ApiController {
 
 
     public void sectionFave(String sectionId, boolean isSelected, Action1<UserLogin> success,
-            Action1<UserLogin> error) {
+                            Action1<UserLogin> error) {
         Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
 
         if (postSectionFave != null) {
             postSectionFave.subscribe(new SubscriberMe(success, error));
+        }
+    }
+
+    class SubscriberDeviceRegister extends Subscriber<DeviceRegister> {
+
+        private Action1<DeviceRegister> mSucces;
+
+        public SubscriberDeviceRegister(Action1<DeviceRegister> mSucces) {
+            this.mSucces = mSucces;
+        }
+
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+
+        }
+
+        @Override
+        public void onNext(DeviceRegister register) {
+            mSucces.call(register);
         }
     }
 
@@ -465,7 +506,8 @@ public class ApiController {
 
         private ResponseHeaderListener mListener;
 
-        public ResponseHeaderInterceptor() {}
+        public ResponseHeaderInterceptor() {
+        }
 
         public ResponseHeaderInterceptor(ResponseHeaderListener listener) {
             mListener = listener;
@@ -542,6 +584,7 @@ public class ApiController {
             sendMe(listener);
         }
     }
+
 
     public void refreshMainConfigListeners() {
         for (ApiControllerInterface listener : listeners) {

@@ -29,6 +29,7 @@ import com.tiscali.appmail.activity.misc.BottomNavigationViewHelper;
 import com.tiscali.appmail.activity.setup.AccountSetupBasics;
 import com.tiscali.appmail.activity.setup.migrations.SettingsMigrations;
 import com.tiscali.appmail.api.ApiController;
+import com.tiscali.appmail.api.model.DeviceRegister;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
 import com.tiscali.appmail.controller.MessagingController;
@@ -41,6 +42,7 @@ import com.tiscali.appmail.fragment.OffersPresenter;
 import com.tiscali.appmail.fragment.VideoPresenter;
 import com.tiscali.appmail.helper.CaptivePortalHelper;
 import com.tiscali.appmail.helper.NetworkHelper;
+import com.tiscali.appmail.preferences.FirebasePreference;
 import com.tiscali.appmail.preferences.StorageEditor;
 import com.tiscali.appmail.preferences.WelcomePreference;
 import com.tiscali.appmail.search.LocalSearch;
@@ -82,6 +84,7 @@ import android.widget.FrameLayout;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 
@@ -472,7 +475,16 @@ public class NavigationDrawerActivity extends K9Activity
                         Log.i("APZ", "Push token: " + token);
                         mApiController.pushRegister(token,
                                 TiscaliAppFirebaseInstanceIDService.FIREBASE_PLATFORM,
-                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT_SANDBOX);
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT_SANDBOX,
+                                new Action1<DeviceRegister>() {
+                                    @Override
+                                    public void call(DeviceRegister register) {
+                                        Log.i("APZ",
+                                                "DeviceRegister Status: " + register.getStatus());
+                                        Log.i("APZ",
+                                                "DeviceRegister Device: " + register.getDevice());
+                                    }
+                                });
                     }
                 } else if (TiscaliAppFirebaseMessagingService.TOKEN_VERIFY_BROADCAST
                         .equals(intent.getAction())) {
@@ -481,7 +493,15 @@ public class NavigationDrawerActivity extends K9Activity
                         String otp = intent.getStringExtra(
                                 TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN);
                         Log.i("APZ", "Push otp: " + otp);
-                        mApiController.pushActivate(otp);
+                        mApiController.pushActivate(otp, new Action1<DeviceRegister>() {
+                            @Override
+                            public void call(DeviceRegister register) {
+                                Log.i("APZ", "DeviceActivate Status: " + register.getStatus());
+                                Log.i("APZ", "DeviceActivate Device: " + register.getDevice());
+                                FirebasePreference.getInstance(getApplicationContext())
+                                        .resetToken();
+                            }
+                        });
                     }
                 }
 
@@ -1026,6 +1046,7 @@ public class NavigationDrawerActivity extends K9Activity
         editor.putInt(DEFAULT_TAB_KEY, defaultTabIndex);
         editor.commit();
     }
+
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
