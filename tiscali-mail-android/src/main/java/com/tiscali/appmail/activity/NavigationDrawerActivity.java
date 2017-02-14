@@ -312,6 +312,10 @@ public class NavigationDrawerActivity extends K9Activity
         if (intent.getStringExtra(SearchManager.QUERY) != null) {
             mailIntent = intent;
             intent.putExtra(EXTRA_STARTUP, false);
+        } else if (intent.getExtras() != null && intent.getExtras()
+                .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION) != null) {
+            mailIntent = intent;
+
         } else if (accountUUid != null) {
             account = pref.getAccount(accountUUid);
             mailIntent = getMailIntent(account);
@@ -390,6 +394,24 @@ public class NavigationDrawerActivity extends K9Activity
             if (!intent.getBooleanExtra(EXTRA_STARTUP, true) || (intent.getExtras() != null
                     && intent.getExtras().get(EXTRA_SEARCH) != null)) {
                 tempSelectedTab = MAIL_TAB_SELECTED;
+            } else if (intent.getExtras() != null && intent.getExtras()
+                    .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION) != null) {
+
+                String extrasSection = intent.getExtras()
+                        .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION);
+                if (extrasSection != null) {
+                    if (extrasSection
+                            .equals(TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_NEWS)) {
+                        tempSelectedTab = NEWS_TAB_SELECTED;
+                    } else if (extrasSection.equals(
+                            TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_VIDEO)) {
+                        tempSelectedTab = VIDEO_TAB_SELECTED;
+                    } else if (extrasSection.equals(
+                            TiscaliAppFirebaseMessagingService.NOTIFICATION_SECTION_OFFERS)) {
+                        tempSelectedTab = OFFERS_TAB_SELECTED;
+                    }
+                }
+
             }
             mBottomNav.findViewById(mBottomNav.getMenu().getItem(tempSelectedTab).getItemId())
                     .performClick();

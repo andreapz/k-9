@@ -53,21 +53,6 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
         if (remoteMessage.getData().size() > 0 && remoteMessage.getNotification() != null) {
             sendNotification(remoteMessage.getNotification().getBody(), remoteMessage.getData());
         }
-        // TEST
-        // Map<String, String> data = new HashMap<String, String>();
-        // data.put(NOTIFICATION_SECTION, NOTIFICATION_SECTION_NEWS);
-        // data.put(NOTIFICATION_MESSAGE, "ciao");
-        // detailtest
-        // data.put(NOTIFICATION_URL, "http://www.tiscali.it");
-        // // home test
-        // data.put(NOTIFICATION_URL, "http://m.tiscali.it/tiscaliapp/");
-        // // ultimora test
-        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/ultimora/");
-        // section internal home
-        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/regioni/liguria/");
-        //
-        // sendNotification(remoteMessage.getNotification().getBody(), data);
-        // FINE TEST
 
 
         // Also if you intend on generating your own notifications as a result of a received FCM
