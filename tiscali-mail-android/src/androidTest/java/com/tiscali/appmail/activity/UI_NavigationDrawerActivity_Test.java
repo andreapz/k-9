@@ -3,6 +3,9 @@ package com.tiscali.appmail.activity;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.contrib.DrawerActions.open;
+import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.anything;
 
@@ -24,6 +27,7 @@ import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Tap;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -74,6 +78,36 @@ public class UI_NavigationDrawerActivity_Test {
 
         // tap unread icon and force selected mail as unread
         onView(withId(R.id.mark_as_unread)).perform(click());
+    }
+
+    @Test
+    public void addAccountWithSimplePassword() {
+        onView(withId(R.id.menu_mail)).perform(click());
+        // Espresso.onView(allOf(withId(R.string.drawer_open), hasSibling(withText("Mail"))))
+        // .perform(click());
+
+//        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
+        onView(withId(R.id.drawer_layout)).perform(click());
+
+        // Open Drawer to click on navigation.
+        onView(withId(R.id.drawer_layout))
+                .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
+                .perform(open()); // Open Drawer
+
+        onView(withId(R.id.expand_menu)).perform(click());
+
+        //Tap on add account
+        onData(anything()).inAdapterView(withId(R.id.left_drawer)).atPosition(1).perform(click());
+
+//
+//        // Start the screen of your activity.
+//        onView(withId(R.id.nav_view))
+//                .perform(NavigationViewActions.navigateTo(R.id.your_navigation_menu_item));
+//
+//        // Check that you Activity was opened.
+//        String expectedNoStatisticsText = InstrumentationRegistry.getTargetContext()
+//                .getString(R.string.no_item_available);
+//        onView(withId(R.id.no_statistics)).check(matches(withText(expectedNoStatisticsText)));
     }
 
 
