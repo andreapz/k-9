@@ -11,18 +11,23 @@ import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
 import com.tiscali.appmail.api.model.Onboarding;
 import com.tiscali.appmail.preferences.WelcomePreference;
+import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +56,8 @@ public class WelcomeActivity extends AppCompatActivity
     private Onboarding mOnBoarding;
     private MainConfig mMainConfig;
     private int[] mPlaceholders;
+    private BroadcastReceiver mBroadcastReceiver;
+    private LocalBroadcastManager mLocalBroadcastManager;
 
     @Inject
     ApiController mApiController;
@@ -100,6 +107,23 @@ public class WelcomeActivity extends AppCompatActivity
             }
         });
 
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        mBroadcastReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if (TiscaliAppFirebaseInstanceIDService.TOKEN_BROADCAST
+                        .equals(intent.getAction())) {
+                    if (intent.getStringExtra(
+                            TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN) != null) {
+                        String token = intent.getStringExtra(
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN);
+                        Log.i("APZ", "Push token: " + token);
+                    }
+                }
+            }
+        };
 
     }
 
@@ -107,6 +131,13 @@ public class WelcomeActivity extends AppCompatActivity
     public View onCreateView(String name, Context context, AttributeSet attrs) {
         // mOnBoarding = mApiController.getMainConfig().getConfig().getOnboarding();
         return super.onCreateView(name, context, attrs);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mLocalBroadcastManager.registerReceiver(mBroadcastReceiver,
+                new IntentFilter(TiscaliAppFirebaseInstanceIDService.TOKEN_BROADCAST));
     }
 
     @Override
@@ -119,6 +150,12 @@ public class WelcomeActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         mApiController.removeListener(this);
+    }
+
+    @Override
+    protected void onStop() {
+        mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+        super.onStop();
     }
 
     private void addBottomDots(int currentPage) {
