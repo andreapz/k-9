@@ -3,14 +3,8 @@ package com.tiscali.appmail.activity;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.swipeLeft;
-import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.anything;
-import static org.hamcrest.Matchers.not;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -46,41 +40,10 @@ public class UI_NavigationDrawerActivity_Test {
             new ActivityTestRule<>(NavigationDrawerActivity.class);
 
     @Test
-    public void swipeOnBoardingTest() {
-        // 1
-        onView(withId(R.id.btn_skip)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.view_pager)).perform(swipeLeft());
-        // 2
-        onView(withId(R.id.btn_skip)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.view_pager)).perform(swipeLeft());
-        // 3
-        onView(withId(R.id.btn_skip)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.view_pager)).perform(swipeLeft());
-        // 4
-        onView(withId(R.id.btn_skip)).check(matches(isDisplayed()));
-        onView(withId(R.id.btn_skip)).perform(click());
-    }
-
-    @Test
-    public void setCredentialTest() {
-        onView(withId(R.id.account_email)).perform(click());
-        onView(withId(R.id.account_email)).perform(typeText("testappios"));
-        onView(withId(R.id.account_password)).perform(click());
-        onView(withId(R.id.account_password)).perform(typeText("AppIos25"));
-        onView(withId(R.id.show_password)).perform(click());
-        onView(withId(R.id.show_password)).check(matches(isChecked()));
-        onView(withId(R.id.next)).perform(click());
-
-        onView(withId(R.id.account_name)).perform(click());
-        onView(withId(R.id.account_name)).perform(typeText("Test Account"));
-        onView(withId(R.id.done)).perform(click());
-    }
-
-    @Test
     public void selectTabMailTest() {
-//        openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
+        // openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
 
-        //Select Tab Mail
+        // Select Tab Mail
         onView(withId(R.id.menu_mail)).perform(click());
 
         K9PullToRefreshListView pullToRefreshListView = (K9PullToRefreshListView) mActivityRule
@@ -88,34 +51,34 @@ public class UI_NavigationDrawerActivity_Test {
 
         ListView listView = pullToRefreshListView.getRefreshableView();
 
-        //Select 3rd mail
+        // Select 3rd mail
         onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(3).perform(click());
 
-        //next email from next button
+        // next email from next button
         onView(withId(R.id.mail_next_btn)).perform(click());
 
-        //back to the mail list
+        // back to the mail list
         Espresso.pressBack();
         // int count = listView.getCount();
         //
         // Assert.assertTrue(count == MESSAGE_LIST_STEP_NUMBER);
 
-        //select 3rd and 4th mail
+        // select 3rd and 4th mail
         onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(3)
                 .onChildView(withId(R.id.selected_checkbox)).perform(click());
 
         onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(4)
                 .onChildView(withId(R.id.selected_checkbox)).perform(click());
 
-//        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
 
-        //tap unread icon and force selected mail as unread
+        // tap unread icon and force selected mail as unread
         onView(withId(R.id.mark_as_unread)).perform(click());
     }
 
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
-                                           final int childPosition) {
+            final int childPosition) {
         return new TypeSafeMatcher<View>() {
             @Override
             public void describeTo(Description description) {
