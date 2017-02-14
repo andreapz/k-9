@@ -470,6 +470,9 @@ public class NavigationDrawerActivity extends K9Activity
                         String token = intent.getStringExtra(
                                 TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN);
                         Log.i("APZ", "Push token: " + token);
+                        mApiController.pushRegister(token,
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_PLATFORM,
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT_SANDBOX);
                     }
                 } else if (TiscaliAppFirebaseMessagingService.TOKEN_VERIFY_BROADCAST
                         .equals(intent.getAction())) {
@@ -477,7 +480,8 @@ public class NavigationDrawerActivity extends K9Activity
                             TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN) != null) {
                         String otp = intent.getStringExtra(
                                 TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN);
-                        // TODO call API POST push-notification/activate
+                        Log.i("APZ", "Push otp: " + otp);
+                        mApiController.pushActivate(otp);
                     }
                 }
 

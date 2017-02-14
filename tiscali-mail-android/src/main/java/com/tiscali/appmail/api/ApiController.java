@@ -223,6 +223,8 @@ public class ApiController {
                 .retry(RETRY_COUNT);
     }
 
+
+
     private Observable<UserLogin> getMe() {
         if (mMainConfig == null) {
             return null;
@@ -336,6 +338,22 @@ public class ApiController {
         }
     }
 
+    public void pushActivate(String otp) {
+        if (mMainConfig == null) {
+            return;
+        }
+        apiClient().postPushActivate(
+                mMainConfig.getEndpoints().getPushnotificationActivate().getUrl(), otp);
+    }
+
+    public void pushRegister(String token, String platform, String environment) {
+        if (mMainConfig == null) {
+            return;
+        }
+        apiClient().postPushRegister(mMainConfig.getEndpoints().getAccountRegister().getUrl(),
+                token, platform, environment);
+    }
+
     public void sectionVisibility(String sectionId, boolean isSelected) {
         Observable<UserLogin> postSectionVisibility = postSectionVisibility(sectionId, isSelected);
 
@@ -424,6 +442,7 @@ public class ApiController {
                             }
                         }).subscribe(new SubscriberUserLogin());
                     }
+
                 }
 
             }
@@ -437,6 +456,7 @@ public class ApiController {
             refreshMeListeners();
         }
     }
+
 
     private static class ResponseHeaderInterceptor implements Interceptor {
         public interface ResponseHeaderListener {
@@ -459,6 +479,7 @@ public class ApiController {
             }
             return response;
         }
+
     }
 
     public void sendMe(ApiControllerInterface listener) {

@@ -38,6 +38,15 @@ public interface ApiClient {
 
     @FormUrlEncoded
     @POST
+    Observable<> postPushActivate(@Url String url, @Field("otp") String otp);
+
+    @FormUrlEncoded
+    @POST
+    Observable<> postPushRegister(@Url String url, @Field("pushtoken") String otp,
+            @Field("platform") String platform, @Field("environment") String environment);
+
+    @FormUrlEncoded
+    @POST
     Observable<UserLogin> postSectionVisibility(@Url String url, @Field("section") String sectionId,
             @Field("value") boolean isSelected);
 
