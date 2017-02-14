@@ -6,7 +6,10 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.DrawerActions.open;
 import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 
 import org.hamcrest.Description;
@@ -20,11 +23,14 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.view.K9PullToRefreshListView;
 
 import android.support.test.espresso.Espresso;
+import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.action.CoordinatesProvider;
 import android.support.test.espresso.action.GeneralClickAction;
 import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Tap;
+import android.support.test.espresso.contrib.NavigationViewActions;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.view.Gravity;
@@ -83,22 +89,22 @@ public class UI_NavigationDrawerActivity_Test {
     @Test
     public void addAccountWithSimplePassword() {
         onView(withId(R.id.menu_mail)).perform(click());
-        // Espresso.onView(allOf(withId(R.string.drawer_open), hasSibling(withText("Mail"))))
-        // .perform(click());
 
-//        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-        onView(withId(R.id.drawer_layout)).perform(click());
 
-        // Open Drawer to click on navigation.
         onView(withId(R.id.drawer_layout))
                 .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
                 .perform(open()); // Open Drawer
 
         onView(withId(R.id.expand_menu)).perform(click());
 
-        //Tap on add account
-        onData(anything()).inAdapterView(withId(R.id.left_drawer)).atPosition(1).perform(click());
+//        onView(allOf(withId(R.id.left_drawer), withText("Aggiungi account")))
+//                .check(matches(isDisplayed())).perform(click());
 
+        onView(withId(R.id.left_drawer))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
+
+//        onData(anything()).inAdapterView(withId(R.id.left_drawer)).atPosition(2).perform(click());
+//        onView(withId(R.id.left_drawer)).perform(NavigationViewActions.navigateTo(R.id.nav_slideshow));
 //
 //        // Start the screen of your activity.
 //        onView(withId(R.id.nav_view))
@@ -167,4 +173,5 @@ public class UI_NavigationDrawerActivity_Test {
             }
         };
     }
+
 }

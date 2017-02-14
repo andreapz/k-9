@@ -25,6 +25,7 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
     public static final String NOTIFICATION_SECTION = "t";
     public static final String NOTIFICATION_URL = "v";
     public static final String NOTIFICATION_MESSAGE = "m";
+    public static final String NOTIFICATION_SECTION_SYSTEM = "s";
     public static final String NOTIFICATION_SECTION_NEWS = "n";
     public static final String NOTIFICATION_SECTION_VIDEO = "v";
     public static final String NOTIFICATION_SECTION_OFFERS = "o";
@@ -50,26 +51,15 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
         }
 
 
-        if (remoteMessage.getData().size() > 0 && remoteMessage.getNotification() != null) {
-            sendNotification(remoteMessage.getNotification().getBody(), remoteMessage.getData());
+        if (remoteMessage.getData().size() > 0) {
+            if (remoteMessage.getData().get(NOTIFICATION_SECTION) != null && remoteMessage.getData()
+                    .get(NOTIFICATION_SECTION).equals(NOTIFICATION_SECTION_SYSTEM)) {
+
+            } else {
+                sendNotification(remoteMessage.getData());
+            }
+
         }
-
-        // TEST
-        // Map<String, String> data = new HashMap<String, String>();
-        // data.put(NOTIFICATION_SECTION, NOTIFICATION_SECTION_NEWS);
-        // data.put(NOTIFICATION_MESSAGE, "ciao");
-        // detailtest
-        // data.put(NOTIFICATION_URL, "http://www.tiscali.it");
-        // // home test
-        // data.put(NOTIFICATION_URL, "http://m.tiscali.it/tiscaliapp/");
-        // // ultimora test
-        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/ultimora/");
-        // section internal home
-        // data.put(NOTIFICATION_URL, "http://notizie.tiscali.it/regioni/liguria/");
-        //
-        // sendNotification(remoteMessage.getNotification().getBody(), data);
-        // FINE TEST
-
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
@@ -79,9 +69,9 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
+     * @param data FCM data received.
      */
-    private void sendNotification(String messageBody, Map<String, String> data) {
+    private void sendNotification(Map<String, String> data) {
         Intent intent = new Intent(this, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         String section = data.get(NOTIFICATION_SECTION);
