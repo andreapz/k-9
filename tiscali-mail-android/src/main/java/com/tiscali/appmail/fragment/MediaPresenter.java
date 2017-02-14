@@ -157,6 +157,12 @@ public abstract class MediaPresenter
                 initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
             }
         }
+        if (mIntent.getExtras() != null) {
+            String extrasUrl = mIntent.getExtras()
+                    .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_URL);
+            startFromNotification(extrasUrl);
+
+        }
     }
 
     @Override
@@ -170,33 +176,41 @@ public abstract class MediaPresenter
         if (intent.getExtras() != null) {
             String extrasUrl = intent.getExtras()
                     .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_URL);
-            if (extrasUrl != null) {
+            startFromNotification(extrasUrl);
 
-                for (int i = 0; i < mMenuItems.size(); i++) {
-                    TiscaliMenuItem item = mMenuItems.get(i);
-                    if (item.getUrl().equals(extrasUrl)) {
-                        if (item.getUrl().equals(mMenuItems.get(0).getUrl())) {
-                            openSection(extrasUrl, true);
-                            return;
-                        } else {
+        }
+
+    }
+
+    private void startFromNotification(String extrasUrl) {
+
+
+        if (extrasUrl != null) {
+
+            for (int i = 0; i < mMenuItems.size(); i++) {
+                TiscaliMenuItem item = mMenuItems.get(i);
+                if (item.getUrl().equals(extrasUrl)) {
+                    if (item.getUrl().equals(mMenuItems.get(0).getUrl())) {
+                        openSection(extrasUrl, true);
+                        return;
+                    } else {
+                        openSection(extrasUrl, false);
+                        return;
+                    }
+
+                }
+                if (item.getSections() != null && item.getSections().size() > 0) {
+                    for (int j = 0; j < item.getSections().size(); j++) {
+                        TiscaliMenuItem section = item.getSections().get(j);
+                        if (section.getUrl().equals(extrasUrl)) {
                             openSection(extrasUrl, false);
                             return;
                         }
-
                     }
-                    if (item.getSections() != null && item.getSections().size() > 0) {
-                        for (int j = 0; j < item.getSections().size(); j++) {
-                            TiscaliMenuItem section = item.getSections().get(j);
-                            if (section.getUrl().equals(extrasUrl)) {
-                                openSection(extrasUrl, false);
-                                return;
-                            }
-                        }
 
-                    }
                 }
-                detailPageLoad(extrasUrl);
             }
+            detailPageLoad(extrasUrl);
         }
 
     }
@@ -337,12 +351,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
     }
 
@@ -352,7 +364,7 @@ public abstract class MediaPresenter
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     public void openSection(String url, boolean isHome) {
@@ -379,12 +391,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
 
     }
@@ -690,8 +700,7 @@ public abstract class MediaPresenter
             }
         };
 
-        public MediaAdapter() {
-        }
+        public MediaAdapter() {}
 
         public void setSelectedPos(String sectionId) {
 
@@ -1010,8 +1019,7 @@ public abstract class MediaPresenter
     }
 
     @Override
-    public void setStartInstanceState(Bundle savedInstanceState) {
-    }
+    public void setStartInstanceState(Bundle savedInstanceState) {}
 
 
     public void showDialogInformations() {
