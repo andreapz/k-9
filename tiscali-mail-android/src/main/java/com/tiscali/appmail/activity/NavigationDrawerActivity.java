@@ -570,7 +570,6 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onStop() {
         mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-        mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         super.onStop();
 
     }

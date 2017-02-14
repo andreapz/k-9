@@ -12,6 +12,7 @@ import com.tiscali.appmail.api.model.Me;
 import com.tiscali.appmail.api.model.Onboarding;
 import com.tiscali.appmail.preferences.WelcomePreference;
 import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
+import com.tiscali.appmail.service.TiscaliAppFirebaseMessagingService;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -121,6 +122,14 @@ public class WelcomeActivity extends AppCompatActivity
                                 TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN);
                         Log.i("APZ", "Push token: " + token);
                     }
+                } else if (TiscaliAppFirebaseMessagingService.TOKEN_VERIFY_BROADCAST
+                        .equals(intent.getAction())) {
+                    if (intent.getStringExtra(
+                            TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN) != null) {
+                        String otp = intent.getStringExtra(
+                                TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN);
+                        // TODO call API POST push-notification/activate
+                    }
                 }
             }
         };
@@ -138,6 +147,8 @@ public class WelcomeActivity extends AppCompatActivity
         super.onStart();
         mLocalBroadcastManager.registerReceiver(mBroadcastReceiver,
                 new IntentFilter(TiscaliAppFirebaseInstanceIDService.TOKEN_BROADCAST));
+        mLocalBroadcastManager.registerReceiver(mBroadcastReceiver,
+                new IntentFilter(TiscaliAppFirebaseMessagingService.TOKEN_VERIFY_BROADCAST));
     }
 
     @Override
