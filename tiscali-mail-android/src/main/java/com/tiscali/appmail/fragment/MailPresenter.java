@@ -50,6 +50,7 @@ import com.tiscali.appmail.view.holder.HeaderViewHolder;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
 import android.app.FragmentTransaction;
@@ -155,6 +156,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
+
+    private boolean isMediaListFragmentAttached = false;
 
     // private Bundle mSavedInstanceState;
 
@@ -533,10 +536,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private void removeMessageListFragment() {
         if (mMessageListFragment != null) {
-            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-            ft.remove(mMessageListFragment);
-            mMessageListFragment = null;
-            ft.commit();
+            hideFragment(mMessageListFragment);
         }
     }
 
@@ -552,15 +552,22 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         boolean hasMessageListFragment = (mMessageListFragment != null);
 
         if (!hasMessageListFragment) {
-            FragmentTransaction ft = fragmentManager.beginTransaction();
             mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
                     (K9.isThreadedViewEnabled() && !mNoThreading));
-            ft.add(R.id.message_list_container, mMessageListFragment);
-            ft.commit();
         }
+
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        if (isMediaListFragmentAttached) {
+            ft.show(mMessageListFragment);
+        } else {
+            ft.add(R.id.message_list_container, mMessageListFragment);
+            isMediaListFragmentAttached = true;
+        }
+        ft.commit();
 
         // Check if the fragment wasn't restarted and has a MessageReference in the arguments. If
         // so, open the referenced message.
+        // should not be possible: bottom bar hidden in detail message view
         if (!hasMessageListFragment && mMessageViewFragment == null && mMessageReference != null) {
             openMessage(mMessageReference);
         }
@@ -673,10 +680,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      */
     private void removeMessageViewFragment() {
         if (mMessageViewFragment != null) {
-            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
-            ft.remove(mMessageViewFragment);
+            removeFragment(mMessageViewFragment);
             mMessageViewFragment = null;
-            ft.commit();
 
             showDefaultTitleView();
         }
@@ -1122,8 +1127,21 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mMessageReference = null;
         mSearch = null;
         mFolderName = null;
+    }
 
-        updateFragments();
+    private void removeFragment(Fragment fragment) {
+        FragmentManager manager = mContext.getFragmentManager();
+        FragmentTransaction ft = manager.beginTransaction();
+        ft.remove(fragment);
+        ft.commit();
+        manager.popBackStackImmediate();
+    }
+
+    private void hideFragment(Fragment fragment) {
+        FragmentManager manager = mContext.getFragmentManager();
+        FragmentTransaction ft = manager.beginTransaction();
+        ft.hide(fragment);
+        ft.commit();
     }
 
     @Override
