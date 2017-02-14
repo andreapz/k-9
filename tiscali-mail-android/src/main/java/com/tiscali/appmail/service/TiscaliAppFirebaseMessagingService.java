@@ -54,7 +54,6 @@ public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService
             sendNotification(remoteMessage.getNotification().getBody(), remoteMessage.getData());
         }
 
-
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
     }

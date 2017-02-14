@@ -5,6 +5,7 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 import com.tiscali.appmail.preferences.FirebasePreference;
 
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 /**
@@ -12,19 +13,19 @@ import android.util.Log;
  */
 public class TiscaliAppFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
-    private static final String TAG = "FBMsgServiceID";
+    private static final String TAG = TiscaliAppFirebaseInstanceIDService.class.getName();
     public static final String TOKEN_BROADCAST = "token_broadcast";
+    public static final String FIREBASE_PUSH_TOKEN = "FIREBASE_PUSH_TOKEN";
 
     @Override
     public void onTokenRefresh() {
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
-
-        getApplicationContext().sendBroadcast(new Intent(TOKEN_BROADCAST));
+        Intent intent = new Intent(TOKEN_BROADCAST);
+        intent.putExtra(FIREBASE_PUSH_TOKEN, refreshedToken);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         storeToken(refreshedToken);
-        // TODO send token to server
-
     }
 
     private void storeToken(String token) {
