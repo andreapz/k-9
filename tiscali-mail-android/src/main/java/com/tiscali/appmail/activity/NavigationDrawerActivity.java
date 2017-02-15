@@ -947,7 +947,9 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onDestroy() {
         NetworkHelper.resetInstance();
-        mInterstitialView.onDestroy();
+        if (mInterstitialView != null) {
+            mInterstitialView.onDestroy();
+        }
         super.onDestroy();
     }
 
