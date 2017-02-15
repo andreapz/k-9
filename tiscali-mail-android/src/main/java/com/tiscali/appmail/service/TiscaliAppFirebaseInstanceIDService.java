@@ -15,6 +15,9 @@ public class TiscaliAppFirebaseInstanceIDService extends FirebaseInstanceIdServi
 
     private static final String TAG = TiscaliAppFirebaseInstanceIDService.class.getName();
     public static final String TOKEN_BROADCAST = "token_broadcast";
+    public static final String FIREBASE_PLATFORM = "android";
+    public static final String FIREBASE_ENVIRONMENT_SANDBOX = "sandbox";
+    public static final String FIREBASE_ENVIRONMENT_PRODUCTION = "production";
     public static final String FIREBASE_PUSH_TOKEN = "FIREBASE_PUSH_TOKEN";
 
     @Override

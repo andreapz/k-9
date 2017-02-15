@@ -7,9 +7,11 @@ import com.tiscali.appmail.ApplicationComponent;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.api.ApiController;
+import com.tiscali.appmail.api.model.DeviceRegister;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
 import com.tiscali.appmail.api.model.Onboarding;
+import com.tiscali.appmail.preferences.FirebasePreference;
 import com.tiscali.appmail.preferences.WelcomePreference;
 import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
 import com.tiscali.appmail.service.TiscaliAppFirebaseMessagingService;
@@ -38,6 +40,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import rx.functions.Action1;
 
 /**
  * Created by thomascastangia on 31/01/17.
@@ -121,6 +125,18 @@ public class WelcomeActivity extends AppCompatActivity
                         String token = intent.getStringExtra(
                                 TiscaliAppFirebaseInstanceIDService.FIREBASE_PUSH_TOKEN);
                         Log.i("APZ", "Push token: " + token);
+                        mApiController.pushRegister(token,
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_PLATFORM,
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT_SANDBOX,
+                                new Action1<DeviceRegister>() {
+                                    @Override
+                                    public void call(DeviceRegister register) {
+                                        Log.i("APZ",
+                                                "DeviceRegister Status: " + register.getStatus());
+                                        Log.i("APZ",
+                                                "DeviceRegister Device: " + register.getDevice());
+                                    }
+                                });
                     }
                 } else if (TiscaliAppFirebaseMessagingService.TOKEN_VERIFY_BROADCAST
                         .equals(intent.getAction())) {
@@ -128,7 +144,16 @@ public class WelcomeActivity extends AppCompatActivity
                             TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN) != null) {
                         String otp = intent.getStringExtra(
                                 TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN);
-                        // TODO call API POST push-notification/activate
+                        Log.i("APZ", "Push otp: " + otp);
+                        mApiController.pushActivate(otp, new Action1<DeviceRegister>() {
+                            @Override
+                            public void call(DeviceRegister register) {
+                                FirebasePreference.getInstance(getApplicationContext())
+                                        .resetToken();
+                                Log.i("APZ", "DeviceActivate Status: " + register.getStatus());
+                                Log.i("APZ", "DeviceActivate Device: " + register.getDevice());
+                            }
+                        });
                     }
                 }
             }
@@ -271,6 +296,7 @@ public class WelcomeActivity extends AppCompatActivity
     public void updateMe(Me me, String json) {
 
     }
+
 
     @Override
     public void updateMainConfig(MainConfig mainConfig) {

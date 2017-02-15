@@ -1,6 +1,7 @@
 package com.tiscali.appmail.api;
 
 import com.tiscali.appmail.api.model.Authorize;
+import com.tiscali.appmail.api.model.DeviceRegister;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.UserLogin;
 
@@ -35,6 +36,15 @@ public interface ApiClient {
     @POST
     Observable<UserLogin> postUserLogin(@Url String url, @Field("username") String username,
             @Field("password") String password);
+
+    @FormUrlEncoded
+    @POST
+    Observable<DeviceRegister> postPushActivate(@Url String url, @Field("otp") String otp);
+
+    @FormUrlEncoded
+    @POST
+    Observable<DeviceRegister> postPushRegister(@Url String url, @Field("pushtoken") String otp,
+            @Field("platform") String platform, @Field("environment") String environment);
 
     @FormUrlEncoded
     @POST
