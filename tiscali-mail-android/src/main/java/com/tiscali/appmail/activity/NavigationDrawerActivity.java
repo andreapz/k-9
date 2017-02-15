@@ -20,6 +20,11 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.smartadserver.android.library.SASBannerView;
+import com.smartadserver.android.library.SASInterstitialView;
+import com.smartadserver.android.library.model.SASAdElement;
+import com.smartadserver.android.library.ui.SASAdView;
+import com.smartadserver.android.library.ui.SASRotatingImageLoader;
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.ApplicationComponent;
 import com.tiscali.appmail.K9;
@@ -63,6 +68,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.Settings;
@@ -81,6 +87,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -153,10 +160,24 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String GET_PARAMS_ID = "&UDID=";
     public static final String GET_PARAMS_PLATFORM = "&platform=";
     public static final String PLATFORM = "android";
+    public static final int INTERSTITIAL_INTERVAL_TIME = 1000 * 60 * 5;
 
     public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
     public static final String DEFAULT_TAB_KEY = "default_tab";
 
+    public static final String INTERSTITIAL_TIME = "INTERSTITIAL_TIME";
+    /*****************************************
+     * Ad Constants
+     *****************************************/
+    private final static int SITE_ID = 104808; // 45409
+    private final static String PAGE_ID = "663262";
+    private final static int FORMAT_ID = 15140;
+    private final static String TARGET = "";
+
+    private final static int INTERSTITIAL_SITE_ID = 104808;
+    private final static String INTERSTITIAL_PAGE_ID = "663264";
+    private final static int INTERSTITIAL_FORMAT_ID = 12167;
+    private final static String INTERSTITIAL_TARGET = "";
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
@@ -167,6 +188,11 @@ public class NavigationDrawerActivity extends K9Activity
 
     private int mSelectedTab;
     private BottomNavigationView mBottomNav;
+
+    private SASBannerView mBannerView;
+    private SASAdView.AdResponseHandler mBannerResponseHandler;
+    private SASInterstitialView mInterstitialView;
+    private SASAdView.AdResponseHandler interstitialResponseHandler;
 
     @Inject
     MailPresenter mMailPresenter;
@@ -182,6 +208,7 @@ public class NavigationDrawerActivity extends K9Activity
     private FrameLayout mViewContainer;
     private BroadcastReceiver mBroadcastReceiver;
     private LocalBroadcastManager mLocalBroadcastManager;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -231,6 +258,7 @@ public class NavigationDrawerActivity extends K9Activity
                     return true;
                 }
             };
+    private LinearLayout mBannerContainer;
 
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
@@ -360,6 +388,7 @@ public class NavigationDrawerActivity extends K9Activity
         BottomNavigationViewHelper.disableShiftMode(mBottomNav);
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
+        mBannerContainer = (LinearLayout) findViewById(R.id.banner_ll);
 
         // set a custom shadow that overlays the main content when the drawer opens
         // mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -475,7 +504,7 @@ public class NavigationDrawerActivity extends K9Activity
                         Log.i("APZ", "Push token: " + token);
                         mApiController.pushRegister(token,
                                 TiscaliAppFirebaseInstanceIDService.FIREBASE_PLATFORM,
-                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT_SANDBOX,
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT,
                                 new Action1<DeviceRegister>() {
                                     @Override
                                     public void call(DeviceRegister register) {
@@ -504,10 +533,55 @@ public class NavigationDrawerActivity extends K9Activity
                         });
                     }
                 }
-
             }
 
         };
+
+        initBannerView();
+        initInterstitialView();
+        loadBannerAd();
+
+        long startMillis = pref.getStorage().getLong(INTERSTITIAL_TIME, 0L);
+        long nowMillis = System.currentTimeMillis();
+
+        if (nowMillis - startMillis > INTERSTITIAL_INTERVAL_TIME) {
+            loadInterstitialAd();
+            StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
+            editor.putLong(INTERSTITIAL_TIME, nowMillis);
+            editor.commit();
+        }
+    }
+
+    private void initBannerView() {
+        // Fetch the SASBannerView inflated from the main.xml layout file
+        mBannerView = (SASBannerView) this.findViewById(R.id.banner);
+
+        // Add a loader view on the banner. This view covers the banner placement, to indicate
+        // progress, whenever the banner is loading an ad.
+        // This is optional
+        View loader = new SASRotatingImageLoader(this);
+        loader.setBackgroundColor(0x66000000);
+        mBannerView.setLoaderView(loader);
+
+        // Instantiate the response handler used when loading an ad on the banner
+        mBannerResponseHandler = new SASAdView.AdResponseHandler() {
+            public void adLoadingCompleted(SASAdElement adElement) {
+                Log.i("APZ", "Banner loading completed");
+            }
+
+            public void adLoadingFailed(Exception e) {
+                Log.i("APZ", "Banner loading failed: " + e.getMessage());
+            }
+        };
+    }
+
+    /**
+     * Loads an ad on the banner
+     */
+    private void loadBannerAd() {
+        // Load banner ad with appropriate parameters
+        // (siteID,pageID,formatID,master,targeting,adResponseHandler)
+        mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET, mBannerResponseHandler);
     }
 
     private Account getAccount(List<Account> accounts, LocalSearch localSearch) {
@@ -519,6 +593,65 @@ public class NavigationDrawerActivity extends K9Activity
             }
         }
         return null;
+    }
+
+    /**
+     * initialize the SASInterstitialView instance of this Activity
+     */
+    private void initInterstitialView() {
+
+        // Create SASInterstitialView instance
+        mInterstitialView = new SASInterstitialView(this);
+
+        // Add a loader view on the interstitial view. This view is displayed fullscreen, to
+        // indicate progress,
+        // whenever the interstitial is loading an ad.
+        View loader = new SASRotatingImageLoader(this);
+        loader.setBackgroundColor(Color.WHITE);
+        mInterstitialView.setLoaderView(loader);
+
+        // Add a state change listener on the SASInterstitialView instance to monitor MRAID states
+        // changes.
+        // Useful for instance to perform some actions as soon as the interstitial disappears.
+        mInterstitialView.addStateChangeListener(new SASAdView.OnStateChangeListener() {
+            public void onStateChanged(SASAdView.StateChangeEvent stateChangeEvent) {
+                switch (stateChangeEvent.getType()) {
+                    case SASAdView.StateChangeEvent.VIEW_DEFAULT:
+                        // the MRAID Ad View is in default state
+                        Log.i("APZ", "Interstitial MRAID state : DEFAULT");
+                        break;
+                    case SASAdView.StateChangeEvent.VIEW_EXPANDED:
+                        // the MRAID Ad View is in expanded state
+                        Log.i("APZ", "Interstitial MRAID state : EXPANDED");
+                        break;
+                    case SASAdView.StateChangeEvent.VIEW_HIDDEN:
+                        // the MRAID Ad View is in hidden state
+                        Log.i("APZ", "Interstitial MRAID state : HIDDEN");
+                        break;
+                }
+            }
+        });
+
+        // Instantiate the response handler used when loading an interstitial ad
+        interstitialResponseHandler = new SASAdView.AdResponseHandler() {
+            public void adLoadingCompleted(SASAdElement adElement) {
+                Log.i("APZ", "Interstitial loading completed");
+            }
+
+            public void adLoadingFailed(Exception e) {
+                Log.i("APZ", "Interstitial loading failed: " + e.getMessage());
+            }
+        };
+    }
+
+    /**
+     * Loads an interstitial ad
+     */
+    private void loadInterstitialAd() {
+        // Load interstitial ad with appropriate parameters
+        // (siteID,pageID,formatID,master,targeting,adResponseHandler)
+        mInterstitialView.loadAd(INTERSTITIAL_SITE_ID, INTERSTITIAL_PAGE_ID, INTERSTITIAL_FORMAT_ID,
+                true, INTERSTITIAL_TARGET, interstitialResponseHandler);
     }
 
     @Override
@@ -663,24 +796,24 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public void hideBottomNav() {
-        mBottomNav.animate().translationY(mBottomNav.getHeight())
+        mBannerContainer.animate().translationY(mBottomNav.getHeight())
                 .setListener(new AnimatorListenerAdapter() {
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mBottomNav.setVisibility(View.GONE);
+                        // mBottomNav.setVisibility(View.GONE);
                     }
 
                 });
     }
 
     public void showBottomNav() {
-        mBottomNav.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
+        mBannerContainer.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                mBottomNav.setVisibility(View.VISIBLE);
+                // mBottomNav.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -814,6 +947,7 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onDestroy() {
         NetworkHelper.resetInstance();
+        mInterstitialView.onDestroy();
         super.onDestroy();
     }
 

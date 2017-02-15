@@ -73,6 +73,8 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.3.1'
     compile 'com.google.firebase:firebase-messaging:10.0.1'
 
+    compile files('libs/SmartAdServer-Android-SDK-6.6.2.jar')
+
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.mockito:mockito-core:${mockitoVersion}"
@@ -82,6 +84,7 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-contrib:2.2.2'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
 
     androidTestCompile "com.android.support:support-v4:${androidSupportLibraryVersion}"
     androidTestCompile "com.android.support:appcompat-v7:${androidSupportLibraryVersion}"

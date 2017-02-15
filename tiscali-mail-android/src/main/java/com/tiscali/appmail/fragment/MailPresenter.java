@@ -1010,7 +1010,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         menu.findItem(R.id.search_remote).setVisible(false);
 
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW || mMessageListFragment == null
-                || !mMessageListFragment.isInitialized()) {
+                || !mMessageListFragment.isInitialized() || mMessageListFragment.isHidden()) {
             menu.findItem(R.id.check_mail).setVisible(false);
             menu.findItem(R.id.set_sort).setVisible(false);
             menu.findItem(R.id.select_all).setVisible(false);
@@ -1127,6 +1127,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mMessageReference = null;
         mSearch = null;
         mFolderName = null;
+
+        mContext.invalidateOptionsMenu();
+
     }
 
     private void removeFragment(Fragment fragment) {

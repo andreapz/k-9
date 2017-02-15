@@ -91,6 +91,8 @@ import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -99,7 +101,6 @@ import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -3553,8 +3554,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
     private void startAndPrepareActionMode() {
-        mActionMode = getActivity().startActionMode(mActionModeCallback);
-        mActionMode.invalidate();
+        if (getActivity() instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            mActionMode = activity.startSupportActionMode(mActionModeCallback);
+            mActionMode.invalidate();
+        }
     }
 
     /**

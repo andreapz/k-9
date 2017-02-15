@@ -127,7 +127,7 @@ public class WelcomeActivity extends AppCompatActivity
                         Log.i("APZ", "Push token: " + token);
                         mApiController.pushRegister(token,
                                 TiscaliAppFirebaseInstanceIDService.FIREBASE_PLATFORM,
-                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT_SANDBOX,
+                                TiscaliAppFirebaseInstanceIDService.FIREBASE_ENVIRONMENT,
                                 new Action1<DeviceRegister>() {
                                     @Override
                                     public void call(DeviceRegister register) {

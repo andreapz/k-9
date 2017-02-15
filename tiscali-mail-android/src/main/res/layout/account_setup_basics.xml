@@ -6,39 +6,45 @@
     android:layout_width="fill_parent">
 
     <ScrollView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="6dip"
+        android:paddingLeft="@dimen/margin_standard_16dp"
+        android:paddingBottom="@dimen/margin_standard_16dp"
+        android:paddingRight="@dimen/margin_standard_16dp"
+        android:paddingTop="@dimen/margin_standard_56dp"
         android:fadingEdge="none"
         android:scrollbarStyle="outsideInset">
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_gravity="center_horizontal|center_vertical"
+            android:layout_gravity="center_horizontal"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/account_email"
-                    android:layout_width="0dp"
-                    android:layout_weight=".7"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="bottom"
                     android:hint="@string/account_setup_basics_email_hint"
-                    android:maxLines="1" />
+                    android:layout_toLeftOf="@+id/account_domain"
+                    android:maxLines="1"
+                    style="@style/Body1Style" />
 
                 <TextView
                     android:id="@+id/account_domain"
-                    android:layout_width="0dp"
-                    android:layout_weight=".3"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1" />
-            </LinearLayout>
+                    android:maxLines="1"
+                    style="@style/Body1Style" />
+            </RelativeLayout>
 
             <EditText
                 android:id="@+id/account_password"
@@ -47,13 +53,15 @@
                 android:maxLines="1"
                 android:layout_height="wrap_content"
                 android:layout_width="fill_parent"
-                android:nextFocusDown="@+id/next" />
+                android:nextFocusDown="@+id/next"
+                style="@style/Body1Style" />
 
             <CheckBox
                 android:id="@+id/show_password"
                 android:layout_height="wrap_content"
                 android:layout_width="fill_parent"
-                android:text="@string/account_setup_basics_show_password" />
+                android:text="@string/account_setup_basics_show_password"
+                style="@style/CaptionStyle" />
 
             <com.tiscali.appmail.view.ClientCertificateSpinner
                 android:id="@+id/account_client_certificate_spinner"

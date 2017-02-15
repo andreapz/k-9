@@ -340,7 +340,7 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
             // Auto-setup doesn't support client certificates.
             onManualSetup();
             return;
-        }
+         }
 
         String domain = mEmailDomain.substring(mEmailDomain.indexOf("@") + 1);
         mProvider = findProviderForDomain(domain);
