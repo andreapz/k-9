@@ -1,8 +1,10 @@
 package com.tiscali.appmail.activity;
 
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.pressBack;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.DrawerActions.open;
@@ -13,11 +15,13 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.anything;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +30,7 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.view.K9PullToRefreshListView;
 
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
@@ -35,8 +40,13 @@ import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Tap;
 import android.support.test.espresso.contrib.NavigationViewActions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
+import android.support.test.espresso.core.deps.guava.util.concurrent.ThreadFactoryBuilder;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiSelector;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,7 +62,14 @@ public class UI_NavigationDrawerActivity_Test {
     @Rule
     public ActivityTestRule<NavigationDrawerActivity> mActivityRule =
             new ActivityTestRule<>(NavigationDrawerActivity.class);
+    private UiDevice mDevice;
 
+    @Before
+    public void setUp() throws Exception{
+//        super.setUp();
+        mDevice = UiDevice.getInstance(getInstrumentation());
+    }
+    
     @Test
     public void selectTabMailTest() {
         // openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
@@ -112,15 +129,32 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withId(R.id.show_password)).check(matches(isChecked()));
         onView(withId(R.id.next)).perform(click());
 
-        SystemClock.sleep(1000);
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-//        onView(withText("CAMBIA PASSWORD"))
-//        onView(withId(android.R.id.button1))
-//                .inRoot(isDialog())
-//                .check(matches(isDisplayed()));
+        UiObject uiObject = mDevice.findObject(new UiSelector().text("CAMBIA PASSWORD"));
+        try {
+            uiObject.click();
+        } catch (UiObjectNotFoundException e) {
+            throw new RuntimeException("UI Object not found", e);
+        }
 
-        onView(withId(android.R.id.button3))
-                .perform(click());
+        mDevice.pressBack();
+        mDevice.pressBack();
+        mDevice.pressHome();
+
+        onView(withText("CAMBIA PASSWORD")).check(matches(isDisplayed()));
+
+        onView(any(View.class)).perform(pressBack());
+
+        onView(withText("CAMBIA PASSWORD"))
+                .perform(pressBack());
+
+//        onView(withId(android.R.id.button3))
+//                .perform(click());
 
         Espresso.pressBack();
         Espresso.pressBack();
