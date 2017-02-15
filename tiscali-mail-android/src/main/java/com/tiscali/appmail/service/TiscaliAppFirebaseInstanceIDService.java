@@ -2,6 +2,7 @@ package com.tiscali.appmail.service;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.tiscali.appmail.BuildConfig;
 import com.tiscali.appmail.preferences.FirebasePreference;
 
 import android.content.Intent;
@@ -18,7 +19,17 @@ public class TiscaliAppFirebaseInstanceIDService extends FirebaseInstanceIdServi
     public static final String FIREBASE_PLATFORM = "android";
     public static final String FIREBASE_ENVIRONMENT_SANDBOX = "sandbox";
     public static final String FIREBASE_ENVIRONMENT_PRODUCTION = "production";
+    public static String FIREBASE_ENVIRONMENT = FIREBASE_ENVIRONMENT_PRODUCTION;
+
     public static final String FIREBASE_PUSH_TOKEN = "FIREBASE_PUSH_TOKEN";
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if(BuildConfig.DEBUG) {
+            FIREBASE_ENVIRONMENT = FIREBASE_ENVIRONMENT_SANDBOX;
+        }
+    }
 
     @Override
     public void onTokenRefresh() {

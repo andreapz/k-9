@@ -154,7 +154,8 @@ public abstract class MediaPresenter
             initializeFragments(mCurrentPage);
         } else {
             if (mMenuItems.size() > 0) {
-                initializeFragments(mMenuItems.get(HOME_POSITION_PRESENTER).getUrl());
+                mCurrentPage = mMenuItems.get(HOME_POSITION_PRESENTER).getUrl();
+                initializeFragments(mCurrentPage);
             }
         }
         if (mIntent.getExtras() != null) {
@@ -177,16 +178,13 @@ public abstract class MediaPresenter
             String extrasUrl = intent.getExtras()
                     .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_URL);
             startFromNotification(extrasUrl);
-
         }
 
     }
 
     private void startFromNotification(String extrasUrl) {
 
-
         if (extrasUrl != null) {
-
             for (int i = 0; i < mMenuItems.size(); i++) {
                 TiscaliMenuItem item = mMenuItems.get(i);
                 if (item.getUrl().equals(extrasUrl)) {
@@ -197,7 +195,6 @@ public abstract class MediaPresenter
                         openSection(extrasUrl, false);
                         return;
                     }
-
                 }
                 if (item.getSections() != null && item.getSections().size() > 0) {
                     for (int j = 0; j < item.getSections().size(); j++) {
@@ -207,12 +204,10 @@ public abstract class MediaPresenter
                             return;
                         }
                     }
-
                 }
             }
             detailPageLoad(extrasUrl);
         }
-
     }
 
     private void findFragments() {

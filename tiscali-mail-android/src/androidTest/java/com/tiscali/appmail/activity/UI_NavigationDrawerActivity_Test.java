@@ -107,58 +107,58 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withId(R.id.mark_as_unread)).perform(click());
     }
 
-    @Test
-    public void addAccountWithSimplePassword() {
-        onView(withId(R.id.menu_mail)).perform(click());
-
-
-        onView(withId(R.id.drawer_layout))
-                .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
-                .perform(open()); // Open Drawer
-
-        onView(withId(R.id.expand_menu)).perform(click());
-
-        onView(withId(R.id.left_drawer))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
-
-        onView(withId(R.id.account_email)).perform(click());
-        onView(withId(R.id.account_email)).perform(typeText("testappmail"));
-        onView(withId(R.id.account_password)).perform(click());
-        onView(withId(R.id.account_password)).perform(typeText("123456"));
-        onView(withId(R.id.show_password)).perform(click());
-        onView(withId(R.id.show_password)).check(matches(isChecked()));
-        onView(withId(R.id.next)).perform(click());
-
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        UiObject uiObject = mDevice.findObject(new UiSelector().text("CAMBIA PASSWORD"));
-        try {
-            uiObject.click();
-        } catch (UiObjectNotFoundException e) {
-            throw new RuntimeException("UI Object not found", e);
-        }
-
-        mDevice.pressBack();
-        mDevice.pressBack();
-        mDevice.pressHome();
-
-        onView(withText("CAMBIA PASSWORD")).check(matches(isDisplayed()));
-
-        onView(any(View.class)).perform(pressBack());
-
-        onView(withText("CAMBIA PASSWORD"))
-                .perform(pressBack());
-
-//        onView(withId(android.R.id.button3))
-//                .perform(click());
-
-        Espresso.pressBack();
-        Espresso.pressBack();
-    }
+//    @Test
+//    public void addAccountWithSimplePassword() {
+//        onView(withId(R.id.menu_mail)).perform(click());
+//
+//
+//        onView(withId(R.id.drawer_layout))
+//                .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
+//                .perform(open()); // Open Drawer
+//
+//        onView(withId(R.id.expand_menu)).perform(click());
+//
+//        onView(withId(R.id.left_drawer))
+//                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
+//
+//        onView(withId(R.id.account_email)).perform(click());
+//        onView(withId(R.id.account_email)).perform(typeText("testappmail"));
+//        onView(withId(R.id.account_password)).perform(click());
+//        onView(withId(R.id.account_password)).perform(typeText("123456"));
+//        onView(withId(R.id.show_password)).perform(click());
+//        onView(withId(R.id.show_password)).check(matches(isChecked()));
+//        onView(withId(R.id.next)).perform(click());
+//
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//        UiObject uiObject = mDevice.findObject(new UiSelector().text("CAMBIA PASSWORD"));
+//        try {
+//            uiObject.click();
+//        } catch (UiObjectNotFoundException e) {
+//            throw new RuntimeException("UI Object not found", e);
+//        }
+//
+//        mDevice.pressBack();
+//        mDevice.pressBack();
+//        mDevice.pressHome();
+//
+//        onView(withText("CAMBIA PASSWORD")).check(matches(isDisplayed()));
+//
+//        onView(any(View.class)).perform(pressBack());
+//
+//        onView(withText("CAMBIA PASSWORD"))
+//                .perform(pressBack());
+//
+////        onView(withId(android.R.id.button3))
+////                .perform(click());
+//
+//        Espresso.pressBack();
+//        Espresso.pressBack();
+//    }
 
     @Test
     public void addSecondAccountPassword() {
