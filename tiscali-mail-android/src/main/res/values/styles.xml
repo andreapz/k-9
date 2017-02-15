@@ -80,17 +80,33 @@
         <item name="android:windowIsFloating">false</item>
     </style>
 
-    <style name="RobotoRegular14">
+    <style name="RobotoRegular">
         <item name="android:fontFamily">sans-serif"</item>
+
+    </style>
+
+    <style name="RobotoRegular14White" parent="RobotoRegular">
+        <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">14sp</item>
     </style>
 
-    <style name="RobotoRegular14White" parent="RobotoRegular14">
+    <style name="RobotoRegular14Black" parent="RobotoRegular">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="RobotoRegular16White" parent="RobotoRegular">
+        <item name="android:textSize">16sp</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
 
-    <style name="RobotoRegular14Black" parent="RobotoRegular14">
-        <item name="android:textColor">@android:color/black</item>
+    <style name="RobotoRegular24White" parent="RobotoRegular">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="RobotoMedium">
+        <item name="android:fontFamily">sans-serif-medium-serif"</item>
     </style>
 
     <style name="RobotoMedium14">
@@ -98,13 +114,35 @@
         <item name="android:textSize">14sp</item>
     </style>
 
-    <style name="RobotoMedium14White" parent="RobotoMedium14">
+    <style name="RobotoMedium14White" parent="RobotoMedium">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="RobotoMedium14Black" parent="RobotoMedium">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TitleStyle" parent="RobotoMedium">
+        <item name="android:textSize">20sp</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
 
-    <style name="RobotoMedium14Black" parent="RobotoMedium14">
-        <item name="android:textColor">@android:color/black</item>
+    <style name="Body1Style" parent="RobotoRegular">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/black_text_secondary</item>
+        <item name="android:textColorHint">@color/black_text_hint_disabled</item>
     </style>
 
+    <style name="CaptionStyle" parent="RobotoRegular">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/black_text_secondary</item>
+        <item name="android:textColorHint">@color/black_text_hint_disabled</item>
+    </style>
+
+    <style name="FlatButtonStyle" parent="Theme.AppCompat.Light">
+        <item name="android:textColor">@drawable/flat_button_text_color</item>
+    </style>
 </resources>
 

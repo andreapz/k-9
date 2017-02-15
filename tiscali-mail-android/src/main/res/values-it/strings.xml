@@ -427,7 +427,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="account_setup_failed_dlg_password_too_simple_message_fmt">Password troppo semplice.</string>
     <string name="account_setup_failed_dlg_certificate_message_fmt">Il server ha fornito un certificato SSL non valido. A volte ciò è dovuto a problemi di configurazione del server. In altri casi potrebbe dipendere da un tentativo di attacco a te o al tuo server di posta. Se non sei sicuro delle cause, fai clic su Rifiuta e contatta gli amministratori del tuo server di posta.\n\n(<xliff:g id="error">%s</xliff:g>)</string>
     <string name="account_setup_failed_dlg_server_message_fmt">Impossibile connettersi al server.</string>
-    <string name="account_setup_failed_dlg_edit_details_action">Modifica i dettagli</string>
+    <string name="account_setup_failed_dlg_edit_details_action">Modifica</string>
     <string name="account_password_too_simple_failed_dlg_edit_details_action">Cambia password</string>
     <string name="account_setup_failed_dlg_continue_action">Continua</string>
     <string name="account_settings_push_advanced_title">Avanzate</string>

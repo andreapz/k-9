@@ -18,7 +18,7 @@
             android:maxLines="1"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/actionbar_progress"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            style="@style/TitleStyle" />
 
         <ProgressBar
             android:id="@+id/actionbar_progress"
