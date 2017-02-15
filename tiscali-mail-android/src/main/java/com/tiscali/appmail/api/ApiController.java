@@ -404,7 +404,8 @@ public class ApiController {
 
         @Override
         public void onError(Throwable e) {
-
+            RetrofitException re = (RetrofitException) e;
+            Log.i("APITEST", "DeviceRegister ERROR: " + re.getMessage());
         }
 
         @Override

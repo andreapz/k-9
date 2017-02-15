@@ -24,7 +24,6 @@ import android.util.Log;
 public class TiscaliAppFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FBMessagingService";
     public static final String TOKEN_VERIFY_BROADCAST = "token_broadcast";
-
     public static final String FIREBASE_OTP_TOKEN = "FIREBASE_OTP_TOKEN";
     public static final String NOTIFICATION_SECTION = "t";
     public static final String NOTIFICATION_URL = "v";
