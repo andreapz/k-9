@@ -209,6 +209,8 @@ public class NavigationDrawerActivity extends K9Activity
     private BroadcastReceiver mBroadcastReceiver;
     private LocalBroadcastManager mLocalBroadcastManager;
 
+    private Toolbar mToolbar;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -375,8 +377,8 @@ public class NavigationDrawerActivity extends K9Activity
 
         setContentView(R.layout.activity_navigation_drawer);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mTitle = mDrawerTitle = getTitle();
@@ -524,6 +526,7 @@ public class NavigationDrawerActivity extends K9Activity
                                 TiscaliAppFirebaseMessagingService.FIREBASE_OTP_TOKEN);
                         Log.i("APZ", "Push otp: " + otp);
                         mApiController.pushActivate(otp, new Action1<DeviceRegister>() {
+
                             @Override
                             public void call(DeviceRegister register) {
                                 Log.i("APZ", "DeviceActivate Status: " + register.getStatus());
@@ -546,7 +549,9 @@ public class NavigationDrawerActivity extends K9Activity
         long nowMillis = System.currentTimeMillis();
 
         if (nowMillis - startMillis > INTERSTITIAL_INTERVAL_TIME) {
+
             loadInterstitialAd();
+
             StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
             editor.putLong(INTERSTITIAL_TIME, nowMillis);
             editor.commit();
@@ -1086,6 +1091,13 @@ public class NavigationDrawerActivity extends K9Activity
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggls
         mDrawerToggle.onConfigurationChanged(newConfig);
+        // change toolbar height in landscape
+        if (mToolbar != null) {
+            LinearLayout.LayoutParams layoutParams =
+                    (LinearLayout.LayoutParams) mToolbar.getLayoutParams();
+            layoutParams.height = getResources().getDimensionPixelSize(R.dimen.action_bar_size);
+            mToolbar.setLayoutParams(layoutParams);
+        }
     }
 
     private void onMailTabClicked() {
