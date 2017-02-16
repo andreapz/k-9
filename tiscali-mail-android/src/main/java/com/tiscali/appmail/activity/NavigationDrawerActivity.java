@@ -311,6 +311,7 @@ public class NavigationDrawerActivity extends K9Activity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.Theme_K9_Light_NoActionBar_Base);
         super.onCreate(savedInstanceState);
 
         Preferences pref = Preferences.getPreferences(this);

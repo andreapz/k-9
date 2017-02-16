@@ -42,12 +42,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.support.multidex.MultiDexApplication;
 import android.text.format.Time;
 import android.util.Log;
 
 import io.fabric.sdk.android.Fabric;
 
-public class K9 extends Application {
+public class K9 extends MultiDexApplication {
     /**
      * Components that are interested in knowing when the K9 instance is available and ready
      * (Android invokes Application.onCreate() after other components') should implement this
