@@ -37,7 +37,7 @@
         <item name="iconActionSend">@drawable/ic_action_send_light</item>
         <item name="iconActionSettings">@drawable/ic_action_settings_light</item>
         <item name="iconActionSingleMessageOptions">
-            @drawable/ic_action_single_message_options_light
+            @drawable/ic_reply_all_white_24dp
         </item>
         <item name="iconActionSort">@drawable/ic_action_sort_light</item>
         <item name="iconActionSpam">@drawable/ic_action_spam_light</item>
