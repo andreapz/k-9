@@ -17,6 +17,7 @@ package com.tiscali.appmail.activity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -91,6 +92,7 @@ import android.widget.LinearLayout;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
@@ -160,7 +162,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String GET_PARAMS_ID = "&UDID=";
     public static final String GET_PARAMS_PLATFORM = "&platform=";
     public static final String PLATFORM = "android";
-    public static final int INTERSTITIAL_INTERVAL_TIME = 1000 * 60 * 5;
+    public static final int INTERSTITIAL_INTERVAL_TIME = 1000;// * 60 * 5;
 
     public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
     public static final String DEFAULT_TAB_KEY = "default_tab";
@@ -193,6 +195,7 @@ public class NavigationDrawerActivity extends K9Activity
     private SASAdView.AdResponseHandler mBannerResponseHandler;
     private SASInterstitialView mInterstitialView;
     private SASAdView.AdResponseHandler interstitialResponseHandler;
+    private int mInterstitialState;
 
     @Inject
     MailPresenter mMailPresenter;
@@ -262,6 +265,7 @@ public class NavigationDrawerActivity extends K9Activity
             };
     private LinearLayout mBannerContainer;
 
+
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.setAction(ACTION_IMPORT_SETTINGS);
@@ -278,7 +282,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -304,7 +308,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-            MessageReference messageReference) {
+                                                    MessageReference messageReference) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -491,10 +495,12 @@ public class NavigationDrawerActivity extends K9Activity
                                     }
 
                                     @Override
-                                    public void onError(Throwable e) {}
+                                    public void onError(Throwable e) {
+                                    }
 
                                     @Override
-                                    public void onNext(Object o) {}
+                                    public void onNext(Object o) {
+                                    }
                                 });
 
                     }
@@ -623,15 +629,39 @@ public class NavigationDrawerActivity extends K9Activity
             public void onStateChanged(SASAdView.StateChangeEvent stateChangeEvent) {
                 switch (stateChangeEvent.getType()) {
                     case SASAdView.StateChangeEvent.VIEW_DEFAULT:
+                        mInterstitialState = SASAdView.StateChangeEvent.VIEW_DEFAULT;
                         // the MRAID Ad View is in default state
                         Log.i("APZ", "Interstitial MRAID state : DEFAULT");
+                        Observable.empty().observeOn(Schedulers.newThread())
+                                .delay(1500, TimeUnit.MILLISECONDS)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Subscriber<Object>() {
+                                    @Override
+                                    public void onCompleted() {
+                                        if (mInterstitialState == SASAdView.StateChangeEvent.VIEW_DEFAULT) {
+                                            Log.i("APZ", "Interstitial FORCE CLOSE");
+                                            mInterstitialView.onDestroy();
+                                            initInterstitialView();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+                                    }
+
+                                    @Override
+                                    public void onNext(Object o) {
+                                    }
+                                });
                         break;
                     case SASAdView.StateChangeEvent.VIEW_EXPANDED:
                         // the MRAID Ad View is in expanded state
+                        mInterstitialState = SASAdView.StateChangeEvent.VIEW_EXPANDED;
                         Log.i("APZ", "Interstitial MRAID state : EXPANDED");
                         break;
                     case SASAdView.StateChangeEvent.VIEW_HIDDEN:
                         // the MRAID Ad View is in hidden state
+                        mInterstitialState = SASAdView.StateChangeEvent.VIEW_HIDDEN;
                         Log.i("APZ", "Interstitial MRAID state : HIDDEN");
                         break;
                 }
@@ -640,6 +670,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         // Instantiate the response handler used when loading an interstitial ad
         interstitialResponseHandler = new SASAdView.AdResponseHandler() {
+
             public void adLoadingCompleted(SASAdElement adElement) {
                 Log.i("APZ", "Interstitial loading completed");
             }
@@ -647,6 +678,7 @@ public class NavigationDrawerActivity extends K9Activity
             public void adLoadingFailed(Exception e) {
                 Log.i("APZ", "Interstitial loading failed: " + e.getMessage());
             }
+
         };
     }
 
@@ -843,7 +875,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -1213,7 +1245,7 @@ public class NavigationDrawerActivity extends K9Activity
                 mOffersPresenter.goBackOnHistory();
             } else if (mMailPresenter != null
                     && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                            && mMailPresenter.getMessageListWasDisplayed())) {
+                    && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
             } else if (mMailPresenter != null
                     && getIntent().getStringExtra(SearchManager.QUERY) != null) {
