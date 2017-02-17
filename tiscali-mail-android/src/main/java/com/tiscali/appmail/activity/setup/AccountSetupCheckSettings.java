@@ -444,7 +444,7 @@ public class AccountSetupCheckSettings extends K9Activity
         // fragment.show(ta, getDialogTag(dialogId));
     }
 
-    private String getDialogTag(int dialogId) {
+    public String getDialogTag(int dialogId) {
         return String.format(Locale.US, "dialog-%d", dialogId);
     }
 
