@@ -36,12 +36,11 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize"
+            android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            android:layout_alignParentTop="true"
-            app:layout_scrollFlags="enterAlways" />
+            android:elevation="@dimen/margin_standard_4dp" />
 
         <RelativeLayout android:layout_width="match_parent"
             android:layout_height="match_parent"
