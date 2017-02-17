@@ -30,6 +30,7 @@ import com.tiscali.appmail.activity.setup.AccountSetupCheckSettings;
 import com.tiscali.appmail.view.K9PullToRefreshListView;
 
 import android.app.Instrumentation;
+import android.os.SystemClock;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.action.CoordinatesProvider;
@@ -169,6 +170,32 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withId(R.id.done)).perform(click());
     }
 
+    @Test
+    public void scrollDownAndUp() {
+        onView(withId(R.id.menu_mail)).perform(click());
+        K9PullToRefreshListView pullToRefreshListView = (K9PullToRefreshListView) mActivityRule
+                .getActivity().findViewById(R.id.message_list);
+
+        ListView listView = pullToRefreshListView.getRefreshableView();
+
+        int count = listView.getCount();
+        // Scroll message list
+        if (count < MESSAGE_LIST_STEP_NUMBER) {
+            listView.smoothScrollToPosition(count);
+        } else {
+            listView.smoothScrollToPosition(MESSAGE_LIST_STEP_NUMBER);
+        }
+
+
+
+        SystemClock.sleep(1000);
+        onView(withId(R.id.bottom_navigation)).check(matches(not(isDisplayed())));
+        listView.smoothScrollToPosition(0);
+
+        SystemClock.sleep(1000);
+        onView(withId(R.id.bottom_navigation)).check(matches((isDisplayed())));
+
+    }
 
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,

@@ -1123,7 +1123,7 @@ public class NavigationDrawerActivity extends K9Activity
         if (mToolbar != null) {
             LinearLayout.LayoutParams layoutParams =
                     (LinearLayout.LayoutParams) mToolbar.getLayoutParams();
-            layoutParams.height = getResources().getDimensionPixelSize(R.dimen.action_bar_size);
+            layoutParams.height = getResources().getDimensionPixelSize(R.dimen.action_bar_height);
             mToolbar.setLayoutParams(layoutParams);
         }
     }

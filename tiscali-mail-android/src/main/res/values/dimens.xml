@@ -17,5 +17,7 @@
     <dimen name="dots_margin_bottom">20dp</dimen>
 
     <!-- action bar size: as defined in support library -->
-    <dimen name="action_bar_size">@dimen/abc_action_bar_default_height_material</dimen>
+    <dimen name="action_bar_height">@dimen/abc_action_bar_default_height_material</dimen>
+
+    <dimen name="search_bar_width">@dimen/abc_search_view_preferred_width</dimen>
 </resources>

@@ -1,7 +1,5 @@
 package com.tiscali.appmail.analytics;
 
-import java.util.Map;
-
 import android.app.Activity;
 import android.content.Context;
 
@@ -96,8 +94,8 @@ public class TiscaliWebtrekk {
      * @param activity A {@link Activity} instance that is used to stop page tracking.
      */
     public static void stopPageTracking(Activity activity) {
-    // Webtrekk.activityStop(activity);
-    // }
+        // Webtrekk.activityStop(activity);
+    }
 
     /**
      * Returns the value will appear in the Webtrekk analysis.
@@ -128,17 +126,17 @@ public class TiscaliWebtrekk {
      * @param context A {@link Context} instance that is used to get the string resources.
      * @return The Webtrekk parameters.
      */
-    private static Map<String, String> getParameters(Context context) {
-        // String[] entries = context.getResources()
-        // .getStringArray(R.array.webtrekk_adv_parameters_entries_tiscali);
-        // String[] values = context.getResources()
-        // .getStringArray(R.array.webtrekk_adv_parameters_values_tiscali);
-        //
-        // Map<String, String> webtrekkParams = new HashMap<String, String>();
-        // for (int i = 0; i < entries.length; i++)
-        // webtrekkParams.put(entries[i], values[i]);
-        //
-        // return webtrekkParams;
-    }
+    // private static Map<String, String> getParameters(Context context) {
+    // // String[] entries = context.getResources()
+    // // .getStringArray(R.array.webtrekk_adv_parameters_entries_tiscali);
+    // // String[] values = context.getResources()
+    // // .getStringArray(R.array.webtrekk_adv_parameters_values_tiscali);
+    // //
+    // // Map<String, String> webtrekkParams = new HashMap<String, String>();
+    // // for (int i = 0; i < entries.length; i++)
+    // // webtrekkParams.put(entries[i], values[i]);
+    // //
+    // // return webtrekkParams;
+    // }
 
 }
