@@ -274,10 +274,9 @@
         <!-- Search Activity - searchable -->
         <activity
             android:name="com.tiscali.appmail.activity.Search"
-            android:configChanges="locale"
             android:label="@string/search_action"
-            android:theme="@style/Theme.K9.Light.NoActionBar.Base"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:configChanges="locale|keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:theme="@style/Theme.K9.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -471,6 +470,11 @@
                 android:resource="@xml/decrypted_file_provider_paths" />
 
         </provider>
+
+        <provider
+            android:name="com.tiscali.appmail.provider.TiscaliSearchRecentSuggestionsProvider"
+            android:authorities="com.tiscali.appmail.provider.TiscaliSearchRecentSuggestionsProvider" />
+
         <!-- ATTENTION: This was auto-generated to add Google Play services to your project for
      App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
         <meta-data
