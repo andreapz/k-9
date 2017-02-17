@@ -23,17 +23,15 @@ import org.robolectric.annotation.Config;
 
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
-import com.tiscali.appmail.K9.NotificationHideSubject;
-import com.tiscali.appmail.K9.NotificationQuickDelete;
 import com.tiscali.appmail.NotificationSetting;
 import com.tiscali.appmail.R;
 
 import android.app.Application;
 import android.app.Notification;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.support.v4.app.NotificationCompat.InboxStyle;
+import android.support.v7.app.NotificationCompat;
 
 
 @RunWith(RobolectricTestRunner.class)
@@ -76,7 +74,7 @@ public class DeviceNotificationsTest {
 
     @Test
     public void buildSummaryNotification_withPrivacyModeActive() throws Exception {
-        K9.setNotificationHideSubject(NotificationHideSubject.ALWAYS);
+        K9.setNotificationHideSubject(K9.NotificationHideSubject.ALWAYS);
 
         Notification result =
                 notifications.buildSummaryNotification(account, notificationData, false);
@@ -94,8 +92,8 @@ public class DeviceNotificationsTest {
 
     @Test
     public void buildSummaryNotification_withSingleMessageNotification() throws Exception {
-        K9.setNotificationHideSubject(NotificationHideSubject.NEVER);
-        K9.setNotificationQuickDeleteBehaviour(NotificationQuickDelete.ALWAYS);
+        K9.setNotificationHideSubject(K9.NotificationHideSubject.NEVER);
+        K9.setNotificationQuickDeleteBehaviour(K9.NotificationQuickDelete.ALWAYS);
         when(notificationData.isSingleMessageNotification()).thenReturn(true);
 
         Notification result =
@@ -118,8 +116,8 @@ public class DeviceNotificationsTest {
 
     @Test
     public void buildSummaryNotification_withMultiMessageNotification() throws Exception {
-        K9.setNotificationHideSubject(NotificationHideSubject.NEVER);
-        K9.setNotificationQuickDeleteBehaviour(NotificationQuickDelete.ALWAYS);
+        K9.setNotificationHideSubject(K9.NotificationHideSubject.NEVER);
+        K9.setNotificationQuickDeleteBehaviour(K9.NotificationQuickDelete.ALWAYS);
         when(notificationData.isSingleMessageNotification()).thenReturn(false);
         when(notificationData.containsStarredMessages()).thenReturn(true);
 
@@ -148,8 +146,8 @@ public class DeviceNotificationsTest {
 
     @Test
     public void buildSummaryNotification_withAdditionalMessages() throws Exception {
-        K9.setNotificationHideSubject(NotificationHideSubject.NEVER);
-        K9.setNotificationQuickDeleteBehaviour(NotificationQuickDelete.ALWAYS);
+        K9.setNotificationHideSubject(K9.NotificationHideSubject.NEVER);
+        K9.setNotificationQuickDeleteBehaviour(K9.NotificationQuickDelete.ALWAYS);
         when(notificationData.isSingleMessageNotification()).thenReturn(false);
         when(notificationData.hasAdditionalMessages()).thenReturn(true);
         when(notificationData.getAdditionalMessagesCount()).thenReturn(23);
@@ -161,8 +159,8 @@ public class DeviceNotificationsTest {
 
     @Test
     public void buildSummaryNotification_withoutDeleteAllAction() throws Exception {
-        K9.setNotificationHideSubject(NotificationHideSubject.NEVER);
-        K9.setNotificationQuickDeleteBehaviour(NotificationQuickDelete.NEVER);
+        K9.setNotificationHideSubject(K9.NotificationHideSubject.NEVER);
+        K9.setNotificationQuickDeleteBehaviour(K9.NotificationQuickDelete.NEVER);
         when(notificationData.isSingleMessageNotification()).thenReturn(false);
 
         notifications.buildSummaryNotification(account, notificationData, false);
@@ -172,8 +170,8 @@ public class DeviceNotificationsTest {
 
     @Test
     public void buildSummaryNotification_withoutDeleteAction() throws Exception {
-        K9.setNotificationHideSubject(NotificationHideSubject.NEVER);
-        K9.setNotificationQuickDeleteBehaviour(NotificationQuickDelete.NEVER);
+        K9.setNotificationHideSubject(K9.NotificationHideSubject.NEVER);
+        K9.setNotificationQuickDeleteBehaviour(K9.NotificationQuickDelete.NEVER);
         when(notificationData.isSingleMessageNotification()).thenReturn(true);
 
         notifications.buildSummaryNotification(account, notificationData, false);

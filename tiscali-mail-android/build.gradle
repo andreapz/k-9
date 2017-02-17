@@ -85,7 +85,7 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-contrib:2.2.2'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
-    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
+//    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
 
     androidTestCompile "com.android.support:support-v4:${androidSupportLibraryVersion}"
     androidTestCompile "com.android.support:appcompat-v7:${androidSupportLibraryVersion}"
@@ -116,7 +116,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 24
 
-        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
+        generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -135,15 +135,15 @@ android {
 
             buildConfigField "boolean", "DEVELOPER_MODE", "false"
 
-            applicationVariants.all { variant ->
-                variant.outputs.each { output ->
-
-                    // apk file names
-                    if (output.outputFile.name.endsWith(".apk")) {
-                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc-" + K9_VERSION_NAME + ".apk")
-                    }
-                }
-            }
+//            applicationVariants.all { variant ->
+//                variant.outputs.each { output ->
+//
+//                    // apk file names
+//                    if (output.outputFile.name.endsWith(".apk")) {
+//                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc-" + K9_VERSION_NAME + ".apk")
+//                    }
+//                }
+//            }
         }
 
         debug {
@@ -151,18 +151,6 @@ android {
             testCoverageEnabled rootProject.testCoverage
 
             buildConfigField "boolean", "DEVELOPER_MODE", "true"
-        }
-    }
-
-    productFlavors {
-        developer {
-            // multi environment, with many flags enabled
-            versionName "$VERSION_NAME-developer"
-            minSdkVersion 21
-        }
-        production {
-            // to be published on GooglePlay
-            versionName "$VERSION_NAME"
         }
     }
 
