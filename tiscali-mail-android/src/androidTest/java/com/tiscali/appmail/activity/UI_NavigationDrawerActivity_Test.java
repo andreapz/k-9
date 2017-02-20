@@ -13,6 +13,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static android.support.test.espresso.web.sugar.Web.onWebView;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -197,6 +198,32 @@ public class UI_NavigationDrawerActivity_Test {
 
     }
 
+    @Test
+    public void shareVideoDetail() {
+        onView(withId(R.id.menu_video)).perform(click());
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
+
+        onView(withId(R.id.left_drawer))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(5, click()));
+
+        onWebView(withIndex(withId(R.id.webview), 0)).forceJavascriptEnabled();
+
+        SystemClock.sleep(2000);
+
+        onView(withIndex(withId(R.id.webview), 1)).check(matches(isDisplayed()));
+
+        onView(withIndex(withId(R.id.webview), 1)).perform(clickXY(200, 400));
+
+        onView(withId(R.id.menu_item_share)).perform(click());
+
+        mDevice.pressBack();
+        mDevice.pressBack();
+
+
+    }
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
             final int childPosition) {
@@ -219,6 +246,11 @@ public class UI_NavigationDrawerActivity_Test {
             }
         };
     }
+
+    // public static ViewAction customClick() {
+    // return actionWithAssertions(new CustomGeneralClickAction(Tap.SINGLE,
+    // GeneralLocation.VISIBLE_CENTER, Press.FINGER));
+    // }
 
     public static ViewAction clickXY(final int x, final int y) {
         return new GeneralClickAction(Tap.SINGLE, new CoordinatesProvider() {
@@ -254,5 +286,7 @@ public class UI_NavigationDrawerActivity_Test {
             }
         };
     }
+
+
 
 }
