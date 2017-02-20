@@ -35,6 +35,7 @@ import com.tiscali.appmail.mail.Message;
 import com.tiscali.appmail.mailstore.LocalFolder;
 import com.tiscali.appmail.mailstore.StorageManager;
 import com.tiscali.appmail.presenter.PresenterLifeCycle;
+import com.tiscali.appmail.provider.TiscaliSearchRecentSuggestionsProvider;
 import com.tiscali.appmail.search.LocalSearch;
 import com.tiscali.appmail.search.SearchAccount;
 import com.tiscali.appmail.search.SearchSpecification;
@@ -66,11 +67,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.provider.SearchRecentSuggestions;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -183,6 +187,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     List<FolderInfoHolder> mFolders = new ArrayList<>();
     private MailPresenterHandler mHandler = new MailPresenterHandler();
     private String mAccountUuid;
+    private SearchView mSearchView;
 
     private ActivityListener mMessagingListener = new ActivityListener() {
         @Override
@@ -733,8 +738,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
                 // Query was received from Search Dialog
                 String query = intent.getStringExtra(SearchManager.QUERY).trim();
+                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(mContext,
+                        TiscaliSearchRecentSuggestionsProvider.AUTHORITY,
+                        TiscaliSearchRecentSuggestionsProvider.MODE);
+                suggestions.saveRecentQuery(query, null);
 
-                mSearch = new LocalSearch(mContext.getString(R.string.search_results));
+                // use this if generic title for search results is required
+                // mSearch = new LocalSearch(mContext.getString(R.string.search_results));
+                // use this if searched string as toolbar title is required
+                mSearch = new LocalSearch(query);
+
                 mSearch.setManualSearch(true);
                 mNoThreading = true;
 
@@ -1135,6 +1148,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     }
 
+
+
     private void removeFragment(Fragment fragment) {
         FragmentManager manager = mContext.getFragmentManager();
         FragmentTransaction ft = manager.beginTransaction();
@@ -1434,6 +1449,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mContext.getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
         mMenuButtonCheckMail = menu.findItem(R.id.check_mail);
+
+        mSearchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.search));
+        SearchManager searchManager =
+                (SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE);
+        // NavigationDrawerActivity is search activity
+        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(mContext.getComponentName()));
+        mSearchView.setMaxWidth(Integer.MAX_VALUE);
     }
 
     @Override
@@ -1441,6 +1463,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (!mStarted) {
             return false;
         }
+
         return configureMenu(menu);
     }
 
@@ -1915,12 +1938,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             final Bundle appData = new Bundle();
             appData.putString(EXTRA_SEARCH_ACCOUNT, account.getUuid());
             appData.putString(EXTRA_SEARCH_FOLDER, folderName);
-            mContext.startSearch(null, false, appData, false);
+            mSearchView.setAppSearchData(appData);
         } else {
             // TODO Handle the case where we're searching from within a search result.
-            mContext.startSearch(null, false, null, false);
+            // mContext.startSearch(null, false, null, false);
         }
         Toast.makeText(mContext, "startSearch not working", Toast.LENGTH_LONG);
+
+
         return true;
     }
 

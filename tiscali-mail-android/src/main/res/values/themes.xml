@@ -18,6 +18,9 @@
         <!-- colorAccent is used as the default value for colorControlActivated, which is used to tint widgets -->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="actionModeBackground">@color/colorPrimaryDark</item>
+        <item name="colorControlActivated">@android:color/white</item>
+        <item name="autoCompleteTextViewStyle">@style/SearchSuggestionsBackgroundStyle</item>
+        <item name="textAppearanceSearchResultTitle">@style/searchSuggestionsTextStyle</item>
 
         <item name="iconFolder">@drawable/folder_light</item>
         <item name="iconListItemMenu">@drawable/dropdown_ic_arrow_normal_holo_light</item>
@@ -196,4 +199,8 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
+    <style name="SearchSuggestionsBackgroundStyle" parent="Widget.AppCompat.Light.AutoCompleteTextView">
+        <item name="android:popupBackground">@android:color/white</item>
+    </style>
+    
 </resources>
