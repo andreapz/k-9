@@ -78,6 +78,7 @@ dependencies {
 //    compile 'com.webtrekk.webtrekksdk:WebtrekkSDK:4.2.0'
 
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
+    testCompile "org.robolectric:shadows-multidex:${robolectricVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.mockito:mockito-core:${mockitoVersion}"
 

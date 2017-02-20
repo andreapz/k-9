@@ -20,6 +20,8 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
@@ -28,14 +30,16 @@ import com.tiscali.appmail.R;
 
 import android.app.Application;
 import android.app.Notification;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.support.v7.app.NotificationCompat;
 
-
+@Implements(MultiDex.class)
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml", sdk = 21)
+@Config(manifest = "src/androidTest/AndroidManifest.xml", sdk = 21, resourceDir = "src/main/res")
 public class DeviceNotificationsTest {
     private static final int UNREAD_MESSAGE_COUNT = 42;
     private static final int NEW_MESSAGE_COUNT = 2;
@@ -61,6 +65,11 @@ public class DeviceNotificationsTest {
     private Builder builder2 = mockBuilder(Builder.class);
     private LockScreenNotification lockScreenNotification;
 
+
+    @Implementation
+    public static void install(Context context) {
+        // Do nothing since with Robolectric nothing is dexed.
+    }
 
     @Before
     public void setUp() throws Exception {
