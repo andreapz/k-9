@@ -159,9 +159,9 @@ public class UI_NavigationDrawerActivity_Test {
                 .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
 
         onView(withId(R.id.account_email)).perform(click());
-        onView(withId(R.id.account_email)).perform(typeText("furrillu"));
+        onView(withId(R.id.account_email)).perform(typeText("thomascas1974"));
         onView(withId(R.id.account_password)).perform(click());
-        onView(withId(R.id.account_password)).perform(typeText("Casetta11"));
+        onView(withId(R.id.account_password)).perform(typeText("Thom1974"));
         onView(withId(R.id.show_password)).perform(click());
         onView(withId(R.id.show_password)).check(matches(isChecked()));
         onView(withId(R.id.next)).perform(click());
