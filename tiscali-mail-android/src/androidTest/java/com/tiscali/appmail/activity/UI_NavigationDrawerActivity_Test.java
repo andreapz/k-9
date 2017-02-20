@@ -57,6 +57,7 @@ public class UI_NavigationDrawerActivity_Test {
     @Rule
     public ActivityTestRule<NavigationDrawerActivity> mActivityRule =
             new ActivityTestRule<>(NavigationDrawerActivity.class);
+
     private UiDevice mDevice;
 
     @Before

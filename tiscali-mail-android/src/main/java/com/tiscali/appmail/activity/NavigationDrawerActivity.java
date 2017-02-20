@@ -162,7 +162,7 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String GET_PARAMS_ID = "&UDID=";
     public static final String GET_PARAMS_PLATFORM = "&platform=";
     public static final String PLATFORM = "android";
-    public static final int INTERSTITIAL_INTERVAL_TIME = 1000;// * 60 * 5;
+    public static final int INTERSTITIAL_INTERVAL_TIME = 1000 * 60 * 5;
 
     public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
     public static final String DEFAULT_TAB_KEY = "default_tab";
