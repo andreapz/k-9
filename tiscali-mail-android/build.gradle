@@ -75,8 +75,8 @@ dependencies {
     compile 'com.android.support:multidex:1.0.1'
 
     compile files('libs/SmartAdServer-Android-SDK-6.6.2.jar')
-    compile 'com.webtrekk.webtrekksdk:WebtrekkSDK:4.2.0'
-    
+//    compile 'com.webtrekk.webtrekksdk:WebtrekkSDK:4.2.0'
+
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.mockito:mockito-core:${mockitoVersion}"
@@ -136,15 +136,15 @@ android {
 
             buildConfigField "boolean", "DEVELOPER_MODE", "false"
 
-//            applicationVariants.all { variant ->
-//                variant.outputs.each { output ->
-//
-//                    // apk file names
-//                    if (output.outputFile.name.endsWith(".apk")) {
-//                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc-" + K9_VERSION_NAME + ".apk")
-//                    }
-//                }
-//            }
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+
+                    // apk file names
+                    if (output.outputFile.name.endsWith(".apk")) {
+                        output.outputFile = new File(output.outputFile.parent, "tiscali.it-" + variant.versionName + "-rc-" + K9_VERSION_NAME + ".apk")
+                    }
+                }
+            }
         }
 
         debug {

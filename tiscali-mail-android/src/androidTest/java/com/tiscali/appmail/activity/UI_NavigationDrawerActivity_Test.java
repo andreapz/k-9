@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.not;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +39,6 @@ import android.support.test.espresso.action.Tap;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.test.uiautomator.UiDevice;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,13 +54,6 @@ public class UI_NavigationDrawerActivity_Test {
     @Rule
     public ActivityTestRule<NavigationDrawerActivity> mActivityRule =
             new ActivityTestRule<>(NavigationDrawerActivity.class);
-    private UiDevice mDevice;
-
-    @Before
-    public void setUp() throws Exception {
-        // super.setUp();
-        mDevice = UiDevice.getInstance(getInstrumentation());
-    }
 
     @Test
     public void selectTabMailTest() {

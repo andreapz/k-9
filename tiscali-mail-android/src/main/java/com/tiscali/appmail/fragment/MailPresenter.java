@@ -48,7 +48,6 @@ import com.tiscali.appmail.view.ViewSwitcher.OnSwitchCompleteListener;
 import com.tiscali.appmail.view.holder.AccountViewHolder;
 import com.tiscali.appmail.view.holder.FolderViewHolder;
 import com.tiscali.appmail.view.holder.HeaderViewHolder;
-import com.webtrekk.webtrekksdk.Webtrekk;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -127,7 +126,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final int MAX_MESSAGES_COUNT = 99;
     private final Activity mContext;
     private final INavigationDrawerActivityListener mListener;
-    private final Webtrekk mWebtrekk;
     private Intent mIntent;
 
     private boolean mStarted = false;
@@ -420,7 +418,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mListener = listener;
         mContext = listener.getActivity();
         mIntent = intent;
-        mWebtrekk = Webtrekk.getInstance();
+//        mWebtrekk = Webtrekk.getInstance();
     }
 
     public void setIntent(Intent intent) {
