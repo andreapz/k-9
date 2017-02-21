@@ -150,10 +150,10 @@
         <item name="android:windowBackground">@drawable/product_logo</item>
     </style>
 
-    <style name="searchSuggestionsTextStyle" parent="RobotoRegular">
+    <style name="searchSuggestionsTextStyle" parent="TextAppearance.AppCompat.SearchResult.Title">
+        <item name="android:fontFamily">sans-serif"</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/black_text_secondary</item>
-        <item name="android:icon">@drawable/ic_history_black_24dp</item>
     </style>
 
 </resources>

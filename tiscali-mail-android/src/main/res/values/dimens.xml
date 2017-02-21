@@ -20,4 +20,8 @@
     <dimen name="action_bar_height">@dimen/abc_action_bar_default_height_material</dimen>
 
     <dimen name="search_bar_width">@dimen/abc_search_view_preferred_width</dimen>
+
+    <dimen name="search_suggestion_row_height">58dp</dimen>
+    v
+    <dimen name="search_suggestion_row_icon_size">48dp</dimen>
 </resources>

@@ -66,7 +66,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.provider.SearchRecentSuggestions;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
@@ -418,7 +417,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mListener = listener;
         mContext = listener.getActivity();
         mIntent = intent;
-//        mWebtrekk = Webtrekk.getInstance();
+        // mWebtrekk = Webtrekk.getInstance();
     }
 
     public void setIntent(Intent intent) {
@@ -736,10 +735,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
                 // Query was received from Search Dialog
                 String query = intent.getStringExtra(SearchManager.QUERY).trim();
-                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(mContext,
-                        TiscaliSearchRecentSuggestionsProvider.AUTHORITY,
-                        TiscaliSearchRecentSuggestionsProvider.MODE);
-                suggestions.saveRecentQuery(query, null);
+                TiscaliSearchRecentSuggestionsProvider.saveSearch(mContext, query);
 
                 // use this if generic title for search results is required
                 // mSearch = new LocalSearch(mContext.getString(R.string.search_results));
