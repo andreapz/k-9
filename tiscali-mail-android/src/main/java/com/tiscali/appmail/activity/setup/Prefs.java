@@ -16,6 +16,7 @@ import com.tiscali.appmail.preferences.CheckBoxListPreference;
 import com.tiscali.appmail.preferences.Storage;
 import com.tiscali.appmail.preferences.StorageEditor;
 import com.tiscali.appmail.preferences.TimePickerPreference;
+import com.tiscali.appmail.provider.TiscaliSearchRecentSuggestionsProvider;
 import com.tiscali.appmail.service.MailService;
 
 import android.content.Context;
@@ -92,6 +93,7 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_THREADED_VIEW = "threaded_view";
     private static final String PREFERENCE_FOLDERLIST_WRAP_NAME = "folderlist_wrap_folder_name";
     // private static final String PREFERENCE_SPLITVIEW_MODE = "splitview_mode";
+    private static final String PREFERENCE_CANCEL_RECENT_SEARCHES = "clear_recent_searches";
 
     private static final int ACTIVITY_CHOOSE_FOLDER = 1;
 
@@ -141,6 +143,8 @@ public class Prefs extends K9PreferenceActivity {
     private CheckBoxPreference mBackgroundAsUnreadIndicator;
     private CheckBoxPreference mThreadedView;
     // private ListPreference mSplitViewMode;
+
+    private Preference mCancelRecentSearches;
 
 
     public static void actionPrefs(Context context) {
@@ -415,8 +419,17 @@ public class Prefs extends K9PreferenceActivity {
         // mSplitViewMode = (ListPreference) findPreference(PREFERENCE_SPLITVIEW_MODE);
         // initListPreference(mSplitViewMode, K9.getSplitViewMode().name(),
         // mSplitViewMode.getEntries(), mSplitViewMode.getEntryValues());
-    }
 
+        mCancelRecentSearches = findPreference(PREFERENCE_CANCEL_RECENT_SEARCHES);
+        mCancelRecentSearches.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                // FIXME use getActivity() after PreferenceActivity dismissing
+                TiscaliSearchRecentSuggestionsProvider.showCancelSearchHistoryDialog(Prefs.this);
+                return true;
+            }
+        });
+    }
 
     private void saveSettings() {
         Storage storage = Preferences.getPreferences(this).getStorage();

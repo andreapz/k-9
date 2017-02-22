@@ -827,6 +827,9 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="settings_attachment_default_path">Salva allegati in…</string>
     <string name="attachment_save_title">Salva allegato</string>
     <string name="attachment_save_desc">Nessun gestore file presente. Dove vuoi salvare questo allegato?</string>
+    <string name="settings_clear_recent_searches">Cancella la cronologia ricerche</string>
+    <string name="settings_clear_recent_dialog_message">Tutta la cronologia ricerche sarà eliminata definitivamente</string>
+
     <string name="manage_accounts_move_up_action">Sposta su</string>
     <string name="manage_accounts_move_down_action">Sposta giù</string>
     <string name="manage_accounts_moving_message">Spostamento account…</string>

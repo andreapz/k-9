@@ -7,5 +7,6 @@
     <item type="id" name="dialog_attachment_progress" />
     <item type="id" name="dialog_account_setup_error" />
     <item type="id" name="dialog_account_password_too_simple_error" />
+    <item type="id" name="dialog_cancel_recent_searches" />
 
 </resources>
