@@ -28,6 +28,7 @@ import com.tiscali.appmail.activity.setup.AccountSetupBasics;
 import com.tiscali.appmail.activity.setup.Prefs;
 import com.tiscali.appmail.adapter.AccountsAdapterClickListener;
 import com.tiscali.appmail.adapter.MailAdapterClickListener;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.fragment.MessageListFragment.MessageListFragmentListener;
 import com.tiscali.appmail.helper.SizeFormatter;
@@ -162,8 +163,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private boolean isMediaListFragmentAttached = false;
 
-    // private Bundle mSavedInstanceState;
-
     /**
      * {@code true} when the message list was displayed once. This is used in
      * {@link # onBackPressed()} to decide whether to go from the message view to the message list
@@ -185,6 +184,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private MailPresenterHandler mHandler = new MailPresenterHandler();
     private String mAccountUuid;
     private SearchView mSearchView;
+
+    @Inject
+    public LogManager mLogManager;
 
     private ActivityListener mMessagingListener = new ActivityListener() {
         @Override
@@ -325,7 +327,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
 
             mHandler.dataChanged();
-
         }
 
         @Override
@@ -417,7 +418,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mListener = listener;
         mContext = listener.getActivity();
         mIntent = intent;
-        // mWebtrekk = Webtrekk.getInstance();
     }
 
     public void setIntent(Intent intent) {
@@ -474,7 +474,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         initializeLayout();
         initializeFragments();
         displayViews();
-        // setupGestureDetector(this);
 
         mMailAdapter = new MailAdapter();
         mListener.setDrawerListAdapter(mMailAdapter);
@@ -486,6 +485,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mMailAdapter.setSelectedPos(folderName);
 
         mAccountsAdapter = new AccountsAdapter();
+
+        ((NavigationDrawerActivity) mContext).getComponent().injectMailPresenter(this);
+        mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageListFragment);
     }
 
     public void showFolder(LocalSearch search) {
@@ -585,7 +587,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      * <strong>Note:</strong> This method has to be called after {@link #findFragments()} because
      * the result depends on the availability of a {@link MessageViewFragment} instance.
      * </p>
-     *
      */
     private void initializeDisplayMode() {
         if (useSplitView()) {
@@ -1143,7 +1144,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
 
-
     private void removeFragment(Fragment fragment) {
         FragmentManager manager = mContext.getFragmentManager();
         FragmentTransaction ft = manager.beginTransaction();
@@ -1649,11 +1649,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             removeMessageViewFragment();
             if (Intent.ACTION_SEARCH.equals(mIntent.getAction())) {
                 setActionBarUp();
+                mLogManager.track(R.string.com_tiscali_appmail_activity_Search);
             } else {
                 setActionBarToggle();
+                mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageListFragment);
             }
         } else {
             setActionBarUp();
+            mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageViewFragment);
         }
     }
 
@@ -2018,25 +2021,35 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     // account settings
                     case 0:
                         AccountSettings.actionSettings(mListener.getActivity(), account);
+                        mLogManager.track(mContext
+                                .getString(R.string.com_tiscali_appmail_Mail_Settings_Account));
                         break;
                     // global settings
                     case 1:
                         Prefs.actionPrefs(mListener.getActivity());
+                        mLogManager.track(mContext
+                                .getString(R.string.com_tiscali_appmail_Mail_Settings_Global));
                         break;
                     // update account
                     case 2:
                         if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).updateAccount(mAccount);
+                            mLogManager.track(mContext
+                                    .getString(R.string.com_tiscali_appmail_Mail_Update_Account));
                         }
                         break;
                     // delete account
                     case 3:
                         showDeleteAccountDialog();
+                        mLogManager.track(mContext
+                                .getString(R.string.com_tiscali_appmail_Mail_Remove_Account));
                         break;
                     // informations
                     case 4:
                         if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
+                            mLogManager
+                                    .track(mContext.getString(R.string.com_tiscali_appmail_Info));
                         }
                         break;
                 }
@@ -2194,11 +2207,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 FolderViewHolder mailViewHolder = (FolderViewHolder) holder;
                 mailViewHolder.itemView.setSelected(mSelectedPos == position);
 
-                // icon
-                if (mailViewHolder.itemView.isSelected()) {
-                    mailViewHolder.mFolderIconIv.setImageAlpha(255);
-                } else {
-                    mailViewHolder.mFolderIconIv.setImageAlpha(138);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    // icon
+                    if (mailViewHolder.itemView.isSelected()) {
+                        mailViewHolder.mFolderIconIv.setImageAlpha(255);
+                    } else {
+                        mailViewHolder.mFolderIconIv.setImageAlpha(138);
+                    }
                 }
 
                 // Title

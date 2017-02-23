@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <!--  TiscaliConfigRemote Start -->
-  	<string name="config_remote_url_tiscali">http://mail.tiscali.it/media/app/android/t_01.xml</string>
-  	<integer name="min_cache_xml_ttl_tiscali">5</integer><!-- minutes -->
-  	<integer name="max_cache_xml_ttl_tiscali">60</integer><!-- minutes -->
-  	<!--  TiscaliConfigRemote End -->
-  	
-  	<!--  TiscaliTopAppSponsored Start -->
-  	<integer name="min_view_interval_top_app_sponsored_tiscali">60</integer><!-- seconds -->
-  	<integer name="max_view_interval_top_app_sponsored_tiscali">300</integer><!-- seconds -->
-  	 <!--  TiscaliTopAppSponsored Start -->
-  	 
-  	<!-- Webtrekk Start -->
+    <string name="config_remote_url_tiscali">http://mail.tiscali.it/media/app/android/t_01.xml</string>
+    <integer name="min_cache_xml_ttl_tiscali">5</integer><!-- minutes -->
+    <integer name="max_cache_xml_ttl_tiscali">60</integer><!-- minutes -->
+    <!--  TiscaliConfigRemote End -->
+
+    <!--  TiscaliTopAppSponsored Start -->
+    <integer name="min_view_interval_top_app_sponsored_tiscali">60</integer><!-- seconds -->
+    <integer name="max_view_interval_top_app_sponsored_tiscali">300</integer><!-- seconds -->
+    <!--  TiscaliTopAppSponsored Start -->
+
+    <!-- Webtrekk Start -->
     <string name="webtrekk_adv_url_tiscali">http://tiscaliadv01.webtrekk.net</string>
     <string name="webtrekk_adv_track_id_tiscali">245406294797569</string>
     <string name="webtrekk_adv_logging_tiscali">false</string><!-- optional debugging -->
@@ -31,46 +31,68 @@
     <string-array name="webtrekk_adv_parameters_values_tiscali">
         <item>VEESIBLE MOBILE</item>
         <item>SMARTPHONE</item>
-        <item>TISCALI MAIL</item>
-        <item>TISCALI MAIL ANDROID</item>
+        <item>TISCALI.IT ANDROID</item>
     </string-array>
     <!-- content group end -->
     <!-- page name start -->
-	<!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.home,0,0,0,0,1411633505&CG1=VEESIBLE+MOBILE&sid=9368985074712973038&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=4588584134348959712&ps=0 -->
-    <string name="com.tiscali.appmail.activity.Accounts">app.tiscali.mail.android.home</string><!-- Pagina Principale -->
-	<!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.lista-cartelle,0,0,0,0,1411633520&CG1=VEESIBLE+MOBILE&sid=9368985074712973038&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=4588584134348959712&ps=0 -->
-    <string name="com.tiscali.appmail.activity.FolderList">app.tiscali.mail.android.lista-cartelle</string><!-- Lista delle cartelle -->
-    <!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.lista-messaggi,0,0,0,0,1411633525&CG1=VEESIBLE+MOBILE&sid=9368985074712973038&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=4588584134348959712&ps=0 -->
-    <string name="com.tiscali.appmail.activity.MessageList">app.tiscali.mail.android.lista-messaggi</string><!-- Lista dei messaggi -->
-    <!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.lista-messaggi,0,0,0,0,1412081535&CG1=VEESIBLE+MOBILE&sid=6846430425057716426&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=7319017099388898156&ps=0 -->
-    <string name="com.tiscali.appmail.activity.Search">app.tiscali.mail.android.lista-messaggi</string><!-- Lista dei messaggi -->
-    <!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.leggi-messaggio,0,0,0,0,1411637783&CG1=VEESIBLE+MOBILE&sid=5756497082692988176&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=4588584134348959712&ps=0 -->
-    <string name="com.tiscali.appmail.fragment.MessageViewFragment">app.tiscali.mail.android.leggi-messaggio</string><!-- Messaggio Esploso -->
-    <!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.scrivi-messaggio,0,0,0,0,1411633544&CG1=VEESIBLE+MOBILE&sid=9368985074712973038&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=4588584134348959712&ps=0 -->
-    <string name="com.tiscali.appmail.activity.MessageCompose">app.tiscali.mail.android.scrivi-messaggio</string><!-- Componi un messaggio -->
-    <!-- http://tiscaliadv01.webtrekk.net/245406294797569/wt.pl?p=210,app.tiscali.mail.android.altro,0,0,0,0,1411647460&CG1=VEESIBLE+MOBILE&sid=0317947225294491434&CG3=TISCALI+MAIL&CG2=SMARTPHONE&X-WT-UA=Tracking+Library+2.0%28Linux%3B+Android+2.3.7%3B+Vodafone+Smart+II%3B+it_IT%29&CG4=TISCALI+MAIL+ANDROID&eid=4588584134348959712&ps=0 -->
-    <string name="webtrekk_adv_default_page_name_tiscali">app.tiscali.mail.android.altro</string><!-- Tutto il resto (Impostazioni generali, account, cartella, Welcome message, Nuovo account) -->
+
+    <string name="com.tiscali.appmail.activity.NavigationDrawerActivity">com.tiscali.appmail.android.lista-messaggi</string><!-- Lista dei messaggi -->
+    <string name="com.tiscali.appmail.activity.Search">com.tiscali.appmail.android.ricerca.lista-messaggi</string><!-- Lista dei messaggi -->
+
+    <string name="com.tiscali.appmail.fragment.MessageListFragment">com.tiscali.appmail.android.lista-messaggi</string><!-- Messaggio Esploso -->
+    <string name="com.tiscali.appmail.fragment.MessageViewFragment">com.tiscali.appmail.android.leggi-messaggio</string><!-- Messaggio Esploso -->
+
+    <string name="com.tiscali.appmail.fragment.MediaFragment">com.tiscali.appmail.android.home</string><!-- Home page news -->
+
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Home.SectionId">com.tiscali.appmail.android.%1$s</string><!-- Home page news -->
+
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Home.News">com.tiscali.appmail.android.news_hp</string><!-- Home page news -->
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Home.Video">com.tiscali.appmail.android.video_hp</string><!-- Home page video -->
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Home.Promo">com.tiscali.appmail.android.promo_hp</string><!-- Home page promo -->
+
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Page.News">com.tiscali.appmail.android.news.page</string><!-- Page news -->
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Page.Video">com.tiscali.appmail.android.video.page</string><!-- Page video -->
+    <string name="com.tiscali.appmail.fragment.MediaFragment.Page.Promo">com.tiscali.appmail.android.promo.page</string><!-- Page promo -->
+
+    <string name="com.tiscali.appmail.Drawer.Mail">com.tiscali.appmail.android.mail_menu</string><!-- Menu mail -->
+    <string name="com.tiscali.appmail.Drawer.News">com.tiscali.appmail.android.news_menu</string><!-- Menu news -->
+    <string name="com.tiscali.appmail.Drawer.Video">com.tiscali.appmail.android.video_menu</string><!-- Menu video -->
+    <string name="com.tiscali.appmail.Drawer.Promo">com.tiscali.appmail.android.promo_menu</string><!-- Menu promo -->
+
+    <string name="com.tiscali.appmail.Mail.Settings.Account">com.tiscali.appmail.android.mail.settings.account</string>
+    <string name="com.tiscali.appmail.Mail.Settings.Global">com.tiscali.appmail.android.mail.settings.global</string>
+    <string name="com.tiscali.appmail.Mail.Update.Account">com.tiscali.appmail.android.mail.update.account</string>
+    <string name="com.tiscali.appmail.Mail.Remove.Account">com.tiscali.appmail.android.mail.remove.Account</string>
+    <string name="com.tiscali.appmail.Info">com.tiscali.appmail.android.informations</string>
+
+    <string name="com.tiscali.appmail.activity.MessageCompose">com.tiscali.appmail.android.scrivi-messaggio</string><!-- Componi un messaggio -->
+
+
+    <string name="com.tiscali.appmail.News.Customization.Visibility">com.tiscali.appmail.android.news.customization.visibility</string><!-- Menu news -->
+
+
+    <string name="webtrekk_adv_default_page_name_tiscali">com.tiscali.appmail.android.altro</string><!-- Tutto il resto (Impostazioni generali, account, cartella, Welcome message, Nuovo account) -->
     <!-- page name end -->
     <!-- Webtrekk End -->
-    
+
     <!--  TiscaliAPP for actionbar Start -->
     <string name="package_name_sponsor_action_bar_tiscali">com.tiscali.portale.android</string>
     <!--  TiscaliAPP for actionbar End -->
-    
-   	<!-- DotAndAd Start -->
-   	<!-- CID: Customer ID -->
-   	<string name="dotandad_adv_cid">31</string>
-   	<!-- MPO: Multipoint -->
-	<string name="dotandad_adv_mpo_smartphone">sdk_tismail_android</string>
-	<string name="dotandad_adv_mpo_tablet">sdk_tismail_tabandroid</string>
-	<!-- MPT: Mediapoint -->
-	<string name="dotandad_adv_mpt_smartphone_head">tiscali.android/sdkmail-320x50-head</string><!-- MPT BANNER 320x50 -->
-	<!-- string name="dotandad_adv_mpt_smartphone_full">tiscali.android/sdkmail-320x480-full</string>< MPT BANNER 320x480 > -->
-	<string name="dotandad_adv_mpt_tablet_portrait">tiscali.apptabletandroidmail/all-768x90-pt</string><!-- MPT BANNER 768x90 -->
-	<string name="dotandad_adv_mpt_tablet_landscape">tiscali.apptabletandroidmail/all-1024x90-ld</string><!-- MPT BANNER 1024x90 -->
-	<!-- DotAndAd End -->
-	
-	<!-- MaxMessageSize Start -->
+
+    <!-- DotAndAd Start -->
+    <!-- CID: Customer ID -->
+    <string name="dotandad_adv_cid">31</string>
+    <!-- MPO: Multipoint -->
+    <string name="dotandad_adv_mpo_smartphone">sdk_tismail_android</string>
+    <string name="dotandad_adv_mpo_tablet">sdk_tismail_tabandroid</string>
+    <!-- MPT: Mediapoint -->
+    <string name="dotandad_adv_mpt_smartphone_head">tiscali.android/sdkmail-320x50-head</string><!-- MPT BANNER 320x50 -->
+    <!-- string name="dotandad_adv_mpt_smartphone_full">tiscali.android/sdkmail-320x480-full</string>< MPT BANNER 320x480 > -->
+    <string name="dotandad_adv_mpt_tablet_portrait">tiscali.apptabletandroidmail/all-768x90-pt</string><!-- MPT BANNER 768x90 -->
+    <string name="dotandad_adv_mpt_tablet_landscape">tiscali.apptabletandroidmail/all-1024x90-ld</string><!-- MPT BANNER 1024x90 -->
+    <!-- DotAndAd End -->
+
+    <!-- MaxMessageSize Start -->
     <string name="tiscali_max_message_size">12582912</string><!-- 12582912 bytes => 12MB -->
     <!-- MaxMessageSize End -->
 </resources>

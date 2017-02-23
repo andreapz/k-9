@@ -626,6 +626,7 @@ public class K9 extends MultiDexApplication {
 
         mComponent = DaggerApplicationComponent.builder()
                 .applicationModule(new ApplicationModule(this)).build();
+
     }
 
     /**

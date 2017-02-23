@@ -270,7 +270,6 @@ public class MediaFragment extends Fragment {
 
 
     private void loadUrl(String url) {
-
         Log.d("TiscaliWebView", "[URL]:" + url + " @" + this);
         if (mWebView != null && mFragmentListener != null) {
             mWebView.loadUrl(url, mExtraHeaders);
@@ -286,7 +285,6 @@ public class MediaFragment extends Fragment {
                                     && NetworkHelper.getInstance(getActivity()).isConnected()) {
                                 loadUrl(mUrl);
                             }
-
                         }
                     }
                 }, mFragmentListener.getRefreshTimeout());

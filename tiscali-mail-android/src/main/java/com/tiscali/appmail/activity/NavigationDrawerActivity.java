@@ -34,6 +34,7 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.misc.BottomNavigationViewHelper;
 import com.tiscali.appmail.activity.setup.AccountSetupBasics;
 import com.tiscali.appmail.activity.setup.migrations.SettingsMigrations;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.api.model.DeviceRegister;
 import com.tiscali.appmail.api.model.MainConfig;
@@ -207,13 +208,14 @@ public class NavigationDrawerActivity extends K9Activity
     VideoPresenter mVideoPresenter;
     @Inject
     OffersPresenter mOffersPresenter;
+    @Inject
+    LogManager mLogManager;
 
     private FrameLayout mViewContainer;
     private BroadcastReceiver mBroadcastReceiver;
     private LocalBroadcastManager mLocalBroadcastManager;
 
     private Toolbar mToolbar;
-
 
     private BottomNavigationView.OnNavigationItemSelectedListener mBottomNavigationItemSelectedListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -264,7 +266,7 @@ public class NavigationDrawerActivity extends K9Activity
                 }
             };
     private LinearLayout mBannerContainer;
-
+    private NavigationDrawerActivityComponent mComponent;
 
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
@@ -282,7 +284,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -308,7 +310,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-            MessageReference messageReference) {
+                                                    MessageReference messageReference) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -396,6 +398,8 @@ public class NavigationDrawerActivity extends K9Activity
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
         mBannerContainer = (LinearLayout) findViewById(R.id.banner_ll);
+        initBannerView();
+        initInterstitialView();
 
         // set a custom shadow that overlays the main content when the drawer opens
         // mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -423,6 +427,7 @@ public class NavigationDrawerActivity extends K9Activity
             public void onDrawerOpened(View drawerView) {
                 getSupportActionBar().setTitle(mDrawerTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                logDrawerOpened();
             }
         };
 
@@ -495,10 +500,12 @@ public class NavigationDrawerActivity extends K9Activity
                                     }
 
                                     @Override
-                                    public void onError(Throwable e) {}
+                                    public void onError(Throwable e) {
+                                    }
 
                                     @Override
-                                    public void onNext(Object o) {}
+                                    public void onNext(Object o) {
+                                    }
                                 });
 
                     }
@@ -545,8 +552,6 @@ public class NavigationDrawerActivity extends K9Activity
 
         };
 
-        initBannerView();
-        initInterstitialView();
         loadBannerAd();
 
         long startMillis = pref.getStorage().getLong(INTERSTITIAL_TIME, 0L);
@@ -644,10 +649,12 @@ public class NavigationDrawerActivity extends K9Activity
                                     }
 
                                     @Override
-                                    public void onError(Throwable e) {}
+                                    public void onError(Throwable e) {
+                                    }
 
                                     @Override
-                                    public void onNext(Object o) {}
+                                    public void onNext(Object o) {
+                                    }
                                 });
                         break;
                     case SASAdView.StateChangeEvent.VIEW_EXPANDED:
@@ -852,10 +859,16 @@ public class NavigationDrawerActivity extends K9Activity
         });
     }
 
+    public NavigationDrawerActivityComponent getComponent() {
+        return mComponent;
+    }
+
     private void buildDaggerComponent(Intent intent) {
         ApplicationComponent component = ((K9) getApplicationContext()).getComponent();
-        DaggerNavigationDrawerActivityComponent.builder().applicationComponent(component)
-                .activityModule(new ActivityModule(this, intent)).build().inject(this);
+        mComponent =
+                DaggerNavigationDrawerActivityComponent.builder().applicationComponent(component)
+                        .activityModule(new ActivityModule(this, intent)).build();
+        mComponent.inject(this);
     }
 
     private Intent getMailIntent(Account account) {
@@ -871,7 +884,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -1161,6 +1174,27 @@ public class NavigationDrawerActivity extends K9Activity
         }
     }
 
+    public void logDrawerOpened() {
+        String tag = "";
+
+        switch (mSelectedTab) {
+            case MAIL_TAB_SELECTED:
+                tag = getResources().getString(R.string.com_tiscali_appmail_Drawer_Mail);
+                break;
+            case NEWS_TAB_SELECTED:
+                tag = getResources().getString(R.string.com_tiscali_appmail_Drawer_News);
+                break;
+            case VIDEO_TAB_SELECTED:
+                tag = getResources().getString(R.string.com_tiscali_appmail_Drawer_Video);
+                break;
+            case OFFERS_TAB_SELECTED:
+                tag = getResources().getString(R.string.com_tiscali_appmail_Drawer_Promo);
+                break;
+        }
+
+        mLogManager.track(tag);
+    }
+
     private void forceBuildDaggerComponent() {
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         Intent intent = getMailIntent(accounts.get(0));
@@ -1241,7 +1275,7 @@ public class NavigationDrawerActivity extends K9Activity
                 mOffersPresenter.goBackOnHistory();
             } else if (mMailPresenter != null
                     && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                            && mMailPresenter.getMessageListWasDisplayed())) {
+                    && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
             } else if (mMailPresenter != null
                     && getIntent().getStringExtra(SearchManager.QUERY) != null) {

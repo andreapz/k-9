@@ -8,6 +8,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.Account.MessageFormat;
 import com.tiscali.appmail.FontSizes;
@@ -30,6 +32,7 @@ import com.tiscali.appmail.activity.compose.RecipientPresenter;
 import com.tiscali.appmail.activity.compose.RecipientPresenter.CryptoMode;
 import com.tiscali.appmail.activity.compose.SaveMessageTask;
 import com.tiscali.appmail.activity.misc.Attachment;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.controller.MessagingListener;
 import com.tiscali.appmail.fragment.ProgressDialogFragment;
@@ -150,7 +153,7 @@ public class MessageCompose extends K9Activity
 
     /**
      * Regular expression to remove the first localized "Re:" prefix in subjects.
-     *
+     * <p>
      * Currently: - "Aw:" (german: abbreviation for "Antwort")
      */
     private static final Pattern PREFIX =
@@ -193,6 +196,8 @@ public class MessageCompose extends K9Activity
     private MessageBuilder currentMessageBuilder;
     private boolean mFinishAfterDraftSaved;
     private boolean alreadyNotifiedUserOfEmptySubject = false;
+    @Inject
+    public LogManager mLogManager;
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
@@ -253,7 +258,7 @@ public class MessageCompose extends K9Activity
 
     /**
      * The currently used message format.
-     *
+     * <p>
      * <p>
      * <strong>Note:</strong> Don't modify this field directly. Use {@link #updateMessageFormat()}.
      * </p>
@@ -524,6 +529,10 @@ public class MessageCompose extends K9Activity
             setProgressBarIndeterminateVisibility(true);
             currentMessageBuilder.reattachCallback(this);
         }
+
+        ((K9) getApplication()).getComponent().inject(this);
+        mLogManager.track(
+                getResources().getString(R.string.com_tiscali_appmail_activity_MessageCompose));
     }
 
     @Override
@@ -535,7 +544,7 @@ public class MessageCompose extends K9Activity
 
     /**
      * Handle external intents that trigger the message compose activity.
-     *
+     * <p>
      * <p>
      * Supported external intents:
      * <ul>
@@ -547,7 +556,6 @@ public class MessageCompose extends K9Activity
      * </p>
      *
      * @param intent The (external) intent that started the activity.
-     *
      * @return {@code true}, if this activity was started by an external intent. {@code false},
      *         otherwise.
      */

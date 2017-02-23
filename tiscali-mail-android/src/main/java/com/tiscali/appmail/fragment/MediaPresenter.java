@@ -8,14 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.bumptech.glide.Glide;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.INavigationDrawerActivityListener;
+import com.tiscali.appmail.activity.NavigationDrawerActivity;
 import com.tiscali.appmail.adapter.BaseNavDrawerMenuAdapter;
 import com.tiscali.appmail.adapter.TiscaliMenuClickListener;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
@@ -36,6 +39,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -101,6 +105,9 @@ public abstract class MediaPresenter
     private MediaAdapter mNewsAdapter = new MediaAdapter();
     private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
 
+    @Inject
+    public LogManager mLogManager;
+
     private boolean mStarted = false;
     private boolean isAttached = false;
     private boolean mIsExternalBrowsing = false;
@@ -144,6 +151,9 @@ public abstract class MediaPresenter
         mViewSwitcher.setOnSwitchCompleteListener(this);
 
         mIsHomePage = true;
+
+        ((NavigationDrawerActivity) mContext).getComponent().injectMediaPresenter(this);
+
         initializeActionBar();
         // findFragments();
         initializeDisplayMode();
@@ -162,8 +172,10 @@ public abstract class MediaPresenter
             String extrasUrl = mIntent.getExtras()
                     .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_URL);
             startFromNotification(extrasUrl);
-
         }
+
+        mLogManager.track(mContext.getResources()
+                .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_News));
     }
 
     @Override
@@ -366,6 +378,7 @@ public abstract class MediaPresenter
         showMedia();
         if (mMediaViewFragment != null) {
             mMediaViewFragment.updateUrl(url);
+            mLogManager.track(getCurrentPageId());
         }
         mIsHomePage = isHome;
     }
@@ -516,9 +529,38 @@ public abstract class MediaPresenter
         if (displayedChild == 0) {
             removeDetailFragment();
             setActionBarToggle();
+            mLogManager.track(getCurrentPageId());
         } else {
             setActionBarUp();
+            mLogManager.track(mMediaDetailFragment.getUrl());
         }
+    }
+
+    private String getCurrentPageId() {
+        for (int i = 0; i < mMenuItems.size(); i++) {
+            TiscaliMenuItem item = mMenuItems.get(i);
+            if (item.getUrl().equals(mMediaViewFragment.getUrl())) {
+                if (i == 0) {
+                    switch (getType()) {
+                        case NEWS:
+                            return mContext.getResources().getString(
+                                    R.string.com_tiscali_appmail_fragment_MediaFragment_Home_News);
+                        case VIDEO:
+                            return mContext.getResources().getString(
+                                    R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Video);
+                        case OFFERS:
+                            return mContext.getResources().getString(
+                                    R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Promo);
+                    }
+                } else {
+                    return mContext.getResources().getString(
+                            R.string.com_tiscali_appmail_fragment_MediaFragment_Home_SectionId,
+                            item.getSectionId());
+                }
+
+            }
+        }
+        return "";
     }
 
     @Override
@@ -836,10 +878,12 @@ public abstract class MediaPresenter
                 // Icon
                 if (item.getIco() != null) {
                     itemViewHolder.mItemIconIv.setVisibility(View.VISIBLE);
-                    if (itemViewHolder.itemView.isSelected()) {
-                        itemViewHolder.mItemIconIv.setImageAlpha(255);
-                    } else {
-                        itemViewHolder.mItemIconIv.setImageAlpha(138);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        if (itemViewHolder.itemView.isSelected()) {
+                            itemViewHolder.mItemIconIv.setImageAlpha(255);
+                        } else {
+                            itemViewHolder.mItemIconIv.setImageAlpha(138);
+                        }
                     }
                     Glide.with(mContext).load(item.getIco()).into(itemViewHolder.mItemIconIv);
                 } else {
@@ -1026,6 +1070,8 @@ public abstract class MediaPresenter
                     case 0:
                         if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
+                            mLogManager
+                                    .track(mContext.getString(R.string.com_tiscali_appmail_Info));
                         }
                         break;
                 }
@@ -1057,6 +1103,9 @@ public abstract class MediaPresenter
                 customize.dismiss();
             }
         });
+
+        mLogManager.track(mContext.getResources()
+                .getString(R.string.com_tiscali_appmail_News_Customization_Visibility));
 
         customize.show();
     }

@@ -2,6 +2,8 @@ package com.tiscali.appmail;
 
 import javax.inject.Singleton;
 
+import com.tiscali.appmail.activity.MessageCompose;
+
 import dagger.Component;
 
 /**
@@ -11,6 +13,5 @@ import dagger.Component;
 @Singleton
 @Component(modules = ApplicationModule.class)
 public interface ApplicationComponent {
-
+    void inject(MessageCompose activity);
 }
-
