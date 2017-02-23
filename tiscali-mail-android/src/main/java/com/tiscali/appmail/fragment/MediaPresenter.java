@@ -37,6 +37,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -839,6 +840,15 @@ public abstract class MediaPresenter
                 ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
                 itemViewHolder.itemView.setSelected(mSelectedPos == position);
 
+                // row background
+                if (itemViewHolder.itemView.isSelected()) {
+                    itemViewHolder.mItemContainerRl.setBackgroundColor(
+                            ContextCompat.getColor(mContext, R.color.colorItemSelected));
+                } else {
+                    itemViewHolder.mItemContainerRl.setBackgroundColor(
+                            ContextCompat.getColor(mContext, android.R.color.transparent));
+                }
+
                 RelativeLayout.LayoutParams params =
                         (RelativeLayout.LayoutParams) itemViewHolder.mItemTitleTv.getLayoutParams();
                 int materialMarginLeft =
@@ -878,17 +888,27 @@ public abstract class MediaPresenter
                     itemViewHolder.mItemActionTv.setVisibility(View.GONE);
                 }
 
-                // add additionally left margin depending on depth
-                if (itemViewHolder.mItemContainerRl
-                        .getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-                    ViewGroup.MarginLayoutParams p =
-                            (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl
-                                    .getLayoutParams();
-                    int marginLeft = (int) (getItemDepth(position)
-                            * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
-                    p.setMargins(marginLeft, 0, 0, 0);
-                    itemViewHolder.mItemContainerRl.requestLayout();
-                }
+                // add additionally left padding depending on depth
+                // if (itemViewHolder.mItemContainerRl
+                // .getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                // ViewGroup.MarginLayoutParams p =
+                // (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl
+                // .getLayoutParams();
+                // int marginLeft = (int) (getItemDepth(position)
+                // * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
+                // p.setMargins(marginLeft, 0, 0, 0);
+                // itemViewHolder.mItemContainerRl.requestLayout();
+                // }
+                int additionalPaddingLeft = (int) (getItemDepth(position) * mContext.getResources()
+                        .getDimensionPixelSize(R.dimen.margin_standard_16dp));
+                int basePaddingLeft =
+                        mContext.getResources().getDimensionPixelSize(R.dimen.margin_standard_16dp);
+                int paddingLeft = basePaddingLeft + additionalPaddingLeft;
+                itemViewHolder.mItemContainerRl.setPadding(paddingLeft,
+                        itemViewHolder.mItemContainerRl.getPaddingTop(),
+                        itemViewHolder.mItemContainerRl.getPaddingRight(),
+                        itemViewHolder.mItemContainerRl.getPaddingBottom());
+                itemViewHolder.mItemContainerRl.requestLayout();
 
                 // toggle icon for expandable items
                 if (hasChildren(position)) {

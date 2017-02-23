@@ -5,6 +5,7 @@ import com.tiscali.appmail.R;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
@@ -20,6 +21,7 @@ public class FolderViewHolder extends RecyclerView.ViewHolder {
     public ImageView mFlaggedMessageCountIconIv;
     public View mNewMessageCountWrapperV;
     public View mFlaggedMessageCountWrapperV;
+    public RelativeLayout mContainerRl;
 
     public FolderViewHolder(View itemView) {
         super(itemView);
@@ -32,5 +34,6 @@ public class FolderViewHolder extends RecyclerView.ViewHolder {
         mFlaggedMessageCountIconIv =
                 (ImageView) itemView.findViewById(R.id.flagged_message_count_icon);
         mFolderIconIv = (ImageView) itemView.findViewById(R.id.folder_icon);
+        mContainerRl = (RelativeLayout) itemView.findViewById(R.id.item_container);
     }
 }
