@@ -68,6 +68,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -2206,6 +2207,15 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 final FolderInfoHolder folder = getItem(position);
                 FolderViewHolder mailViewHolder = (FolderViewHolder) holder;
                 mailViewHolder.itemView.setSelected(mSelectedPos == position);
+
+                // row background
+                if (mailViewHolder.itemView.isSelected()) {
+                    mailViewHolder.mContainerRl.setBackgroundColor(
+                            ContextCompat.getColor(mContext, R.color.colorItemSelected));
+                } else {
+                    mailViewHolder.mContainerRl.setBackgroundColor(
+                            ContextCompat.getColor(mContext, android.R.color.transparent));
+                }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     // icon

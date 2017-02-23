@@ -5,9 +5,10 @@
     <color name="light_black">#444</color>
 
     <!-- OnBoarding colors -->
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#0098A7</color>
+    <color name="colorPrimaryDark">#00838f</color>
     <color name="colorAccent">@color/colorPrimary</color>
+    <color name="colorItemSelected">#E1F0F1</color>
 
 
     <!-- dots inactive colors -->
