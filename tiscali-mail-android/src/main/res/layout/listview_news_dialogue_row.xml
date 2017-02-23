@@ -2,22 +2,29 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <RelativeLayout
         android:id="@+id/row_media"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="@dimen/search_suggestion_row_height">
 
+        <ImageView
+            android:id="@+id/item_icon"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="@dimen/margin_standard_8dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp" />
 
         <TextView
             android:id="@+id/category_media"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:textSize="20sp"
-            android:text=""
-            android:textStyle="bold"
+            android:layout_toRightOf="@+id/item_icon"
+            style="@style/RobotoRegular16White"
+            android:textColor="@color/colorPrimary"
             android:layout_centerVertical="true"
             android:clickable="true" />
         <!--android:button="@drawable/toggle_news_selector"-->
@@ -25,11 +32,18 @@
             android:id="@+id/toggle_media"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="@dimen/margin_standard_8dp"
             android:text=""
             android:layout_alignParentRight="true" />
 
 
     </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black_text_hint_disabled" />
+
 </LinearLayout>

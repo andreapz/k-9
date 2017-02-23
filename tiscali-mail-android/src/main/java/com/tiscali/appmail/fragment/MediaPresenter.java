@@ -28,7 +28,6 @@ import com.tiscali.appmail.view.holder.HeaderViewHolder;
 import com.tiscali.appmail.view.holder.ItemViewHolder;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -41,7 +40,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -51,10 +52,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -619,6 +620,7 @@ public abstract class MediaPresenter
             public CheckBox media_button;
             public TextView media_category;
             public RelativeLayout rl_media;
+            public ImageView media_icon;
         }
 
         @Override
@@ -635,10 +637,18 @@ public abstract class MediaPresenter
                 holder.media_button = (CheckBox) convertView.findViewById(R.id.toggle_media);
                 holder.media_category = (TextView) convertView.findViewById(R.id.category_media);
                 holder.rl_media = (RelativeLayout) convertView.findViewById(R.id.row_media);
+                holder.media_icon = (ImageView) convertView.findViewById(R.id.item_icon);
                 holder.media_button.setTag(position);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
+            }
+
+            if (mMediaCategory.get(position).getIco() != null) {
+                Glide.with(mContext).load(mMediaCategory.get(position).getIco())
+                        .into(holder.media_icon);
+            } else {
+                holder.media_icon.setVisibility(View.INVISIBLE);
             }
 
             holder.media_category.setText(mMediaCategory.get(position).getTitle());
@@ -1038,27 +1048,25 @@ public abstract class MediaPresenter
     public void showDialogCustomize(List<TiscaliMenuItem> data) {
         mListener.closeDrawer();
 
-        final Dialog customize = new Dialog(mListener.getActivity(),
-                android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_custom_news);
-        customize.setCancelable(false);
-
-        ListView listInterests = (ListView) customize.findViewById(R.id.list_catagory);
-
-        final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
-
-        listInterests.setAdapter(adapter);
-
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-
+        final AppCompatDialog customizeDialog = new AppCompatDialog(mListener.getActivity(),
+                R.style.Theme_AppCompat_Light_NoActionBar);
+        customizeDialog.setCancelable(true);
+        customizeDialog.setContentView(R.layout.dialog_custom_news);
+        Toolbar toolbar =
+                (Toolbar) customizeDialog.getWindow().getDecorView().findViewById(R.id.toolbar);
+        toolbar.setTitle(mContext.getString(R.string.action_bar_title_customize));
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                customize.dismiss();
+            public void onClick(View view) {
+                customizeDialog.dismiss();
             }
         });
 
-        customize.show();
+        ListView listInterests = (ListView) customizeDialog.findViewById(R.id.list_catagory);
+        final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
+        listInterests.setAdapter(adapter);
+
+        customizeDialog.show();
     }
 
     public List<TiscaliMenuItem> getCustomizableItems() {
