@@ -2,6 +2,8 @@ package com.tiscali.appmail;
 
 import javax.inject.Singleton;
 
+import com.tiscali.appmail.analytics.LogManager;
+
 import android.app.Application;
 
 import dagger.Module;
@@ -23,5 +25,11 @@ public class ApplicationModule {
     @Singleton
     Application provideApplication() {
         return mApplication;
+    }
+
+    @Provides
+    @Singleton
+    LogManager provideLogManager() {
+        return new LogManager(mApplication);
     }
 }

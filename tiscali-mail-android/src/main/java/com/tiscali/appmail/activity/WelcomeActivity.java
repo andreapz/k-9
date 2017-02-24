@@ -6,6 +6,7 @@ import com.bumptech.glide.Glide;
 import com.tiscali.appmail.ApplicationComponent;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.R;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.api.model.DeviceRegister;
 import com.tiscali.appmail.api.model.MainConfig;
@@ -67,6 +68,8 @@ public class WelcomeActivity extends AppCompatActivity
     @Inject
     ApiController mApiController;
 
+    @Inject
+    LogManager mLogManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -159,6 +162,7 @@ public class WelcomeActivity extends AppCompatActivity
             }
         };
 
+        mLogManager.track(getResources().getString(R.string.com_tiscali_appmail_Onboarding));
     }
 
     @Override

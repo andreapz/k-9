@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<webtrekkConfiguration>
+    <version>1</version>
+    <trackDomain type="text">http://tiscaliadv01.webtrekk.net</trackDomain>
+    <trackId type="text">245406294797569</trackId>
+
+    <sampling type="text">0</sampling>
+    <sendDelay type="text">60</sendDelay>
+    <maxRequests type="number">5000</maxRequests>
+
+    <autoTracked>false</autoTracked>
+    <autoTrackAppUpdate>true</autoTrackAppUpdate>
+    <autoTrackAdvertiserId>true</autoTrackAdvertiserId>
+    <autoTrackAppVersionName>true</autoTrackAppVersionName>
+    <autoTrackAppVersionCode>true</autoTrackAppVersionCode>
+    <autoTrackAppPreInstalled>true</autoTrackAppPreInstalled>
+    <autoTrackPlaystoreMail>false</autoTrackPlaystoreMail>
+    <autoTrackPlaystoreGivenName>false</autoTrackPlaystoreGivenName>
+    <autoTrackPlaystoreFamilyName>false</autoTrackPlaystoreFamilyName>
+    <autoTrackApiLevel>true</autoTrackApiLevel>
+    <autoTrackScreenOrientation>true</autoTrackScreenOrientation>
+    <autoTrackConnectionType>true</autoTrackConnectionType>
+    <autoTrackAdvertisementOptOut>true</autoTrackAdvertisementOptOut>
+    <autoTrackRequestUrlStoreSize>true</autoTrackRequestUrlStoreSize>
+
+    <enableRemoteConfiguration>false</enableRemoteConfiguration>
+    <trackingConfigurationUrl></trackingConfigurationUrl>
+    <resendOnStartEventTime>30</resendOnStartEventTime>
+
+</webtrekkConfiguration>

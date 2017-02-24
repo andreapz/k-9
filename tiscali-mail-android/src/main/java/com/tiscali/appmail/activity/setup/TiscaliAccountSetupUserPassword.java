@@ -7,11 +7,14 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.K9Activity;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.helper.Utility;
 import com.tiscali.appmail.mail.AuthType;
 import com.tiscali.appmail.mail.ConnectionSecurity;
@@ -53,6 +56,9 @@ public class TiscaliAccountSetupUserPassword extends K9Activity implements OnCli
     private Account mAccount;
     private boolean mCheckedIncoming = false;
     private String mEmailDomain;
+
+    @Inject
+    LogManager mLogManager;
 
     public static void actionEditUserPasswordSettings(Activity context, Account account) {
         context.startActivity(intentActionEditUserPasswordSettings(context, account));
@@ -141,6 +147,9 @@ public class TiscaliAccountSetupUserPassword extends K9Activity implements OnCli
         } catch (Exception e) {
             failure(e);
         }
+
+        ((K9) getApplication()).getComponent().inject(this);
+        mLogManager.track(R.string.com_tiscali_appmail_Account_Editor);
     }
 
     @Override

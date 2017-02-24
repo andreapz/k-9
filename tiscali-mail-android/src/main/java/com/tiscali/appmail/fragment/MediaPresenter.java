@@ -8,14 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Singleton;
+import javax.inject.Inject;
 
 import com.bumptech.glide.Glide;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.INavigationDrawerActivityListener;
+import com.tiscali.appmail.activity.NavigationDrawerActivity;
 import com.tiscali.appmail.adapter.BaseNavDrawerMenuAdapter;
 import com.tiscali.appmail.adapter.TiscaliMenuClickListener;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.api.model.MainConfig;
 import com.tiscali.appmail.api.model.Me;
@@ -28,7 +30,6 @@ import com.tiscali.appmail.view.holder.HeaderViewHolder;
 import com.tiscali.appmail.view.holder.ItemViewHolder;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -36,12 +37,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -51,10 +57,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -69,7 +75,6 @@ import rx.functions.Action1;
  * Created by thomascastangia on 02/01/17.
  */
 
-@Singleton
 public abstract class MediaPresenter
         implements MediaFragment.MediaFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
         PresenterLifeCycle, ApiController.ApiControllerInterface {
@@ -100,6 +105,9 @@ public abstract class MediaPresenter
     private List<String> mWalledGarden = new ArrayList<>();
     private MediaAdapter mNewsAdapter = new MediaAdapter();
     private List<TiscaliMenuItem> mMenuItems = new ArrayList<>();
+
+    @Inject
+    public LogManager mLogManager;
 
     private boolean mStarted = false;
     private boolean isAttached = false;
@@ -144,6 +152,9 @@ public abstract class MediaPresenter
         mViewSwitcher.setOnSwitchCompleteListener(this);
 
         mIsHomePage = true;
+
+        ((NavigationDrawerActivity) mContext).getComponent().injectMediaPresenter(this);
+
         initializeActionBar();
         // findFragments();
         initializeDisplayMode();
@@ -162,8 +173,9 @@ public abstract class MediaPresenter
             String extrasUrl = mIntent.getExtras()
                     .getString(TiscaliAppFirebaseMessagingService.NOTIFICATION_URL);
             startFromNotification(extrasUrl);
-
         }
+
+        mLogManager.track(getCurrentHomeId());
     }
 
     @Override
@@ -366,6 +378,7 @@ public abstract class MediaPresenter
         showMedia();
         if (mMediaViewFragment != null) {
             mMediaViewFragment.updateUrl(url);
+            mLogManager.track(getCurrentPageId());
         }
         mIsHomePage = isHome;
     }
@@ -516,9 +529,44 @@ public abstract class MediaPresenter
         if (displayedChild == 0) {
             removeDetailFragment();
             setActionBarToggle();
+            mLogManager.track(getCurrentPageId());
         } else {
             setActionBarUp();
+            mLogManager.track(mMediaDetailFragment.getUrl());
         }
+    }
+
+    private String getCurrentPageId() {
+        for (int i = 0; i < mMenuItems.size(); i++) {
+            TiscaliMenuItem item = mMenuItems.get(i);
+            if (item.getUrl().equals(mMediaViewFragment.getUrl())) {
+                if (i == 0) {
+                    return getCurrentHomeId();
+                } else {
+                    return mContext.getResources().getString(
+                            R.string.com_tiscali_appmail_fragment_MediaFragment_Home_SectionId,
+                            item.getSectionId());
+                }
+
+            }
+        }
+        return "";
+    }
+
+    @NonNull
+    private String getCurrentHomeId() {
+        switch (getType()) {
+            case NEWS:
+                return mContext.getResources()
+                        .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_News);
+            case VIDEO:
+                return mContext.getResources()
+                        .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Video);
+            case OFFERS:
+                return mContext.getResources()
+                        .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Promo);
+        }
+        return "";
     }
 
     @Override
@@ -619,6 +667,7 @@ public abstract class MediaPresenter
             public CheckBox media_button;
             public TextView media_category;
             public RelativeLayout rl_media;
+            public ImageView media_icon;
         }
 
         @Override
@@ -635,10 +684,18 @@ public abstract class MediaPresenter
                 holder.media_button = (CheckBox) convertView.findViewById(R.id.toggle_media);
                 holder.media_category = (TextView) convertView.findViewById(R.id.category_media);
                 holder.rl_media = (RelativeLayout) convertView.findViewById(R.id.row_media);
+                holder.media_icon = (ImageView) convertView.findViewById(R.id.item_icon);
                 holder.media_button.setTag(position);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
+            }
+
+            if (mMediaCategory.get(position).getIco() != null) {
+                Glide.with(mContext).load(mMediaCategory.get(position).getIco())
+                        .into(holder.media_icon);
+            } else {
+                holder.media_icon.setVisibility(View.INVISIBLE);
             }
 
             holder.media_category.setText(mMediaCategory.get(position).getTitle());
@@ -829,6 +886,15 @@ public abstract class MediaPresenter
                 ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
                 itemViewHolder.itemView.setSelected(mSelectedPos == position);
 
+                // row background
+                if (itemViewHolder.itemView.isSelected()) {
+                    itemViewHolder.mItemContainerRl.setBackgroundColor(
+                            ContextCompat.getColor(mContext, R.color.colorItemSelected));
+                } else {
+                    itemViewHolder.mItemContainerRl.setBackgroundColor(
+                            ContextCompat.getColor(mContext, android.R.color.transparent));
+                }
+
                 RelativeLayout.LayoutParams params =
                         (RelativeLayout.LayoutParams) itemViewHolder.mItemTitleTv.getLayoutParams();
                 int materialMarginLeft =
@@ -836,10 +902,12 @@ public abstract class MediaPresenter
                 // Icon
                 if (item.getIco() != null) {
                     itemViewHolder.mItemIconIv.setVisibility(View.VISIBLE);
-                    if (itemViewHolder.itemView.isSelected()) {
-                        itemViewHolder.mItemIconIv.setImageAlpha(255);
-                    } else {
-                        itemViewHolder.mItemIconIv.setImageAlpha(138);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        if (itemViewHolder.itemView.isSelected()) {
+                            itemViewHolder.mItemIconIv.setImageAlpha(255);
+                        } else {
+                            itemViewHolder.mItemIconIv.setImageAlpha(138);
+                        }
                     }
                     Glide.with(mContext).load(item.getIco()).into(itemViewHolder.mItemIconIv);
                 } else {
@@ -868,17 +936,27 @@ public abstract class MediaPresenter
                     itemViewHolder.mItemActionTv.setVisibility(View.GONE);
                 }
 
-                // add additionally left margin depending on depth
-                if (itemViewHolder.mItemContainerRl
-                        .getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-                    ViewGroup.MarginLayoutParams p =
-                            (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl
-                                    .getLayoutParams();
-                    int marginLeft = (int) (getItemDepth(position)
-                            * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
-                    p.setMargins(marginLeft, 0, 0, 0);
-                    itemViewHolder.mItemContainerRl.requestLayout();
-                }
+                // add additionally left padding depending on depth
+                // if (itemViewHolder.mItemContainerRl
+                // .getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                // ViewGroup.MarginLayoutParams p =
+                // (ViewGroup.MarginLayoutParams) itemViewHolder.mItemContainerRl
+                // .getLayoutParams();
+                // int marginLeft = (int) (getItemDepth(position)
+                // * mContext.getResources().getDimension(R.dimen.margin_standard_16dp));
+                // p.setMargins(marginLeft, 0, 0, 0);
+                // itemViewHolder.mItemContainerRl.requestLayout();
+                // }
+                int additionalPaddingLeft = (int) (getItemDepth(position) * mContext.getResources()
+                        .getDimensionPixelSize(R.dimen.margin_standard_16dp));
+                int basePaddingLeft =
+                        mContext.getResources().getDimensionPixelSize(R.dimen.margin_standard_16dp);
+                int paddingLeft = basePaddingLeft + additionalPaddingLeft;
+                itemViewHolder.mItemContainerRl.setPadding(paddingLeft,
+                        itemViewHolder.mItemContainerRl.getPaddingTop(),
+                        itemViewHolder.mItemContainerRl.getPaddingRight(),
+                        itemViewHolder.mItemContainerRl.getPaddingBottom());
+                itemViewHolder.mItemContainerRl.requestLayout();
 
                 // toggle icon for expandable items
                 if (hasChildren(position)) {
@@ -1026,6 +1104,8 @@ public abstract class MediaPresenter
                     case 0:
                         if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
+                            mLogManager
+                                    .track(mContext.getString(R.string.com_tiscali_appmail_Info));
                         }
                         break;
                 }
@@ -1038,27 +1118,28 @@ public abstract class MediaPresenter
     public void showDialogCustomize(List<TiscaliMenuItem> data) {
         mListener.closeDrawer();
 
-        final Dialog customize = new Dialog(mListener.getActivity(),
-                android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        customize.setContentView(R.layout.dialog_custom_news);
-        customize.setCancelable(false);
-
-        ListView listInterests = (ListView) customize.findViewById(R.id.list_catagory);
-
-        final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
-
-        listInterests.setAdapter(adapter);
-
-        Button btnOk = (Button) customize.findViewById(R.id.btn_close);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-
+        final AppCompatDialog customizeDialog =
+                new AppCompatDialog(mListener.getActivity(), R.style.Theme_K9_Light_NoActionBar);
+        customizeDialog.setCancelable(true);
+        customizeDialog.setContentView(R.layout.dialog_custom_news);
+        Toolbar toolbar =
+                (Toolbar) customizeDialog.getWindow().getDecorView().findViewById(R.id.toolbar);
+        toolbar.setTitle(mContext.getString(R.string.action_bar_title_customize));
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                customize.dismiss();
+            public void onClick(View view) {
+                customizeDialog.dismiss();
             }
         });
 
-        customize.show();
+        mLogManager.track(mContext.getResources()
+                .getString(R.string.com_tiscali_appmail_News_Customization_Visibility));
+
+        ListView listInterests = (ListView) customizeDialog.findViewById(R.id.list_catagory);
+        final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
+        listInterests.setAdapter(adapter);
+
+        customizeDialog.show();
     }
 
     public List<TiscaliMenuItem> getCustomizableItems() {

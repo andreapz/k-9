@@ -1,5 +1,6 @@
 package com.tiscali.appmail.activity;
 
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.fragment.MailPresenter;
 import com.tiscali.appmail.fragment.MediaPresenter;
@@ -39,6 +40,12 @@ public class ActivityModule {
     LayoutInflater provideLayoutInflater() {
         System.out.println("Provide LayoutInflater");
         return mActivity.getLayoutInflater();
+    }
+
+    @Provides
+    @ActivityScope
+    LogManager provideLogManager() {
+        return new LogManager(mActivity.getApplication());
     }
 
     @Provides

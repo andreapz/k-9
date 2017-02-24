@@ -1,29 +1,30 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/cardview_light_background"
-    android:orientation="vertical" >
+    android:background="@color/cardview_light_background">
 
-    <Button
-        android:id="@+id/btn_close"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="10dp"
-        android:layout_alignParentRight="true"
-        android:background="@drawable/ic_action_cancel_light" />
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        app:navigationIcon="?homeAsUpIndicator"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:elevation="@dimen/margin_standard_4dp" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"
-        android:layout_below="@id/btn_close"
+        android:layout_below="@+id/toolbar"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical" >
-
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="fill_parent"
@@ -43,8 +44,7 @@
             android:layout_marginTop="10dp"
             android:layout_weight="1"
             android:cacheColorHint="#00000000"
-            android:divider="@android:color/transparent" >
-        </ListView>
+            android:divider="@android:color/transparent"></ListView>
 
 
     </LinearLayout>

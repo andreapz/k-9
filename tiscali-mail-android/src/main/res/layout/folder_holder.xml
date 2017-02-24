@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/item_container"
-    android:paddingLeft="@dimen/margin_standard_16dp"
     android:paddingRight="@dimen/margin_standard_16dp"
     android:layout_width="match_parent"
     android:layout_height="@dimen/margin_standard_48dp">

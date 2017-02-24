@@ -1,11 +1,15 @@
 
 package com.tiscali.appmail.activity.setup;
 
+import javax.inject.Inject;
+
 import com.tiscali.appmail.Account;
+import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.K9Activity;
 import com.tiscali.appmail.activity.NavigationDrawerActivity;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.helper.Utility;
 
 import android.content.Context;
@@ -31,6 +35,9 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
 
     private Button mDoneButton;
 
+    @Inject
+    LogManager mLogManager;
+
     public static void actionSetNames(Context context, Account account) {
         Intent i = new Intent(context, AccountSetupNames.class);
         i.putExtra(EXTRA_ACCOUNT, account.getUuid());
@@ -51,9 +58,11 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
                 validateFields();
             }
 
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         };
         mName.addTextChangedListener(validationTextWatcher);
 
@@ -73,6 +82,9 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
         if (!Utility.requiredFieldValid(mName)) {
             mDoneButton.setEnabled(false);
         }
+
+        ((K9) getApplication()).getComponent().inject(this);
+        mLogManager.track(R.string.com_tiscali_appmail_Account_Setup);
     }
 
     private void validateFields() {

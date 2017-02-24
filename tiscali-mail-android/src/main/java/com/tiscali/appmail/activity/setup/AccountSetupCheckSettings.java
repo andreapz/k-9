@@ -12,12 +12,15 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.BrowserActivity;
 import com.tiscali.appmail.activity.K9Activity;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.fragment.ConfirmationDialogFragment;
 import com.tiscali.appmail.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
@@ -66,6 +69,9 @@ public class AccountSetupCheckSettings extends K9Activity
     private static final String TISCALI_SMTP_PASSWORD_TOO_SIMPLE_MESSAGE =
             "your password is too simple";
     private static final String SMTP_PASSWORD_TOO_SIMPLE_CODE = "535";
+
+    @Inject
+    LogManager mLogManager;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API. See
@@ -152,6 +158,10 @@ public class AccountSetupCheckSettings extends K9Activity
         String accountUuid = getIntent().getStringExtra(EXTRA_ACCOUNT);
         mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
         mDirection = (CheckDirection) getIntent().getSerializableExtra(EXTRA_CHECK_DIRECTION);
+
+        ((K9) getApplication()).getComponent().inject(this);
+        mLogManager.track(getResources().getString(
+                R.string.com_tiscali_appmail_Account_Settings_Check, mAccount.getEmail()));
 
         mCheckAccountTask = new CheckAccountTask(mAccount);
         mCheckAccountTask.execute(mDirection);
@@ -524,6 +534,9 @@ public class AccountSetupCheckSettings extends K9Activity
                     return null;
                 }
 
+                mLogManager.track(getResources().getString(
+                        R.string.com_tiscali_appmail_Account_Settings_Check_Ok,
+                        mAccount.getEmail()));
                 setResult(RESULT_OK);
                 finish();
 
@@ -540,9 +553,18 @@ public class AccountSetupCheckSettings extends K9Activity
                     errorMsgId = R.string.account_setup_failed_dlg_auth_message_fmt;
                 }
                 showErrorDialog(errorMsgId, null);
+                mLogManager.track(getResources().getString(
+                        R.string.com_tiscali_appmail_Account_Settings_Check_Error,
+                        mAccount.getEmail()));
             } catch (CertificateValidationException cve) {
+                mLogManager.track(getResources().getString(
+                        R.string.com_tiscali_appmail_Account_Settings_Check_Error,
+                        mAccount.getEmail()));
                 handleCertificateValidationException(cve);
             } catch (Exception e) {
+                mLogManager.track(getResources().getString(
+                        R.string.com_tiscali_appmail_Account_Settings_Check_Error,
+                        mAccount.getEmail()));
                 Log.e(K9.LOG_TAG, "Error while testing settings", e);
                 showErrorDialog(R.string.account_setup_failed_dlg_server_message_fmt, null);
             }
