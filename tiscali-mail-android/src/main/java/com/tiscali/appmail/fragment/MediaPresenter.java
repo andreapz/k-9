@@ -1118,8 +1118,8 @@ public abstract class MediaPresenter
     public void showDialogCustomize(List<TiscaliMenuItem> data) {
         mListener.closeDrawer();
 
-        final AppCompatDialog customizeDialog = new AppCompatDialog(mListener.getActivity(),
-                R.style.Theme_AppCompat_Light_NoActionBar);
+        final AppCompatDialog customizeDialog =
+                new AppCompatDialog(mListener.getActivity(), R.style.Theme_K9_Light_NoActionBar);
         customizeDialog.setCancelable(true);
         customizeDialog.setContentView(R.layout.dialog_custom_news);
         Toolbar toolbar =
