@@ -106,6 +106,8 @@ public class UI_Search_Test {
 
         onView(withId(android.support.design.R.id.search_src_text)).perform(pressImeActionButton());
 
+        SystemClock.sleep(2000);
+
         Search nextActivity =
                 (Search) getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 4000);
 
