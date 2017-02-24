@@ -14,6 +14,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.support.test.espresso.web.sugar.Web.onWebView;
+import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -106,7 +107,7 @@ public class UI_NavigationDrawerActivity_Test {
     @Test
     public void addAccountWithSimplePassword() {
 
-        Instrumentation.ActivityMonitor activityMonitor = getInstrumentation()
+        final Instrumentation.ActivityMonitor activityMonitor = getInstrumentation()
                 .addMonitor(AccountSetupCheckSettings.class.getName(), null, false);
         onView(withId(R.id.menu_mail)).perform(click());
 
@@ -131,8 +132,8 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withId(R.id.next)).perform(click());
 
         AccountSetupCheckSettings nextActivity = (AccountSetupCheckSettings) getInstrumentation()
-                .waitForMonitorWithTimeout(activityMonitor, 3000);
-
+                .waitForMonitorWithTimeout(activityMonitor, 4000);
+        assertNotNull(nextActivity);
         onView(withText(R.string.account_password_too_simple_failed_dlg_edit_details_action))
                 .inRoot(withDecorView(not(is(nextActivity.getWindow().getDecorView()))))
                 .check(matches(isDisplayed()));
@@ -142,6 +143,8 @@ public class UI_NavigationDrawerActivity_Test {
 
         Espresso.pressBack();
         Espresso.pressBack();
+
+
     }
 
     @Test
