@@ -7,6 +7,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.EmailAddressValidator;
 import com.tiscali.appmail.K9;
@@ -15,6 +17,7 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.account.AccountCreator;
 import com.tiscali.appmail.activity.K9Activity;
 import com.tiscali.appmail.activity.setup.AccountSetupCheckSettings.CheckDirection;
+import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.helper.UrlEncodingHelper;
 import com.tiscali.appmail.helper.Utility;
 import com.tiscali.appmail.mail.AuthType;
@@ -73,6 +76,8 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
     private boolean mCheckedIncoming = false;
     private CheckBox mShowPasswordCheckBox;
     private String mEmailDomain;
+    @Inject
+    LogManager mLogManager;
 
     public static void actionNewAccount(Context context) {
         Intent i = new Intent(context, AccountSetupBasics.class);
@@ -97,6 +102,9 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
 
         mEmailDomain = getResources().getString(R.string.account_setup_basics_domain_tiscali);
         emailDomainTv.setText(mEmailDomain);
+
+        ((K9) getApplication()).getComponent().inject(this);
+        mLogManager.track(R.string.com_tiscali_appmail_Login);
     }
 
     private void initializeViewListeners() {
@@ -340,7 +348,7 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
             // Auto-setup doesn't support client certificates.
             onManualSetup();
             return;
-         }
+        }
 
         String domain = mEmailDomain.substring(mEmailDomain.indexOf("@") + 1);
         mProvider = findProviderForDomain(domain);

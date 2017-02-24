@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.bumptech.glide.Glide;
 import com.tiscali.appmail.K9;
@@ -40,6 +39,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -75,7 +75,6 @@ import rx.functions.Action1;
  * Created by thomascastangia on 02/01/17.
  */
 
-@Singleton
 public abstract class MediaPresenter
         implements MediaFragment.MediaFragmentListener, ViewSwitcher.OnSwitchCompleteListener,
         PresenterLifeCycle, ApiController.ApiControllerInterface {
@@ -176,8 +175,7 @@ public abstract class MediaPresenter
             startFromNotification(extrasUrl);
         }
 
-        mLogManager.track(mContext.getResources()
-                .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_News));
+        mLogManager.track(getCurrentHomeId());
     }
 
     @Override
@@ -543,17 +541,7 @@ public abstract class MediaPresenter
             TiscaliMenuItem item = mMenuItems.get(i);
             if (item.getUrl().equals(mMediaViewFragment.getUrl())) {
                 if (i == 0) {
-                    switch (getType()) {
-                        case NEWS:
-                            return mContext.getResources().getString(
-                                    R.string.com_tiscali_appmail_fragment_MediaFragment_Home_News);
-                        case VIDEO:
-                            return mContext.getResources().getString(
-                                    R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Video);
-                        case OFFERS:
-                            return mContext.getResources().getString(
-                                    R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Promo);
-                    }
+                    return getCurrentHomeId();
                 } else {
                     return mContext.getResources().getString(
                             R.string.com_tiscali_appmail_fragment_MediaFragment_Home_SectionId,
@@ -561,6 +549,22 @@ public abstract class MediaPresenter
                 }
 
             }
+        }
+        return "";
+    }
+
+    @NonNull
+    private String getCurrentHomeId() {
+        switch (getType()) {
+            case NEWS:
+                return mContext.getResources()
+                        .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_News);
+            case VIDEO:
+                return mContext.getResources()
+                        .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Video);
+            case OFFERS:
+                return mContext.getResources()
+                        .getString(R.string.com_tiscali_appmail_fragment_MediaFragment_Home_Promo);
         }
         return "";
     }

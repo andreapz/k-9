@@ -284,7 +284,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-                                             boolean noThreading, boolean newTask, boolean clearTop) {
+            boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -310,7 +310,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-                                                    MessageReference messageReference) {
+            MessageReference messageReference) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -380,6 +380,9 @@ public class NavigationDrawerActivity extends K9Activity
         if (mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);
         }
+
+        mLogManager.track(getResources()
+                .getString(R.string.com_tiscali_appmail_activity_NavigationDrawerActivity));
 
         setContentView(R.layout.activity_navigation_drawer);
 
@@ -500,12 +503,10 @@ public class NavigationDrawerActivity extends K9Activity
                                     }
 
                                     @Override
-                                    public void onError(Throwable e) {
-                                    }
+                                    public void onError(Throwable e) {}
 
                                     @Override
-                                    public void onNext(Object o) {
-                                    }
+                                    public void onNext(Object o) {}
                                 });
 
                     }
@@ -649,12 +650,10 @@ public class NavigationDrawerActivity extends K9Activity
                                     }
 
                                     @Override
-                                    public void onError(Throwable e) {
-                                    }
+                                    public void onError(Throwable e) {}
 
                                     @Override
-                                    public void onNext(Object o) {
-                                    }
+                                    public void onNext(Object o) {}
                                 });
                         break;
                     case SASAdView.StateChangeEvent.VIEW_EXPANDED:
@@ -884,7 +883,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     @Override
@@ -1275,7 +1274,7 @@ public class NavigationDrawerActivity extends K9Activity
                 mOffersPresenter.goBackOnHistory();
             } else if (mMailPresenter != null
                     && (mMailPresenter.getDisplayMode() == MailPresenter.DisplayMode.MESSAGE_VIEW
-                    && mMailPresenter.getMessageListWasDisplayed())) {
+                            && mMailPresenter.getMessageListWasDisplayed())) {
                 mMailPresenter.showMessageList();
             } else if (mMailPresenter != null
                     && getIntent().getStringExtra(SearchManager.QUERY) != null) {

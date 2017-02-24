@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
@@ -95,7 +94,6 @@ import android.widget.Toast;
  * Created by andreaputzu on 22/11/16.
  */
 
-@Singleton
 public class MailPresenter implements MessageListFragmentListener, MessageViewFragmentListener,
         OnBackStackChangedListener, OnSwipeGestureListener, OnSwitchCompleteListener,
         PresenterLifeCycle {

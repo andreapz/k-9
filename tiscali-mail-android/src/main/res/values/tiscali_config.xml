@@ -36,7 +36,7 @@
     <!-- content group end -->
     <!-- page name start -->
 
-    <string name="com.tiscali.appmail.activity.NavigationDrawerActivity">com.tiscali.appmail.android.lista-messaggi</string><!-- Lista dei messaggi -->
+    <string name="com.tiscali.appmail.activity.NavigationDrawerActivity">com.tiscali.appmail.android.home</string><!-- Lista dei messaggi -->
     <string name="com.tiscali.appmail.activity.Search">com.tiscali.appmail.android.ricerca.lista-messaggi</string><!-- Lista dei messaggi -->
 
     <string name="com.tiscali.appmail.fragment.MessageListFragment">com.tiscali.appmail.android.lista-messaggi</string><!-- Messaggio Esploso -->
@@ -64,6 +64,14 @@
     <string name="com.tiscali.appmail.Mail.Update.Account">com.tiscali.appmail.android.mail.update.account</string>
     <string name="com.tiscali.appmail.Mail.Remove.Account">com.tiscali.appmail.android.mail.remove.Account</string>
     <string name="com.tiscali.appmail.Info">com.tiscali.appmail.android.informations</string>
+
+    <string name="com.tiscali.appmail.Onboarding">com.tiscali.appmail.android.onboarding</string>
+    <string name="com.tiscali.appmail.Login">com.tiscali.appmail.android.login</string>
+    <string name="com.tiscali.appmail.Account.Setup">com.tiscali.appmail.android.account.setup</string>
+    <string name="com.tiscali.appmail.Account.Editor">com.tiscali.appmail.android.account.editor</string>
+    <string name="com.tiscali.appmail.Account.Settings.Check">com.tiscali.appmail.android.account.settings.check.%1$s</string>
+    <string name="com.tiscali.appmail.Account.Settings.Check.Ok">com.tiscali.appmail.android.account.settings.check.ok.%1$s</string>
+    <string name="com.tiscali.appmail.Account.Settings.Check.Error">com.tiscali.appmail.android.account.settings.check.error.%1$s</string>
 
     <string name="com.tiscali.appmail.activity.MessageCompose">com.tiscali.appmail.android.scrivi-messaggio</string><!-- Componi un messaggio -->
 

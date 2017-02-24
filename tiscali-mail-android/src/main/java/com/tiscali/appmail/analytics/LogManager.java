@@ -1,5 +1,7 @@
 package com.tiscali.appmail.analytics;
 
+import javax.inject.Singleton;
+
 import com.tiscali.appmail.BuildConfig;
 import com.tiscali.appmail.R;
 import com.webtrekk.webtrekksdk.TrackingParameter;
@@ -12,7 +14,7 @@ import android.content.pm.PackageManager;
 /**
  * Created by andreaputzu on 17/02/17.
  */
-
+@Singleton
 public class LogManager {
 
     private final Application mApplication;
