@@ -203,8 +203,8 @@ public class WelcomeActivity extends AppCompatActivity
         // Fixme change all with graphic version
         mDots = new TextView[mNumPages];
 
-        int colorsActive = getResources().getColor(R.color.dot_dark_screen);
-        int colorsInactive = getResources().getColor(R.color.dot_light_screen);
+        int colorsActive = getResources().getColor(R.color.colorPrimary);
+        int colorsInactive = getResources().getColor(R.color.colorItemSelected);
 
         mDotsLayout.removeAllViews();
         for (int i = 0; i < mDots.length; i++) {
