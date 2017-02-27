@@ -31,6 +31,7 @@ import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.fragment.MessageListFragment.MessageListFragmentListener;
 import com.tiscali.appmail.helper.SizeFormatter;
+import com.tiscali.appmail.mail.Flag;
 import com.tiscali.appmail.mail.Message;
 import com.tiscali.appmail.mailstore.LocalFolder;
 import com.tiscali.appmail.mailstore.StorageManager;
@@ -573,6 +574,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         // from notification
         if (mMessageViewFragment == null && mMessageReference != null) {
+            MessagingController.getInstance(mContext).setFlag(mAccount,
+                    mMessageReference.getFolderName(), mMessageReference.getUid(), Flag.SEEN, true);
             openMessage(mMessageReference);
         }
     }
