@@ -163,7 +163,6 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String GET_PARAMS_ID = "&UDID=";
     public static final String GET_PARAMS_PLATFORM = "&platform=";
     public static final String PLATFORM = "android";
-    public static final int INTERSTITIAL_INTERVAL_TIME = 1000 * 60 * 5;
 
     public static int DEFAULT_SELECTED_TAB = NEWS_TAB_SELECTED;
     public static final String DEFAULT_TAB_KEY = "default_tab";
@@ -193,10 +192,12 @@ public class NavigationDrawerActivity extends K9Activity
     private BottomNavigationView mBottomNav;
 
     private SASBannerView mBannerView;
+    private View mBottomView;
     private SASAdView.AdResponseHandler mBannerResponseHandler;
     private SASInterstitialView mInterstitialView;
     private SASAdView.AdResponseHandler interstitialResponseHandler;
     private int mInterstitialState;
+    private Me mMe;
 
     @Inject
     MailPresenter mMailPresenter;
@@ -250,15 +251,32 @@ public class NavigationDrawerActivity extends K9Activity
 
                     switch (item.getItemId()) {
                         case R.id.menu_mail:
+                            updateBannerAd(false);
+                            if (mMe != null) {
+                                loadInterstitialAd(
+                                        mMe.getAdv().getDisable().getMail().getInterstitial());
+                            }
                             onMailTabClicked();
                             break;
                         case R.id.menu_news:
+                            if (mMe != null) {
+                                updateBannerAd(true);
+                                loadInterstitialAd(mMe.getAdv().getDisable().getAdvNews().getAll());
+                            }
                             onNewsTabClicked();
                             break;
                         case R.id.menu_video:
+                            if (mMe != null) {
+                                updateBannerAd(true);
+                                loadInterstitialAd(mMe.getAdv().getDisable().getAdvNews().getAll());
+                            }
                             onVideoTabClicked();
                             break;
                         case R.id.menu_offers:
+                            if (mMe != null) {
+                                updateBannerAd(true);
+                                loadInterstitialAd(mMe.getAdv().getDisable().getAdvNews().getAll());
+                            }
                             onOffersTabClicked();
                             break;
                     }
@@ -554,26 +572,12 @@ public class NavigationDrawerActivity extends K9Activity
             }
 
         };
-
-        loadBannerAd();
-
-        long startMillis = pref.getStorage().getLong(INTERSTITIAL_TIME, 0L);
-        long nowMillis = System.currentTimeMillis();
-
-        if (nowMillis - startMillis > INTERSTITIAL_INTERVAL_TIME) {
-
-            // loadInterstitialAd();
-
-            StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
-            editor.putLong(INTERSTITIAL_TIME, nowMillis);
-            editor.commit();
-        }
     }
 
     private void initBannerView() {
         // Fetch the SASBannerView inflated from the main.xml layout file
         mBannerView = (SASBannerView) this.findViewById(R.id.banner);
-
+        mBottomView = this.findViewById(R.id.view_bottom);
         // Add a loader view on the banner. This view covers the banner placement, to indicate
         // progress, whenever the banner is loading an ad.
         // This is optional
@@ -591,16 +595,54 @@ public class NavigationDrawerActivity extends K9Activity
                 Log.i("APZ", "Banner loading failed: " + e.getMessage());
             }
         };
+
+
     }
 
     /**
      * Loads an ad on the banner
      */
-    private void loadBannerAd() {
-        // Load banner ad with appropriate parameters
-        // (siteID,pageID,formatID,master,targeting,adResponseHandler)
-        mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET, mBannerResponseHandler);
+    private void updateBannerAd(boolean disable) {
+
+        if (!disable) {
+            // Load banner ad with appropriate parameters
+            // (siteID,pageID,formatID,master,targeting,adResponseHandler)
+            mBottomView.setVisibility(View.GONE);
+            mBannerView.setVisibility(View.VISIBLE);
+            Integer intervalTime = 0;
+            if (mMe.getAdv().getTiming().getMail().getInterval() > mMe.getAdv().getTiming()
+                    .getMail().getShowtime()) {
+                intervalTime = mMe.getAdv().getTiming().getMail().getInterval();
+            } else {
+                intervalTime = mMe.getAdv().getTiming().getMail().getShowtime();
+            }
+
+            Observable.empty().observeOn(AndroidSchedulers.mainThread())
+                    .interval(mMe.getAdv().getTiming().getMail().getDelay(), intervalTime,
+                            TimeUnit.SECONDS)
+                    .subscribe(new Subscriber<Object>() {
+                        @Override
+                        public void onCompleted() {
+
+                }
+
+                        @Override
+                        public void onError(Throwable e) {}
+
+                        @Override
+                        public void onNext(Object o) {
+                            mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET,
+                                    mBannerResponseHandler);
+                        }
+                    });
+
+        } else {
+            mBottomView.setVisibility(View.VISIBLE);
+            mBannerView.setVisibility(View.INVISIBLE);
+        }
+
     }
+
 
     private Account getAccount(List<Account> accounts, LocalSearch localSearch) {
         for (Account cAccount : accounts) {
@@ -689,11 +731,29 @@ public class NavigationDrawerActivity extends K9Activity
     /**
      * Loads an interstitial ad
      */
-    private void loadInterstitialAd() {
+    private void loadInterstitialAd(boolean disable) {
         // Load interstitial ad with appropriate parameters
         // (siteID,pageID,formatID,master,targeting,adResponseHandler)
-        mInterstitialView.loadAd(INTERSTITIAL_SITE_ID, INTERSTITIAL_PAGE_ID, INTERSTITIAL_FORMAT_ID,
-                true, INTERSTITIAL_TARGET, interstitialResponseHandler);
+        if (!disable) {
+
+            final Preferences pref = Preferences.getPreferences(this);
+            final StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
+            long startMillis = pref.getStorage().getLong(INTERSTITIAL_TIME, 0L);
+            long nowMillis = System.currentTimeMillis();
+
+            if (nowMillis - startMillis > mMe.getAdv().getTiming().getMail().getInterval()) {
+
+                mInterstitialView.loadAd(INTERSTITIAL_SITE_ID, INTERSTITIAL_PAGE_ID,
+                        INTERSTITIAL_FORMAT_ID, true, INTERSTITIAL_TARGET,
+                        interstitialResponseHandler);
+
+                editor.putLong(INTERSTITIAL_TIME, nowMillis);
+                editor.commit();
+            }
+
+
+        }
+
     }
 
     @Override
@@ -838,6 +898,9 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public void hideBottomNav() {
+        if (mSelectedTab != MAIL_TAB_SELECTED) {
+            mBottomView.setVisibility(View.GONE);
+        }
         mBannerContainer.animate().translationY(mBottomNav.getHeight())
                 .setListener(new AnimatorListenerAdapter() {
 
@@ -851,6 +914,9 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public void showBottomNav() {
+        if (mSelectedTab != MAIL_TAB_SELECTED) {
+            mBottomView.setVisibility(View.VISIBLE);
+        }
         mBannerContainer.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -1243,6 +1309,8 @@ public class NavigationDrawerActivity extends K9Activity
 
     public void updateMe(Me me, String json) {
 
+        mMe = me;
+
         String defaultTab = me.getDefaultTab();
         int defaultTabIndex = NEWS_TAB_SELECTED;
 
@@ -1252,6 +1320,16 @@ public class NavigationDrawerActivity extends K9Activity
             defaultTabIndex = NEWS_TAB_SELECTED;
         } else if (defaultTab.equals(OFFERS_TAB)) {
             defaultTabIndex = OFFERS_TAB_SELECTED;
+        }
+        if (defaultTab.equals(MAIL_TAB)) {
+            if (me.getAdv().getDisable().getMail().getInterstitial()) {
+                updateBannerAd(false);
+                loadInterstitialAd(me.getAdv().getDisable().getMail().getInterstitial());
+
+            }
+        } else {
+            updateBannerAd(true);
+            loadInterstitialAd(me.getAdv().getDisable().getAdvNews().getAll());
         }
 
         StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();

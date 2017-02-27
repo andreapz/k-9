@@ -1013,8 +1013,8 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="account_setup_user_password_title_label_tiscali">Imposta utente e password</string>
     <string name="account_setup_user_password_summary_label_tiscali">Configura il tuo nome utente e la tua password</string>
     <string name="account_setup_user_password_title_tiscali">Configura nome utente e password</string>
-    <string name="special_mailbox_name_inbox_fmt">Posta in arrivo</string>
-    <string name="special_mailbox_name_outbox_fmt">Posta in uscita</string>
+    <string name="special_mailbox_name_inbox_fmt">In arrivo</string>
+    <string name="special_mailbox_name_outbox_fmt">In uscita</string>
     <string name="special_mailbox_name_drafts_fmt">Bozze</string>
     <string name="special_mailbox_name_trash_fmt">Cestino</string>
     <string name="special_mailbox_name_sent_fmt">Inviata</string>
