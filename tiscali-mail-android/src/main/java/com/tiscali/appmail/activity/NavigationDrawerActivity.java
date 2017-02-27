@@ -1324,7 +1324,7 @@ public class NavigationDrawerActivity extends K9Activity
         } else if (defaultTab.equals(OFFERS_TAB)) {
             defaultTabIndex = OFFERS_TAB_SELECTED;
         }
-        if (defaultTab.equals(MAIL_TAB)) {
+        if (mSelectedTab == MAIL_TAB_SELECTED) {
             if (me.getAdv().getDisable().getMail().getInterstitial()) {
                 updateBannerAd(false);
                 loadInterstitialAd(me.getAdv().getDisable().getMail().getInterstitial());
