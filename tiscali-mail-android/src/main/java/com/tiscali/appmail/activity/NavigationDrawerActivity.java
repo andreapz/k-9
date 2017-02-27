@@ -572,9 +572,6 @@ public class NavigationDrawerActivity extends K9Activity
             }
 
         };
-
-
-
     }
 
     private void initBannerView() {
