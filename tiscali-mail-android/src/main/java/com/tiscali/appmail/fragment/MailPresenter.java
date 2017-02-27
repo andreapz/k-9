@@ -31,6 +31,7 @@ import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.fragment.MessageListFragment.MessageListFragmentListener;
 import com.tiscali.appmail.helper.SizeFormatter;
+import com.tiscali.appmail.mail.Flag;
 import com.tiscali.appmail.mail.Message;
 import com.tiscali.appmail.mailstore.LocalFolder;
 import com.tiscali.appmail.mailstore.StorageManager;
@@ -571,10 +572,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
         ft.commit();
 
-        // Check if the fragment wasn't restarted and has a MessageReference in the arguments. If
-        // so, open the referenced message.
-        // should not be possible: bottom bar hidden in detail message view
-        if (!hasMessageListFragment && mMessageViewFragment == null && mMessageReference != null) {
+        // from notification
+        if (mMessageViewFragment == null && mMessageReference != null) {
+            MessagingController.getInstance(mContext).setFlag(mAccount,
+                    mMessageReference.getFolderName(), mMessageReference.getUid(), Flag.SEEN, true);
             openMessage(mMessageReference);
         }
     }
@@ -1669,7 +1670,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             // Set title of menu item to toggle the read state of the currently displayed message
-            if (mMessageViewFragment.isMessageRead()) {
+            if (mMessageViewFragment != null && mMessageViewFragment.isMessageRead()) {
                 int[] attrs = new int[] {R.attr.iconActionMarkAsUnread};
                 TypedArray ta = mContext.obtainStyledAttributes(attrs);
                 mMenu.findItem(R.id.toggle_unread).setIcon(ta.getDrawable(0));
