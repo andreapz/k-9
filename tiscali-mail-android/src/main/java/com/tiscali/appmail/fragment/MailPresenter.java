@@ -1790,7 +1790,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     public void setActionBarTitle(String title) {
-        mActionBarTitle.setText(title);
+        if (mActionBarTitle != null) {
+            mActionBarTitle.setText(title);
+        }
     }
 
     public void setActionBarSubTitle(String subTitle) {

@@ -560,7 +560,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         if (nowMillis - startMillis > INTERSTITIAL_INTERVAL_TIME) {
 
-            loadInterstitialAd();
+            // loadInterstitialAd();
 
             StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
             editor.putLong(INTERSTITIAL_TIME, nowMillis);
