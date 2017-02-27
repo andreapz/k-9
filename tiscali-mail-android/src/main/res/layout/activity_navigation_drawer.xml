@@ -50,7 +50,16 @@
                 android:id="@+id/content_frame"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="50dp" />
+                android:layout_above="@+id/view_bottom" />
+
+            <View
+                android:id="@+id/view_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@null"
+                android:layout_alignParentBottom="true"
+                android:visibility="invisible" />
+
 
             <LinearLayout
                 android:id="@+id/banner_ll"
