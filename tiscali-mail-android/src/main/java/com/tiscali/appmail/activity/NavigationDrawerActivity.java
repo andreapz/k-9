@@ -393,7 +393,9 @@ public class NavigationDrawerActivity extends K9Activity
 
         // upgrade settings from old Tiscali Mail to new Tiscali.it
         SettingsMigrations.upgradeSettings(pref, account);
-        updateAccount(account);
+        for (Account a : accounts) {
+            updateAccount(a);
+        }
 
         if (mNewsPresenter == null) {
             buildDaggerComponent(mailIntent);

@@ -7,8 +7,6 @@ import java.util.List;
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
-import com.tiscali.appmail.activity.Accounts;
-import com.tiscali.appmail.activity.FolderList;
 import com.tiscali.appmail.activity.MessageReference;
 import com.tiscali.appmail.activity.NavigationDrawerActivity;
 import com.tiscali.appmail.activity.NotificationDeleteConfirmation;
@@ -59,16 +57,26 @@ class NotificationActionCreator {
             List<MessageReference> messageReferences, int notificationId) {
 
         TaskStackBuilder stack;
-        if (account.goToUnreadMessageSearch()) {
-            stack = buildUnreadBackStack(account);
-        } else {
-            String folderName = getFolderNameOfAllMessages(messageReferences);
+        // should not happen, Account.goToUnreadMessageSearch setting disabled and default value
+        // equals to false
+        // if (account.goToUnreadMessageSearch()) {
+        // stack = buildUnreadBackStack(account);
+        // } else {
+        // String folderName = getFolderNameOfAllMessages(messageReferences);
+        //
+        // if (folderName == null) {
+        // stack = buildInboxFolderBackStack(account);
+        // } else {
+        // stack = buildMessageListBackStack(account, folderName);
+        // }
+        // }
 
-            if (folderName == null) {
-                stack = buildFolderListBackStack(account);
-            } else {
-                stack = buildMessageListBackStack(account, folderName);
-            }
+        String folderName = getFolderNameOfAllMessages(messageReferences);
+
+        if (folderName == null) {
+            stack = buildInboxFolderBackStack(account);
+        } else {
+            stack = buildMessageListBackStack(account, folderName);
         }
 
         return stack.getPendingIntent(notificationId,
@@ -76,7 +84,7 @@ class NotificationActionCreator {
     }
 
     public PendingIntent createViewFolderListPendingIntent(Account account, int notificationId) {
-        TaskStackBuilder stack = buildFolderListBackStack(account);
+        TaskStackBuilder stack = buildInboxFolderBackStack(account);
         return stack.getPendingIntent(notificationId,
                 PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
     }
@@ -229,42 +237,47 @@ class NotificationActionCreator {
                 PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
     }
 
-    private TaskStackBuilder buildAccountsBackStack() {
-        TaskStackBuilder stack = TaskStackBuilder.create(context);
-        if (!skipAccountsInBackStack()) {
-            Intent intent = new Intent(context, Accounts.class);
-            intent.putExtra(Accounts.EXTRA_STARTUP, false);
+    // private TaskStackBuilder buildAccountsBackStack() {
+    // TaskStackBuilder stack = TaskStackBuilder.create(context);
+    // if (!skipAccountsInBackStack()) {
+    // Intent intent = new Intent(context, Accounts.class);
+    // intent.putExtra(Accounts.EXTRA_STARTUP, false);
+    //
+    // stack.addNextIntent(intent);
+    // }
+    // return stack;
+    // }
 
-            stack.addNextIntent(intent);
-        }
-        return stack;
+    private TaskStackBuilder buildInboxFolderBackStack(Account account) {
+        return buildMessageListBackStack(account, account.getAutoExpandFolderName());
     }
 
-    private TaskStackBuilder buildFolderListBackStack(Account account) {
-        TaskStackBuilder stack = buildAccountsBackStack();
+    // private TaskStackBuilder buildFolderListBackStack(Account account) {
+    // TaskStackBuilder stack = buildAccountsBackStack();
+    //
+    // Intent intent = FolderList.actionHandleAccountIntent(context, account, false);
+    //
+    // stack.addNextIntent(intent);
+    //
+    // return stack;
+    // }
 
-        Intent intent = FolderList.actionHandleAccountIntent(context, account, false);
-
-        stack.addNextIntent(intent);
-
-        return stack;
-    }
-
-    private TaskStackBuilder buildUnreadBackStack(final Account account) {
-        TaskStackBuilder stack = buildAccountsBackStack();
-
-        LocalSearch search = Accounts.createUnreadSearch(context, account);
-        Intent intent =
-                NavigationDrawerActivity.intentDisplaySearch(context, search, true, false, false);
-
-        stack.addNextIntent(intent);
-
-        return stack;
-    }
+    // private TaskStackBuilder buildUnreadBackStack(final Account account) {
+    // TaskStackBuilder stack = TaskStackBuilder.create(context);
+    //
+    // LocalSearch search = NavigationDrawerActivity.createUnreadSearch(context, account);
+    // Intent intent =
+    // NavigationDrawerActivity.intentDisplaySearch(context, search, true, false, false);
+    //
+    // stack.addNextIntent(intent);
+    //
+    // return stack;
+    // }
 
     private TaskStackBuilder buildMessageListBackStack(Account account, String folderName) {
-        TaskStackBuilder stack = skipFolderListInBackStack(account, folderName)
-                ? buildAccountsBackStack() : buildFolderListBackStack(account);
+        // TaskStackBuilder stack = skipFolderListInBackStack(account, folderName)
+        // ? buildAccountsBackStack() : buildFolderListBackStack(account);
+        TaskStackBuilder stack = TaskStackBuilder.create(context);
 
         LocalSearch search = new LocalSearch(folderName);
         search.addAllowedFolder(folderName);
@@ -295,16 +308,16 @@ class NotificationActionCreator {
 
         for (MessageReference messageReference : messageReferences) {
             if (!TextUtils.equals(folderName, messageReference.getFolderName())) {
-                return null;
+                folderName = messageReference.getFolderName();
             }
         }
 
         return folderName;
     }
 
-    private boolean skipFolderListInBackStack(Account account, String folderName) {
-        return folderName != null && folderName.equals(account.getAutoExpandFolderName());
-    }
+    // private boolean skipFolderListInBackStack(Account account, String folderName) {
+    // return folderName != null && folderName.equals(account.getAutoExpandFolderName());
+    // }
 
     private boolean skipAccountsInBackStack() {
         return Preferences.getPreferences(context).getAccounts().size() == 1;
