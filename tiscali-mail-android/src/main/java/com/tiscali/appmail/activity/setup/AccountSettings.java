@@ -151,7 +151,7 @@ public class AccountSettings extends K9PreferenceActivity {
     private Preference mChipColor;
     private Preference mLedColor;
     private boolean mIncomingChanged = false;
-    private CheckBoxPreference mNotificationOpensUnread;
+    // private CheckBoxPreference mNotificationOpensUnread;
     private ListPreference mMessageFormat;
     private CheckBoxPreference mMessageReadReceipt;
     private ListPreference mQuoteStyle;
@@ -575,9 +575,9 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccountLed = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_LED);
         mAccountLed.setChecked(mAccount.getNotificationSetting().isLed());
 
-        mNotificationOpensUnread =
-                (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
-        mNotificationOpensUnread.setChecked(mAccount.goToUnreadMessageSearch());
+        // mNotificationOpensUnread =
+        // (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
+        // mNotificationOpensUnread.setChecked(mAccount.goToUnreadMessageSearch());
 
         new PopulateFolderPrefsTask().execute();
 
@@ -716,7 +716,7 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccount.getNotificationSetting()
                 .setVibrateTimes(Integer.parseInt(mAccountVibrateTimes.getValue()));
         mAccount.getNotificationSetting().setLed(mAccountLed.isChecked());
-        mAccount.setGoToUnreadMessageSearch(mNotificationOpensUnread.isChecked());
+        // mAccount.setGoToUnreadMessageSearch(mNotificationOpensUnread.isChecked());
         mAccount.setDeletePolicy(DeletePolicy.fromInt(Integer.parseInt(mDeletePolicy.getValue())));
         if (mIsExpungeCapable) {
             mAccount.setExpungePolicy(Expunge.valueOf(mExpungePolicy.getValue()));
