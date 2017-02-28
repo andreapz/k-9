@@ -343,6 +343,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         // TEST
         NetworkHelper.getInstance(this);
+        mLastCallBanner = 0;
         List<Account> accounts = pref.getAccounts();
         WelcomePreference prefManager = new WelcomePreference(this);
         Intent intent = getIntent();
@@ -1331,7 +1332,7 @@ public class NavigationDrawerActivity extends K9Activity
         } else if (defaultTab.equals(OFFERS_TAB)) {
             defaultTabIndex = OFFERS_TAB_SELECTED;
         }
-        mLastCallBanner = 0;
+
         if (mSelectedTab == MAIL_TAB_SELECTED) {
             if (me.getAdv().getDisable().getMail().getInterstitial()) {
                 updateBannerAd(false);
