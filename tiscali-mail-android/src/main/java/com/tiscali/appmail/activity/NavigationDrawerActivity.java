@@ -251,8 +251,8 @@ public class NavigationDrawerActivity extends K9Activity
 
                     switch (item.getItemId()) {
                         case R.id.menu_mail:
-                            updateBannerAd(false);
                             if (mMe != null) {
+                                updateBannerAd(false);
                                 loadInterstitialAd(
                                         mMe.getAdv().getDisable().getMail().getInterstitial());
                             }
