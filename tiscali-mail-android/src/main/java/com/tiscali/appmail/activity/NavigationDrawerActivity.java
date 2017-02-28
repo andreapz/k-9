@@ -168,6 +168,9 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String DEFAULT_TAB_KEY = "default_tab";
 
     public static final String INTERSTITIAL_TIME = "INTERSTITIAL_TIME";
+    public static final String BANNER_TIME = "BANNER_TIME";
+    public static final int INTERSTITIAL_INTERVAL_TIME = 1000 * 60 * 5;
+
     /*****************************************
      * Ad Constants
      *****************************************/
@@ -599,11 +602,13 @@ public class NavigationDrawerActivity extends K9Activity
      */
     private void updateBannerAd(boolean disable) {
 
-        if (!disable) {
+        if (!disable && mBannerView.getVisibility() == View.INVISIBLE) {
             // Load banner ad with appropriate parameters
             // (siteID,pageID,formatID,master,targeting,adResponseHandler)
             mBottomView.setVisibility(View.VISIBLE);
             mBannerView.setVisibility(View.VISIBLE);
+            // final Preferences pref = Preferences.getPreferences(this);
+            // final StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
             Integer intervalTime = 0;
             if (mMe.getAdv().getTiming().getMail().getInterval() > mMe.getAdv().getTiming()
                     .getMail().getShowtime()) {
@@ -626,13 +631,18 @@ public class NavigationDrawerActivity extends K9Activity
 
                         @Override
                         public void onNext(Object o) {
-                            mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET,
-                                    mBannerResponseHandler,
-                                    mMe.getAdv().getTiming().getMail().getShowtime());
+                            long lastCall = mBannerView.getLastCallTimestamp();
+                            if (lastCall <= 0) {
+
+                                mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET,
+                                        mBannerResponseHandler,
+                                        mMe.getAdv().getTiming().getMail().getShowtime());
+                            }
+
                         }
                     });
 
-        } else {
+        } else if (disable) {
             mBottomView.setVisibility(View.GONE);
             mBannerView.setVisibility(View.INVISIBLE);
         }
@@ -737,7 +747,7 @@ public class NavigationDrawerActivity extends K9Activity
             long startMillis = pref.getStorage().getLong(INTERSTITIAL_TIME, 0L);
             long nowMillis = System.currentTimeMillis();
 
-            if (nowMillis - startMillis > mMe.getAdv().getTiming().getMail().getInterval()) {
+            if (nowMillis - startMillis > INTERSTITIAL_INTERVAL_TIME) {
 
                 mInterstitialView.loadAd(INTERSTITIAL_SITE_ID, INTERSTITIAL_PAGE_ID,
                         INTERSTITIAL_FORMAT_ID, true, INTERSTITIAL_TARGET,
