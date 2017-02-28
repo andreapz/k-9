@@ -1334,10 +1334,9 @@ public class NavigationDrawerActivity extends K9Activity
         }
 
         if (mSelectedTab == MAIL_TAB_SELECTED) {
+            updateBannerAd(false);
             if (me.getAdv().getDisable().getMail().getInterstitial()) {
-                updateBannerAd(false);
                 loadInterstitialAd(me.getAdv().getDisable().getMail().getInterstitial());
-
             }
         } else {
             updateBannerAd(true);
