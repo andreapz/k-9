@@ -109,7 +109,7 @@ android {
     String K9_VERSION_NAME = '5.114'
 
     int VERSION_CODE = 204
-    String VERSION_NAME = "2.0.4"
+    String VERSION_NAME = "2.0.4.1"
 
     defaultConfig {
         applicationId "com.tiscali.appmail"
@@ -119,9 +119,9 @@ android {
         versionName VERSION_NAME
 
         minSdkVersion 15
-        targetSdkVersion 24
+        targetSdkVersion 22
 
-        generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
+        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
