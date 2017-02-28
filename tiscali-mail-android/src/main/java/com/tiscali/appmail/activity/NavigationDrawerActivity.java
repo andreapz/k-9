@@ -602,7 +602,7 @@ public class NavigationDrawerActivity extends K9Activity
         if (!disable) {
             // Load banner ad with appropriate parameters
             // (siteID,pageID,formatID,master,targeting,adResponseHandler)
-            mBottomView.setVisibility(View.GONE);
+            mBottomView.setVisibility(View.VISIBLE);
             mBannerView.setVisibility(View.VISIBLE);
             Integer intervalTime = 0;
             if (mMe.getAdv().getTiming().getMail().getInterval() > mMe.getAdv().getTiming()
@@ -627,12 +627,13 @@ public class NavigationDrawerActivity extends K9Activity
                         @Override
                         public void onNext(Object o) {
                             mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET,
-                                    mBannerResponseHandler);
+                                    mBannerResponseHandler,
+                                    mMe.getAdv().getTiming().getMail().getShowtime());
                         }
                     });
 
         } else {
-            mBottomView.setVisibility(View.VISIBLE);
+            mBottomView.setVisibility(View.GONE);
             mBannerView.setVisibility(View.INVISIBLE);
         }
 
@@ -893,9 +894,7 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public void hideBottomNav() {
-        if (mSelectedTab != MAIL_TAB_SELECTED) {
-            mBottomView.setVisibility(View.GONE);
-        }
+
         mBannerContainer.animate().translationY(mBottomNav.getHeight())
                 .setListener(new AnimatorListenerAdapter() {
 
@@ -909,9 +908,6 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public void showBottomNav() {
-        if (mSelectedTab != MAIL_TAB_SELECTED) {
-            mBottomView.setVisibility(View.VISIBLE);
-        }
         mBannerContainer.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
