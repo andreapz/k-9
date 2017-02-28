@@ -253,29 +253,24 @@ public class NavigationDrawerActivity extends K9Activity
                         case R.id.menu_mail:
                             if (mMe != null) {
                                 updateBannerAd(false);
-                                loadInterstitialAd(
-                                        mMe.getAdv().getDisable().getMail().getInterstitial());
                             }
                             onMailTabClicked();
                             break;
                         case R.id.menu_news:
                             if (mMe != null) {
                                 updateBannerAd(true);
-                                loadInterstitialAd(mMe.getAdv().getDisable().getAdvNews().getAll());
                             }
                             onNewsTabClicked();
                             break;
                         case R.id.menu_video:
                             if (mMe != null) {
                                 updateBannerAd(true);
-                                loadInterstitialAd(mMe.getAdv().getDisable().getAdvNews().getAll());
                             }
                             onVideoTabClicked();
                             break;
                         case R.id.menu_offers:
                             if (mMe != null) {
                                 updateBannerAd(true);
-                                loadInterstitialAd(mMe.getAdv().getDisable().getAdvNews().getAll());
                             }
                             onOffersTabClicked();
                             break;
