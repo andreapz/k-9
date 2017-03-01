@@ -52,7 +52,7 @@ public class WelcomeActivity extends AppCompatActivity
         implements ApiController.ApiControllerInterface {
 
     private ViewPager mViewPager;
-    private int mNumPages = 2;
+    private int mNumPages = 4;
     private final String IMAGE_RESOURCE_BASE_NAME = "tutorial";
     private WelcomePagerAdapter myViewPagerAdapter;
     private LinearLayout mDotsLayout;
@@ -244,7 +244,8 @@ public class WelcomeActivity extends AppCompatActivity
                 @Override
                 public void onPageSelected(int position) {
                     addBottomDots(position);
-                    if (mOnBoarding.getPages().get(position).getOptions().getAllowskip()) {
+                    if (mOnBoarding != null
+                            && mOnBoarding.getPages().get(position).getOptions().getAllowskip()) {
                         mBtnSkip.setVisibility(View.VISIBLE);
                         // changing the next button text 'NEXT' / 'GOT IT'
                         if (position == mNumPages - 1) {
@@ -254,6 +255,13 @@ public class WelcomeActivity extends AppCompatActivity
                             // still pages are left
                             mBtnSkip.setText(getString(R.string.skip));
 
+                        }
+                    } else if (mOnBoarding == null) {
+
+                        if (position == mNumPages - 1) {
+                            mBtnSkip.setVisibility(View.VISIBLE);
+                            // last page. make button text to GOT IT
+                            mBtnSkip.setText(getString(R.string.start));
                         }
                     } else {
                         mBtnSkip.setVisibility(View.GONE);

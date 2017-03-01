@@ -164,6 +164,9 @@ public class NavigationDrawerActivity extends K9Activity
     public static final String DEFAULT_TAB_KEY = "default_tab";
 
     public static final String INTERSTITIAL_TIME = "INTERSTITIAL_TIME";
+    public static final String BANNER_TIME = "BANNER_TIME";
+    public static final int INTERSTITIAL_INTERVAL_TIME = 1000 * 60 * 5;
+
     /*****************************************
      * Ad Constants
      *****************************************/
@@ -268,7 +271,11 @@ public class NavigationDrawerActivity extends K9Activity
             };
     private LinearLayout mBannerContainer;
     private NavigationDrawerActivityComponent mComponent;
+
     private FrameLayout mBannerMargin;
+
+    private long mLastCallBanner;
+
 
     public static void importSettings(Context context) {
         Intent intent = new Intent(context, NavigationDrawerActivity.class);
@@ -328,6 +335,7 @@ public class NavigationDrawerActivity extends K9Activity
 
         // TEST
         NetworkHelper.getInstance(this);
+        mLastCallBanner = 0;
         List<Account> accounts = pref.getAccounts();
         WelcomePreference prefManager = new WelcomePreference(this);
         Intent intent = getIntent();
@@ -584,6 +592,19 @@ public class NavigationDrawerActivity extends K9Activity
         // }
         // };
 
+//        // Instantiate the response handler used when loading an ad on the banner
+//        mBannerResponseHandler = new SASAdView.AdResponseHandler() {
+//            public void adLoadingCompleted(SASAdElement adElement) {
+//                Log.i("APZ", "Banner loading completed");
+//                mLastCallBanner = mBannerView.getLastCallTimestamp();
+//            }
+//
+//            public void adLoadingFailed(Exception e) {
+//                mLastCallBanner = 0;
+//                Log.i("APZ", "Banner loading failed: " + e.getMessage());
+//            }
+//        };
+
 
     }
 
@@ -632,6 +653,53 @@ public class NavigationDrawerActivity extends K9Activity
         // mBannerView.setVisibility(View.INVISIBLE);
         // }
 
+//        if (!disable && mBannerView.getVisibility() == View.INVISIBLE) {
+//            // Load banner ad with appropriate parameters
+//            // (siteID,pageID,formatID,master,targeting,adResponseHandler)
+//            mBottomView.setVisibility(View.VISIBLE);
+//            mBannerView.setVisibility(View.VISIBLE);
+//            // final Preferences pref = Preferences.getPreferences(this);
+//            // final StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
+//            Integer intervalTime = 0;
+//            if (mMe.getAdv().getTiming().getMail().getInterval() > mMe.getAdv().getTiming()
+//                    .getMail().getShowtime()) {
+//                intervalTime = mMe.getAdv().getTiming().getMail().getInterval();
+//            } else {
+//                intervalTime = mMe.getAdv().getTiming().getMail().getShowtime();
+//            }
+//
+//            Observable.empty().observeOn(AndroidSchedulers.mainThread())
+//                    .interval(mMe.getAdv().getTiming().getMail().getDelay(), intervalTime,
+//                            TimeUnit.SECONDS)
+//                    .subscribe(new Subscriber<Object>() {
+//                        @Override
+//                        public void onCompleted() {
+//
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//                        }
+//
+//                        @Override
+//                        public void onNext(Object o) {
+//
+//
+//                            if (mLastCallBanner <= 0) {
+//
+//                                mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET,
+//                                        mBannerResponseHandler);
+//                            }
+//
+//                        }
+//                    });
+//
+//        } else if (disable) {
+//            mBottomView.setVisibility(View.GONE);
+//            mBannerView.setVisibility(View.INVISIBLE);
+//        }
+
+
     }
 
 
@@ -650,6 +718,7 @@ public class NavigationDrawerActivity extends K9Activity
      * initialize the SASInterstitialView instance of this Activity
      */
     private void initInterstitialView() {
+
 
         // // Create SASInterstitialView instance
         // mInterstitialView = new SASInterstitialView(this);
@@ -718,6 +787,75 @@ public class NavigationDrawerActivity extends K9Activity
         // }
         //
         // };
+
+//        // Create SASInterstitialView instance
+//        mInterstitialView = new SASInterstitialView(this);
+//
+//        // Add a loader view on the interstitial view. This view is displayed fullscreen, to
+//        // indicate progress,
+//        // whenever the interstitial is loading an ad.
+//        View loader = new SASRotatingImageLoader(this);
+//        loader.setBackgroundColor(Color.WHITE);
+//        mInterstitialView.setLoaderView(loader);
+//
+//        // Add a state change listener on the SASInterstitialView instance to monitor MRAID states
+//        // changes.
+//        // Useful for instance to perform some actions as soon as the interstitial disappears.
+//        mInterstitialView.addStateChangeListener(new SASAdView.OnStateChangeListener() {
+//            public void onStateChanged(SASAdView.StateChangeEvent stateChangeEvent) {
+//                switch (stateChangeEvent.getType()) {
+//                    case SASAdView.StateChangeEvent.VIEW_DEFAULT:
+//                        mInterstitialState = SASAdView.StateChangeEvent.VIEW_DEFAULT;
+//                        // the MRAID Ad View is in default state
+//                        Log.i("APZ", "Interstitial MRAID state : DEFAULT");
+//                        Observable.empty().observeOn(Schedulers.newThread())
+//                                .delay(1500, TimeUnit.MILLISECONDS)
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe(new Subscriber<Object>() {
+//                                    @Override
+//                                    public void onCompleted() {
+//                                        if (mInterstitialState == SASAdView.StateChangeEvent.VIEW_DEFAULT) {
+//                                            Log.i("APZ", "Interstitial FORCE CLOSE");
+//                                            mInterstitialView.onDestroy();
+//                                            initInterstitialView();
+//                                        }
+//                                    }
+//
+//                                    @Override
+//                                    public void onError(Throwable e) {
+//                                    }
+//
+//                                    @Override
+//                                    public void onNext(Object o) {
+//                                    }
+//                                });
+//                        break;
+//                    case SASAdView.StateChangeEvent.VIEW_EXPANDED:
+//                        // the MRAID Ad View is in expanded state
+//                        mInterstitialState = SASAdView.StateChangeEvent.VIEW_EXPANDED;
+//                        Log.i("APZ", "Interstitial MRAID state : EXPANDED");
+//                        break;
+//                    case SASAdView.StateChangeEvent.VIEW_HIDDEN:
+//                        // the MRAID Ad View is in hidden state
+//                        mInterstitialState = SASAdView.StateChangeEvent.VIEW_HIDDEN;
+//                        Log.i("APZ", "Interstitial MRAID state : HIDDEN");
+//                        break;
+//                }
+//            }
+//        });
+//
+//        // Instantiate the response handler used when loading an interstitial ad
+//        interstitialResponseHandler = new SASAdView.AdResponseHandler() {
+//
+//            public void adLoadingCompleted(SASAdElement adElement) {
+//                Log.i("APZ", "Interstitial loading completed");
+//            }
+//
+//            public void adLoadingFailed(Exception e) {
+//                Log.i("APZ", "Interstitial loading failed: " + e.getMessage());
+//            }
+//
+//        };
     }
 
     /**
@@ -726,6 +864,7 @@ public class NavigationDrawerActivity extends K9Activity
     private void loadInterstitialAd(boolean disable) {
         // Load interstitial ad with appropriate parameters
         // (siteID,pageID,formatID,master,targeting,adResponseHandler)
+
         // if (!disable) {
         //
         // final Preferences pref = Preferences.getPreferences(this);
@@ -745,6 +884,26 @@ public class NavigationDrawerActivity extends K9Activity
         //
         //
         // }
+
+//        if (!disable) {
+//
+//            final Preferences pref = Preferences.getPreferences(this);
+//            final StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
+//            long startMillis = pref.getStorage().getLong(INTERSTITIAL_TIME, 0L);
+//            long nowMillis = System.currentTimeMillis();
+//
+//            if (nowMillis - startMillis > INTERSTITIAL_INTERVAL_TIME) {
+//
+//                mInterstitialView.loadAd(INTERSTITIAL_SITE_ID, INTERSTITIAL_PAGE_ID,
+//                        INTERSTITIAL_FORMAT_ID, true, INTERSTITIAL_TARGET,
+//                        interstitialResponseHandler);
+//
+//                editor.putLong(INTERSTITIAL_TIME, nowMillis);
+//                editor.commit();
+//            }
+//
+//
+//        }
 
     }
 
@@ -1318,6 +1477,17 @@ public class NavigationDrawerActivity extends K9Activity
         } else if (defaultTab.equals(OFFERS_TAB)) {
             defaultTabIndex = OFFERS_TAB_SELECTED;
         }
+
+
+//        if (mSelectedTab == MAIL_TAB_SELECTED) {
+//            updateBannerAd(false);
+//            if (me.getAdv().getDisable().getMail().getInterstitial()) {
+//                loadInterstitialAd(me.getAdv().getDisable().getMail().getInterstitial());
+//            }
+//        } else {
+//            updateBannerAd(true);
+//            loadInterstitialAd(me.getAdv().getDisable().getAdvNews().getAll());
+//        }
 
         StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
         editor.putInt(DEFAULT_TAB_KEY, defaultTabIndex);
