@@ -13,6 +13,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.v4.app.NotificationCompat;
+import android.util.DisplayMetrics;
+import android.view.Display;
 
 /**
  * Utility class
@@ -237,6 +239,22 @@ public class TiscaliUtility {
                 ((List<String>) list).add(i++, Account.TRASH);
             }
         }
+    }
+
+    public static boolean isTablet(Activity activity) {
+        boolean isTablet = false;
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+
+        float widthInches = metrics.widthPixels / metrics.xdpi;
+        float heightInches = metrics.heightPixels / metrics.ydpi;
+        double diagonalInches = Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2));
+        if (diagonalInches >= 7.0) {
+            isTablet = true;
+        }
+
+        return isTablet;
     }
 
     /**
