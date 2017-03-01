@@ -179,6 +179,8 @@ public class UI_NavigationDrawerActivity_Test {
     @Test
     public void changeVisibilityNewsSection() {
 
+        onView(withId(R.id.menu_news)).perform(click());
+
         onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
                 // should be
                 // closed.
@@ -203,6 +205,29 @@ public class UI_NavigationDrawerActivity_Test {
         // Select 3rd and 1st voice
         onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3).onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
         onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1).onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
+        Espresso.pressBack();
+
+    }
+
+    @Test
+    public void shareInformationPage() {
+
+        onView(withId(R.id.menu_news)).perform(click());
+
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
+
+        onView(withId(R.id.settings)).perform(click());
+
+        onView(withText(R.string.informations_action)).perform(click());
+
+        onView(withId(R.id.menu_item_share)).perform(click());
+
+        mDevice.pressBack();
+        mDevice.pressBack();
+
 
     }
 
