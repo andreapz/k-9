@@ -8,6 +8,7 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.DrawerActions.open;
 import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
+import static android.support.test.espresso.contrib.RecyclerViewActions.scrollToPosition;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -254,6 +255,45 @@ public class UI_NavigationDrawerActivity_Test {
 
         SystemClock.sleep(1000);
         onView(withId(R.id.bottom_navigation)).check(matches((isDisplayed())));
+
+    }
+
+    @Test
+    public void openSubSectionNewsDetail() {
+
+        onView(withId(R.id.menu_news)).perform(click());
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
+
+        onView(withId(R.id.left_drawer))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(9, click()));
+
+        SystemClock.sleep(2000);
+
+        onView(withId(R.id.left_drawer)).perform(scrollToPosition(14));
+
+        SystemClock.sleep(2000);
+        onView(withId(R.id.left_drawer))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(11, click()));
+
+
+        SystemClock.sleep(2000);
+
+//        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(8).onChildView(withId(R.id.toggle_media)).perform(click());
+
+        onWebView(withIndex(withId(R.id.webview), 0)).forceJavascriptEnabled();
+
+        SystemClock.sleep(2000);
+
+        onView(withIndex(withId(R.id.webview), 0)).check(matches(isDisplayed()));
+//
+        onView(withIndex(withId(R.id.webview), 0)).perform(clickXY(200, 400));
+//
+        mDevice.pressBack();
+        mDevice.pressBack();
+
 
     }
 
