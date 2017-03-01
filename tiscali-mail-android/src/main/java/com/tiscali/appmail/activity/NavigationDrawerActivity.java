@@ -643,8 +643,7 @@ public class NavigationDrawerActivity extends K9Activity
                             if (mLastCallBanner <= 0) {
 
                                 mBannerView.loadAd(SITE_ID, PAGE_ID, FORMAT_ID, true, TARGET,
-                                        mBannerResponseHandler,
-                                        mMe.getAdv().getTiming().getMail().getShowtime());
+                                        mBannerResponseHandler);
                             }
 
                         }
