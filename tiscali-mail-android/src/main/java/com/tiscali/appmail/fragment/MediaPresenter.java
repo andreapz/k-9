@@ -1135,7 +1135,7 @@ public abstract class MediaPresenter
         mLogManager.track(mContext.getResources()
                 .getString(R.string.com_tiscali_appmail_News_Customization_Visibility));
 
-        ListView listInterests = (ListView) customizeDialog.findViewById(R.id.list_catagory);
+        ListView listInterests = (ListView) customizeDialog.findViewById(R.id.list_category);
         final CategoryMediaAdapter adapter = new CategoryMediaAdapter(data);
         listInterests.setAdapter(adapter);
 

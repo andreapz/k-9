@@ -11,6 +11,7 @@ import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isNotChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.support.test.espresso.web.sugar.Web.onWebView;
@@ -113,8 +114,8 @@ public class UI_NavigationDrawerActivity_Test {
 
 
         onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
-                                                                                  // should be
-                                                                                  // closed.
+                // should be
+                // closed.
                 .perform(open()); // Open Drawer
 
         onView(withId(R.id.expand_menu)).perform(click());
@@ -153,8 +154,8 @@ public class UI_NavigationDrawerActivity_Test {
 
 
         onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
-                                                                                  // should be
-                                                                                  // closed.
+                // should be
+                // closed.
                 .perform(open()); // Open Drawer
 
         onView(withId(R.id.expand_menu)).perform(click());
@@ -176,6 +177,36 @@ public class UI_NavigationDrawerActivity_Test {
     }
 
     @Test
+    public void changeVisibilityNewsSection() {
+
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
+
+        onView(withText(R.string.menu_item_customize)).perform(click());
+
+        // Select 3rd and 1st voice
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3).onChildView(withId(R.id.toggle_media)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1).onChildView(withId(R.id.toggle_media)).perform(click());
+
+        SystemClock.sleep(1000);
+
+        Espresso.pressBack();
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
+
+        onView(withText(R.string.menu_item_customize)).perform(click());
+
+        // Select 3rd and 1st voice
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3).onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1).onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
+
+    }
+
+    @Test
     public void scrollDownAndUp() {
         onView(withId(R.id.menu_mail)).perform(click());
         K9PullToRefreshListView pullToRefreshListView = (K9PullToRefreshListView) mActivityRule
@@ -190,7 +221,6 @@ public class UI_NavigationDrawerActivity_Test {
         } else {
             listView.smoothScrollToPosition(MESSAGE_LIST_STEP_NUMBER);
         }
-
 
 
         SystemClock.sleep(1000);
@@ -230,7 +260,7 @@ public class UI_NavigationDrawerActivity_Test {
     }
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
-            final int childPosition) {
+                                           final int childPosition) {
         return new TypeSafeMatcher<View>() {
             @Override
             public void describeTo(Description description) {
@@ -290,7 +320,6 @@ public class UI_NavigationDrawerActivity_Test {
             }
         };
     }
-
 
 
 }
