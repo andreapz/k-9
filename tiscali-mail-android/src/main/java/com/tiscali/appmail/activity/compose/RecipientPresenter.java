@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.openintents.openpgp.IOpenPgpService2;
 import org.openintents.openpgp.util.OpenPgpApi;
@@ -16,9 +17,12 @@ import com.tiscali.appmail.Account;
 import com.tiscali.appmail.Identity;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.R;
+import com.tiscali.appmail.activity.MessageCompose;
 import com.tiscali.appmail.activity.compose.ComposeCryptoStatus.AttachErrorState;
 import com.tiscali.appmail.activity.compose.ComposeCryptoStatus.ComposeCryptoStatusBuilder;
 import com.tiscali.appmail.activity.compose.ComposeCryptoStatus.SendErrorState;
+import com.tiscali.appmail.fragment.ConfirmationDialogFragment;
+import com.tiscali.appmail.helper.AppPermissionsUtils;
 import com.tiscali.appmail.helper.Contacts;
 import com.tiscali.appmail.helper.MailTo;
 import com.tiscali.appmail.helper.ReplyToParser;
@@ -31,7 +35,10 @@ import com.tiscali.appmail.message.ComposePgpInlineDecider;
 import com.tiscali.appmail.message.PgpMessageBuilder;
 import com.tiscali.appmail.view.RecipientSelectView.Recipient;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -40,6 +47,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Menu;
 
@@ -58,6 +67,7 @@ public class RecipientPresenter implements PermissionPingCallback {
 
     private static final int PGP_INLINE_DIALOG_DISPLAY_THRESHOLD = 2;
 
+    public static final int REQUEST_CODE_PERMISSION_READ_CONTACTS = 100;
 
     // transient state, which is either obtained during construction and initialization, or cached
     private final Context context;
@@ -114,6 +124,39 @@ public class RecipientPresenter implements PermissionPingCallback {
         result.addAll(recipientMvpView.getBccRecipients());
 
         return result;
+    }
+
+    public void checkContactsPermission(Activity activity) {
+        // contacts permission
+        if (!AppPermissionsUtils.isPermissionGranted(activity, Manifest.permission.READ_CONTACTS)) {
+
+            // permission already asked, show an explanation
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                    Manifest.permission.READ_CONTACTS)) {
+
+                int dialogId = R.id.dialog_explain_permission;
+                String title = null;
+                String message = activity.getString(R.string.contacts_permission_message_dialog);
+                String confirmText = null;
+                String cancelText = activity.getString(android.R.string.ok);
+
+                DialogFragment dialogfragment = ConfirmationDialogFragment.newInstance(dialogId,
+                        title, message, confirmText, cancelText, false);
+                FragmentTransaction ta = activity.getFragmentManager().beginTransaction();
+                ta.add(dialogfragment, String.format(Locale.US, "dialog-%d", dialogId));
+                ta.commitAllowingStateLoss();
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+                requestContactsPermission(activity);
+            }
+        }
+    }
+
+    public void requestContactsPermission(Activity activity) {
+        AppPermissionsUtils.requestPermission(activity, Manifest.permission.READ_CONTACTS,
+                REQUEST_CODE_PERMISSION_READ_CONTACTS);
     }
 
     public boolean checkRecipientsOkForSending() {
@@ -183,6 +226,41 @@ public class RecipientPresenter implements PermissionPingCallback {
 
         if (extraBcc != null) {
             addBccAddresses(addressFromStringArray(extraBcc));
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_PERMISSION_READ_CONTACTS:
+                if (AppPermissionsUtils.isPermissionGranted(Manifest.permission.READ_CONTACTS,
+                        permissions, grantResults)) {
+                    // permission to read contacts has granted
+                } else {
+                    if (recipientMvpView.getActivity() instanceof MessageCompose) {
+                        MessageCompose msgComposeActivity = recipientMvpView.getActivity();
+                        msgComposeActivity.requestFocus();
+
+                        if (AppPermissionsUtils.shouldAskToChangeSettings(msgComposeActivity,
+                                Manifest.permission.READ_CONTACTS)) {
+                            int dialogId = R.id.dialog_change_permission;
+                            String title = null;
+                            String message = msgComposeActivity
+                                    .getString(R.string.contacts_change_permission_message_dialog);
+                            String confirmText = msgComposeActivity.getString(android.R.string.ok);
+                            String cancelText =
+                                    msgComposeActivity.getString(android.R.string.cancel);
+
+                            DialogFragment dialogfragment = ConfirmationDialogFragment.newInstance(
+                                    dialogId, title, message, confirmText, cancelText, false);
+                            FragmentTransaction ta =
+                                    msgComposeActivity.getFragmentManager().beginTransaction();
+                            ta.add(dialogfragment, String.format(Locale.US, "dialog-%d", dialogId));
+                            ta.commitAllowingStateLoss();
+                        }
+                    }
+                }
+                break;
         }
     }
 

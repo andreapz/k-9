@@ -8,5 +8,7 @@
     <item type="id" name="dialog_account_setup_error" />
     <item type="id" name="dialog_account_password_too_simple_error" />
     <item type="id" name="dialog_cancel_recent_searches" />
+    <item type="id" name="dialog_explain_permission" />
+    <item type="id" name="dialog_change_permission" />
 
 </resources>

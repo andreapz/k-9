@@ -13,20 +13,22 @@
         android:normalScreens="true"
         android:smallScreens="true" />
 
+    <!-- normal permissions -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
-
-    <!-- Needed to mark a contact as contacted -->
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- dangerous permissions -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- Needed to mark a contact as contacted -->
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <!-- custom permissions -->
     <permission
         android:name="${applicationId}.permission.READ_ATTACHMENT"
         android:description="@string/read_attachment_desc"
