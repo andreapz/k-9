@@ -343,21 +343,21 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withText(R.string.sort_by_date)).perform(click());
         SystemClock.sleep(1000);
 
-        // verify voice select all and add flag
+        // verify voice select all and delete
 
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
 
         SystemClock.sleep(1000);
         onView(withText(R.string.batch_select_all)).perform(click());
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
 
         SystemClock.sleep(1000);
 
-        onView(withText(R.string.flag_action)).perform(click());
+        onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(1).perform(click());
+        onData(anything()).inAdapterView(withId(android.R.id.list)).atPosition(2).perform(click());
+
 
         SystemClock.sleep(1000);
-
-        mDevice.pressBack();
+        onView(withId(R.id.delete)).perform(click());
 
         // verify mark all as read
 
@@ -365,9 +365,6 @@ public class UI_NavigationDrawerActivity_Test {
 
         SystemClock.sleep(1000);
         onView(withText(R.string.mark_all_as_read)).perform(click());
-        onView(withText("SI")).perform(click());
-
-        SystemClock.sleep(1000);
 
         mDevice.pressBack();
 
