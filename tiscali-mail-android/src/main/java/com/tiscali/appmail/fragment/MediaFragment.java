@@ -489,9 +489,12 @@ public class MediaFragment extends Fragment {
                     title = title.substring(0, title.indexOf(" "));
                 }
                 String titleEncode = title.replaceAll("%20", " ");
-                if (mFragmentListener != null) {
-                    mFragmentListener.setPageTitle(titleEncode);
+                if (!titleEncode.equals("about:blank")) {
+                    if (mFragmentListener != null) {
+                        mFragmentListener.setPageTitle(titleEncode);
+                    }
                 }
+
             } else {
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
             }

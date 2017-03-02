@@ -1,5 +1,6 @@
 package com.tiscali.appmail.activity;
 
+import com.tiscali.appmail.adv.AdvManager;
 import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.api.ApiController;
 import com.tiscali.appmail.fragment.MailPresenter;
@@ -79,6 +80,12 @@ public class ActivityModule {
     OffersPresenter provideOffersPresenter() {
         return new OffersPresenter((INavigationDrawerActivityListener) mActivity, mIntent,
                 MediaPresenter.Type.OFFERS);
+    }
+
+    @Provides
+    @ActivityScope
+    AdvManager provideAdvManager() {
+        return new AdvManager(mActivity);
     }
 
     @Provides

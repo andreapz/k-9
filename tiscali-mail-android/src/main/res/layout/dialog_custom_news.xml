@@ -38,7 +38,7 @@
         </LinearLayout>
 
         <ListView
-            android:id="@+id/list_catagory"
+            android:id="@+id/list_category"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_marginTop="10dp"
