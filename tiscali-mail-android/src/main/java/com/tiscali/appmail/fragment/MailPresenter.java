@@ -567,7 +567,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (isMediaListFragmentAttached) {
             ft.show(mMessageListFragment);
         } else {
-            ft.add(R.id.message_list_container, mMessageListFragment);
+            Fragment f = fragmentManager.findFragmentById(R.id.message_list_container);
+
+            if (f instanceof MessageListFragment) {
+                ft.show(f);
+            } else {
+                ft.add(R.id.message_list_container, mMessageListFragment);
+            }
             isMediaListFragmentAttached = true;
         }
         ft.commit();
@@ -1801,6 +1807,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     public void setActionBarUnread(int unread) {
+        if (mActionBarUnread == null) {
+            return;
+        }
         if (unread == 0) {
             mActionBarUnread.setVisibility(View.GONE);
         } else {
@@ -1816,6 +1825,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setMessageListSubTitle(String subTitle) {
+        if (mActionBarSubTitle == null) {
+            return;
+        }
+
         if (subTitle != null) {
             mActionBarSubTitle.setVisibility(View.VISIBLE);
             setActionBarSubTitle(subTitle);

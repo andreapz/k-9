@@ -50,7 +50,8 @@
                 android:id="@+id/content_frame"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_above="@+id/view_bottom" />
+                android:layout_above="@+id/view_bottom"
+                android:layout_marginBottom="0dp" />
 
             <View
                 android:id="@+id/view_bottom"
@@ -58,7 +59,7 @@
                 android:layout_height="50dp"
                 android:background="@android:color/transparent"
                 android:layout_alignParentBottom="true"
-                android:visibility="invisible" />
+                android:visibility="visible" />
 
 
             <LinearLayout
@@ -68,11 +69,20 @@
                 android:layout_alignParentBottom="true"
                 android:orientation="vertical">
 
-                <com.smartadserver.android.library.SASBannerView
-                    android:id="@+id/banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:visibility="invisible" />
+                <LinearLayout
+                    android:id="@+id/banner_adv_ll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@android:color/transparent"
+                    android:visibility="visible"
+                    android:layout_gravity="center_horizontal"></LinearLayout>
+
+                <!--<com.smartadserver.android.library.SASBannerView-->
+                <!--android:id="@+id/banner"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="50dp"-->
+                <!--android:visibility="visible" />-->
 
                 <android.support.design.widget.BottomNavigationView
                     android:id="@+id/bottom_navigation"

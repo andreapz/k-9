@@ -1,4 +1,5 @@
 include ':tiscali-mail-android'
+include ':sdk-release'
 include ':k9mail-library'
 include ':plugins:Android-PullToRefresh:library'
 include ':plugins:HoloColorPicker'

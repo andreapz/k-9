@@ -10,6 +10,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import com.crashlytics.android.Crashlytics;
+import com.dotandmedia.android.sdk.AdView;
+import com.dotandmedia.android.sdk.DotAndMediaSDK;
 import com.tiscali.appmail.Account.SortType;
 import com.tiscali.appmail.activity.MessageCompose;
 import com.tiscali.appmail.activity.UpgradeDatabases;
@@ -49,6 +51,9 @@ import android.util.Log;
 import io.fabric.sdk.android.Fabric;
 
 public class K9 extends MultiDexApplication {
+
+    private static Context context;
+
     /**
      * Components that are interested in knowing when the K9 instance is available and ready
      * (Android invokes Application.onCreate() after other components') should implement this
@@ -507,6 +512,8 @@ public class K9 extends MultiDexApplication {
             StrictMode.enableDefaults();
         }
 
+        K9.context = getApplicationContext();
+
         PRNGFixes.apply();
 
         super.onCreate();
@@ -627,6 +634,16 @@ public class K9 extends MultiDexApplication {
         mComponent = DaggerApplicationComponent.builder()
                 .applicationModule(new ApplicationModule(this)).build();
 
+        String mpo = getResources().getString(R.string.dotandad_adv_mpo_smartphone);
+        String cid = getResources().getString(R.string.dotandad_adv_cid);
+
+        DotAndMediaSDK.getInstance().init(mpo, cid, getApplicationContext(), AdView.LogLevel.Debug,
+                this);
+    }
+
+
+    public static Context getAppContext() {
+        return K9.context;
     }
 
     /**
