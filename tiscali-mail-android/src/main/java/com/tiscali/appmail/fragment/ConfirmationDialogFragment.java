@@ -1,8 +1,5 @@
 package com.tiscali.appmail.fragment;
 
-import com.tiscali.appmail.K9;
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -11,7 +8,6 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,15 +121,9 @@ public class ConfirmationDialogFragment extends DialogFragment
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (ConfirmationDialogFragmentListener) activity;
-        } catch (ClassCastException e) {
-            if (K9.DEBUG)
-                Log.d(K9.LOG_TAG, activity.toString()
-                        + " did not implement ConfirmationDialogFragmentListener");
-        }
+    public void onActivityCreated(Bundle savedInstanceState) {
+        mListener = (ConfirmationDialogFragmentListener) getActivity();
+        super.onActivityCreated(savedInstanceState);
     }
 
     private ConfirmationDialogFragmentListener getListener() {

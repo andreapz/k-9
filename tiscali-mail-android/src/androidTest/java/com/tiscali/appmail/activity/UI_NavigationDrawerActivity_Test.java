@@ -3,6 +3,7 @@ package com.tiscali.appmail.activity;
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -190,8 +191,10 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withText(R.string.menu_item_customize)).perform(click());
 
         // Select 3rd and 1st voice
-        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3).onChildView(withId(R.id.toggle_media)).perform(click());
-        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1).onChildView(withId(R.id.toggle_media)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3)
+                .onChildView(withId(R.id.toggle_media)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1)
+                .onChildView(withId(R.id.toggle_media)).perform(click());
 
         SystemClock.sleep(1000);
 
@@ -204,8 +207,10 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withText(R.string.menu_item_customize)).perform(click());
 
         // Select 3rd and 1st voice
-        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3).onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
-        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1).onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(3)
+                .onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
+        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(1)
+                .onChildView(withId(R.id.toggle_media)).check(matches(isNotChecked()));
         Espresso.pressBack();
 
     }
@@ -281,16 +286,16 @@ public class UI_NavigationDrawerActivity_Test {
 
         SystemClock.sleep(2000);
 
-//        onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(8).onChildView(withId(R.id.toggle_media)).perform(click());
+        // onData(anything()).inAdapterView(withId(R.id.list_category)).atPosition(8).onChildView(withId(R.id.toggle_media)).perform(click());
 
         onWebView(withIndex(withId(R.id.webview), 0)).forceJavascriptEnabled();
 
         SystemClock.sleep(2000);
 
         onView(withIndex(withId(R.id.webview), 0)).check(matches(isDisplayed()));
-//
+        //
         onView(withIndex(withId(R.id.webview), 0)).perform(clickXY(200, 400));
-//
+        //
         mDevice.pressBack();
         mDevice.pressBack();
 
@@ -324,8 +329,53 @@ public class UI_NavigationDrawerActivity_Test {
 
     }
 
+    @Test
+    public void mailOptionMenu() {
+        onView(withId(R.id.menu_mail)).perform(click());
+
+
+        // verify voice sort
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_date)).perform(click());
+        SystemClock.sleep(1000);
+
+        // verify voice select all and add flag
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.batch_select_all)).perform(click());
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+
+        onView(withText(R.string.flag_action)).perform(click());
+
+        SystemClock.sleep(1000);
+
+        mDevice.pressBack();
+
+        // verify mark all as read
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.mark_all_as_read)).perform(click());
+        onView(withText("SI")).perform(click());
+
+        SystemClock.sleep(1000);
+
+        mDevice.pressBack();
+
+
+    }
+
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
-                                           final int childPosition) {
+            final int childPosition) {
         return new TypeSafeMatcher<View>() {
             @Override
             public void describeTo(Description description) {

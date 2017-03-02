@@ -35,8 +35,10 @@ import com.tiscali.appmail.activity.misc.Attachment;
 import com.tiscali.appmail.analytics.LogManager;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.controller.MessagingListener;
+import com.tiscali.appmail.fragment.ConfirmationDialogFragment;
 import com.tiscali.appmail.fragment.ProgressDialogFragment;
 import com.tiscali.appmail.fragment.ProgressDialogFragment.CancelListener;
+import com.tiscali.appmail.helper.AppPermissionsUtils;
 import com.tiscali.appmail.helper.Contacts;
 import com.tiscali.appmail.helper.IdentityHelper;
 import com.tiscali.appmail.helper.MailTo;
@@ -62,6 +64,7 @@ import com.tiscali.appmail.ui.EolConvertingEditText;
 import com.tiscali.appmail.ui.compose.QuotedMessageMvpView;
 import com.tiscali.appmail.ui.compose.QuotedMessagePresenter;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -78,6 +81,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.text.TextUtils;
@@ -99,9 +104,9 @@ import android.widget.Toast;
 
 
 @SuppressWarnings("deprecation")
-public class MessageCompose extends K9Activity
-        implements OnClickListener, CancelListener, OnFocusChangeListener,
-        OnCryptoModeChangedListener, OnOpenPgpInlineChangeListener, MessageBuilder.Callback {
+public class MessageCompose extends K9Activity implements OnClickListener, CancelListener,
+        OnFocusChangeListener, OnCryptoModeChangedListener, OnOpenPgpInlineChangeListener,
+        MessageBuilder.Callback, ConfirmationDialogFragment.ConfirmationDialogFragmentListener {
 
     private static final int DIALOG_SAVE_OR_DISCARD_DRAFT_MESSAGE = 1;
     private static final int DIALOG_CONFIRM_DISCARD_ON_BACK = 2;
@@ -199,6 +204,8 @@ public class MessageCompose extends K9Activity
     @Inject
     public LogManager mLogManager;
 
+    private RecipientMvpView recipientMvpView;
+
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
         switch (v.getId()) {
@@ -219,6 +226,35 @@ public class MessageCompose extends K9Activity
     @Override
     public void onOpenPgpInlineChange(boolean enabled) {
         recipientPresenter.onCryptoPgpInlineChanged(enabled);
+    }
+
+    @Override
+    public void doPositiveClick(int dialogId) {
+        switch (dialogId) {
+            case R.id.dialog_change_permission:
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+                break;
+        }
+    }
+
+    @Override
+    public void doNegativeClick(int dialogId) {
+        switch (dialogId) {
+            case R.id.dialog_explain_permission:
+                if (recipientPresenter != null) {
+                    recipientPresenter.requestContactsPermission(this);
+                }
+                break;
+        };
+    }
+
+    @Override
+    public void dialogCancelled(int dialogId) {
+
     }
 
     public enum Action {
@@ -362,12 +398,11 @@ public class MessageCompose extends K9Activity
         mChooseIdentityButton = (TextView) findViewById(R.id.identity);
         mChooseIdentityButton.setOnClickListener(this);
 
-        RecipientMvpView recipientMvpView = new RecipientMvpView(this);
+        recipientMvpView = new RecipientMvpView(this);
         ComposePgpInlineDecider composePgpInlineDecider = new ComposePgpInlineDecider();
         recipientPresenter = new RecipientPresenter(getApplicationContext(), getLoaderManager(),
                 recipientMvpView, mAccount, composePgpInlineDecider, new ReplyToParser());
         recipientPresenter.updateCryptoStatus();
-
 
         mSubjectView = (EditText) findViewById(R.id.subject);
         mSubjectView.getInputExtras(true).putBoolean("allowEmoji", true);
@@ -496,14 +531,7 @@ public class MessageCompose extends K9Activity
             mMessageReference = mMessageReference.withModifiedFlag(Flag.ANSWERED);
         }
 
-        if (mAction == Action.REPLY || mAction == Action.REPLY_ALL
-                || mAction == Action.EDIT_DRAFT) {
-            // change focus to message body.
-            mMessageContentView.requestFocus();
-        } else {
-            // Explicitly set focus to "To:" input field (see issue 2998)
-            recipientMvpView.requestFocusOnToField();
-        }
+        requestFocus();
 
         if (mAction == Action.FORWARD) {
             mMessageReference = mMessageReference.withModifiedFlag(Flag.FORWARDED);
@@ -533,6 +561,30 @@ public class MessageCompose extends K9Activity
         ((K9) getApplication()).getComponent().inject(this);
         mLogManager.track(
                 getResources().getString(R.string.com_tiscali_appmail_activity_MessageCompose));
+    }
+
+    public void requestFocus() {
+        if (mAction == Action.REPLY || mAction == Action.REPLY_ALL || mAction == Action.EDIT_DRAFT
+                || !AppPermissionsUtils.isPermissionGranted(this,
+                        Manifest.permission.READ_CONTACTS)) {
+            // change focus to message body.
+            mMessageContentView.requestFocus();
+        } else {
+            // Explicitly set focus to "To:" input field (see issue 2998)
+            recipientMvpView.requestFocusOnToField();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case RecipientPresenter.REQUEST_CODE_PERMISSION_READ_CONTACTS:
+                if (recipientPresenter != null) {
+                    recipientPresenter.onRequestPermissionsResult(requestCode, permissions,
+                            grantResults);
+                }
+        }
     }
 
     @Override
