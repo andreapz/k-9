@@ -1146,7 +1146,7 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onResume() {
         super.onResume();
-
+        Log.i("APZ", NavigationDrawerActivity.class.getName() + " OnResume");
         if (!(this instanceof Search)) {
             // necessary b/c no guarantee Search.onStop will be called before
             // MessageList.onResume

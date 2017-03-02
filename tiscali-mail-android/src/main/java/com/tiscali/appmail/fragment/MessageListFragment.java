@@ -162,7 +162,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             Arrays.copyOf(THREADED_PROJECTION, THREAD_COUNT_COLUMN);
 
     public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay,
-                                                  boolean threadedList) {
+            boolean threadedList) {
         MessageListFragment fragment = new MessageListFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_SEARCH, search);
@@ -725,7 +725,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         mInflater = inflater;
 
@@ -883,7 +883,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         mAllAccounts = false;
         if (mSingleAccountMode) {
-            mAccountUuids = new String[]{mAccount.getUuid()};
+            mAccountUuids = new String[] {mAccount.getUuid()};
         } else {
             if (accountUuids.length == 1
                     && accountUuids[0].equals(SearchSpecification.ALL_ACCOUNTS)) {
@@ -966,7 +966,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     @Override
     public void onResume() {
         super.onResume();
-
+        Log.i("APZ", "MessageListFragment OnResume");
         Context appContext = getActivity().getApplicationContext();
 
         mSenderAboveSubject = K9.messageListSenderAboveSubject();
@@ -1088,7 +1088,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             @Override
             public void onScroll(AbsListView absListView, int firstVisibleItem,
-                                 int visibleItemCount, int totalItemCount) {
+                    int visibleItemCount, int totalItemCount) {
                 if (firstVisibleItem == 0) {
                     mIsBottomNavVisible = true;
                     mFragmentListener.showBottomNav();
@@ -1184,9 +1184,9 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     /**
      * Change the sort type and sort order used for the message list.
      *
-     * @param sortType      Specifies which field to use for sorting the message list.
+     * @param sortType Specifies which field to use for sorting the message list.
      * @param sortAscending Specifies the sort order. If this argument is {@code null} the default
-     *                      search order for the sort type is used.
+     *        search order for the sort type is used.
      */
     // FIXME: Don't save the changes in the UI thread
     private void changeSort(SortType sortType, Boolean sortAscending) {
@@ -1636,7 +1636,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      * Handle a select or unselect swipe event.
      *
      * @param downMotion Event that started the swipe
-     * @param selected   {@code true} if this was an attempt to select (i.e. left to right).
+     * @param selected {@code true} if this was an attempt to select (i.e. left to right).
      */
     private void handleSwipe(final MotionEvent downMotion, final boolean selected) {
         int x = (int) downMotion.getRawX();
@@ -1703,7 +1703,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         @Override
         public void remoteSearchFinished(String folder, int numResults, int maxResults,
-                                         List<Message> extraResults) {
+                List<Message> extraResults) {
             mHandler.progress(false);
             mHandler.remoteSearchFinished();
             mExtraSearchResults = extraResults;
@@ -1719,7 +1719,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         @Override
         public void remoteSearchServerQueryComplete(String folderName, int numResults,
-                                                    int maxResults) {
+                int maxResults) {
             mHandler.progress(true);
             if (maxResults != 0 && numResults > maxResults) {
                 mHandler.updateFooter(mContext.getString(R.string.remote_search_downloading_limited,
@@ -1747,7 +1747,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         @Override
         public void synchronizeMailboxFinished(Account account, String folder,
-                                               int totalMessagesInMailbox, int numNewMessages) {
+                int totalMessagesInMailbox, int numNewMessages) {
 
             if (updateForMe(account, folder)) {
                 mHandler.progress(false);
@@ -2195,7 +2195,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      * Set selection state for all messages.
      *
      * @param selected If {@code true} all messages get selected. Otherwise, all messages get
-     *                 deselected and action mode is finished.
+     *        deselected and action mode is finished.
      */
     private void setSelectionState(boolean selected) {
         if (selected) {
@@ -2471,11 +2471,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      * folder operation ({@link ChooseFolder} activity), while saving a list of associated messages.
      *
      * @param requestCode If {@code >= 0}, this code will be returned in {@code onActivityResult()}
-     *                    when the activity exits.
+     *        when the activity exits.
      * @see #startActivityForResult(Intent, int)
      */
     private void displayFolderChoice(int requestCode, String sourceFolderName, String accountUuid,
-                                     String lastSelectedFolderName, List<MessageReference> messages) {
+            String lastSelectedFolderName, List<MessageReference> messages) {
         Intent intent = new Intent(getActivity(), ChooseFolder.class);
         intent.putExtra(ChooseFolder.EXTRA_ACCOUNT, accountUuid);
         intent.putExtra(ChooseFolder.EXTRA_SEL_FOLDER, lastSelectedFolderName);
@@ -2564,12 +2564,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     /**
      * Display a Toast message if any message isn't synchronized
      *
-     * @param messages  The messages to copy or move. Never {@code null}.
+     * @param messages The messages to copy or move. Never {@code null}.
      * @param operation The type of operation to perform. Never {@code null}.
      * @return {@code true}, if operation is possible.
      */
     private boolean checkCopyOrMovePossible(final List<MessageReference> messages,
-                                            final FolderOperation operation) {
+            final FolderOperation operation) {
 
         if (messages.isEmpty()) {
             return false;
@@ -2582,7 +2582,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 Account account = mPreferences.getAccount(message.getAccountUuid());
                 if ((operation == FolderOperation.MOVE && !mController.isMoveCapable(account))
                         || (operation == FolderOperation.COPY
-                        && !mController.isCopyCapable(account))) {
+                                && !mController.isCopyCapable(account))) {
                     return false;
                 }
             }
@@ -2601,7 +2601,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     /**
      * Copy the specified messages to the specified folder.
      *
-     * @param messages    List of messages to copy. Never {@code null}.
+     * @param messages List of messages to copy. Never {@code null}.
      * @param destination The name of the destination folder. Never {@code null}.
      */
     private void copy(List<MessageReference> messages, final String destination) {
@@ -2611,7 +2611,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     /**
      * Move the specified messages to the specified folder.
      *
-     * @param messages    The list of messages to move. Never {@code null}.
+     * @param messages The list of messages to move. Never {@code null}.
      * @param destination The name of the destination folder. Never {@code null}.
      */
     private void move(List<MessageReference> messages, final String destination) {
@@ -2623,13 +2623,13 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      * {@link #move(List, String)}. This method was added mainly because those 2 methods share
      * common behavior.
      *
-     * @param messages    The list of messages to copy or move. Never {@code null}.
+     * @param messages The list of messages to copy or move. Never {@code null}.
      * @param destination The name of the destination folder. Never {@code null} or
-     *                    {@link K9#FOLDER_NONE}.
-     * @param operation   Specifies what operation to perform. Never {@code null}.
+     *        {@link K9#FOLDER_NONE}.
+     * @param operation Specifies what operation to perform. Never {@code null}.
      */
     private void copyOrMove(List<MessageReference> messages, final String destination,
-                            final FolderOperation operation) {
+            final FolderOperation operation) {
 
         Map<String, List<MessageReference>> folderMap = new HashMap<>();
 
@@ -2769,7 +2769,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
          * Disables menu options not supported by the account type or current "search view".
          *
          * @param account The account to query for its capabilities.
-         * @param menu    The menu to adapt.
+         * @param menu The menu to adapt.
          */
         private void setContextCapabilities(Account account, Menu menu) {
             if (!mSingleAccountMode) {
@@ -3051,7 +3051,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         int listViewPosition = adapterToListViewPosition(position);
         if (listViewPosition != AdapterView.INVALID_POSITION
                 && (listViewPosition < mListView.getFirstVisiblePosition()
-                || listViewPosition > mListView.getLastVisiblePosition())) {
+                        || listViewPosition > mListView.getLastVisiblePosition())) {
             mListView.setSelection(listViewPosition);
         }
 

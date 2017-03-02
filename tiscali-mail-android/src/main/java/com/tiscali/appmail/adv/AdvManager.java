@@ -281,9 +281,8 @@ public class AdvManager {
         addAdView(account);
 
         Observable
-                .interval(20, // me.getAdv().getTiming().getMail().getInterval(),
-                        30, // me.getAdv().getTiming().getMail().getShowtime(),
-                        TimeUnit.SECONDS)
+                .interval(me.getAdv().getTiming().getMail().getInterval(),
+                        me.getAdv().getTiming().getMail().getShowtime(), TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
                     @Override
                     public void onCompleted() {
