@@ -1250,4 +1250,8 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="welcome_name">Intro Slider</string>
     <string name="skip">SKIP</string>
     <string name="start">Start</string>
+
+    <!-- contacts permission explanation dialog -->
+    <string name="contacts_permission_message_dialog">Allow contacts access to select email recipient</string>
+    <string name="contacts_change_permission_message_dialog">You cannot select email recipient.Please allow contacts access</string>
 </resources>

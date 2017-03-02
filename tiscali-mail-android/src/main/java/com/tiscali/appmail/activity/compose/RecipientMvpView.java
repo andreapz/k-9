@@ -51,7 +51,6 @@ public class RecipientMvpView implements OnFocusChangeListener, OnClickListener 
     private final View pgpInlineIndicator;
     private RecipientPresenter presenter;
 
-
     public RecipientMvpView(MessageCompose activity) {
         this.activity = activity;
 
@@ -249,6 +248,10 @@ public class RecipientMvpView implements OnFocusChangeListener, OnClickListener 
         return bccView.getObjects();
     }
 
+    public MessageCompose getActivity() {
+        return activity;
+    }
+
     public boolean recipientToHasUncompletedText() {
         return toView.hasUncompletedText();
     }
@@ -354,6 +357,8 @@ public class RecipientMvpView implements OnFocusChangeListener, OnClickListener 
                 break;
             }
         }
+
+        presenter.checkContactsPermission(activity);
     }
 
     @Override
