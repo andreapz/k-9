@@ -15,7 +15,6 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.Accounts;
 import com.tiscali.appmail.activity.ActivityListener;
 import com.tiscali.appmail.activity.FolderInfoHolder;
-import com.tiscali.appmail.activity.FolderList;
 import com.tiscali.appmail.activity.INavigationDrawerActivityListener;
 import com.tiscali.appmail.activity.MessageReference;
 import com.tiscali.appmail.activity.NavigationDrawerActivity;
@@ -1034,7 +1033,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             menu.findItem(R.id.send_messages).setVisible(false);
             menu.findItem(R.id.expunge).setVisible(false);
             menu.findItem(R.id.mark_all_as_read).setVisible(false);
-            menu.findItem(R.id.show_folder_list).setVisible(false);
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
             menu.findItem(R.id.select_all).setVisible(true);
@@ -1044,12 +1042,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             if (!mMessageListFragment.isSingleAccountMode()) {
                 menu.findItem(R.id.expunge).setVisible(false);
                 menu.findItem(R.id.send_messages).setVisible(false);
-                menu.findItem(R.id.show_folder_list).setVisible(false);
             } else {
                 menu.findItem(R.id.send_messages).setVisible(mMessageListFragment.isOutbox());
                 menu.findItem(R.id.expunge).setVisible(mMessageListFragment.isRemoteFolder()
                         && mMessageListFragment.isAccountExpungeCapable());
-                menu.findItem(R.id.show_folder_list).setVisible(true);
             }
 
             menu.findItem(R.id.check_mail).setVisible(mMessageListFragment.isCheckMailSupported());
@@ -1264,12 +1260,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 mMessageListFragment.onCompose();
                 return true;
             }
-            case KeyEvent.KEYCODE_Q: {
-                if (mMessageListFragment != null && mMessageListFragment.isSingleAccountMode()) {
-                    onShowFolderList();
-                }
-                return true;
-            }
             case KeyEvent.KEYCODE_O: {
                 mMessageListFragment.onCycleSort();
                 return true;
@@ -1430,16 +1420,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return false;
     }
 
-    private void onShowFolderList() {
-        FolderList.actionHandleAccount(mContext, mAccount);
-        mContext.finish();
-    }
-
-    private void onAccounts() {
-        Accounts.listAccounts(mContext);
-        mContext.finish();
-    }
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         if (!mStarted) {
@@ -1530,10 +1510,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
             case R.id.mark_all_as_read: {
                 mMessageListFragment.confirmMarkAllAsRead();
-                return true;
-            }
-            case R.id.show_folder_list: {
-                onShowFolderList();
                 return true;
             }
             // MessageView
@@ -1989,10 +1965,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             fragmentManager.popBackStack();
         } else if (mMessageListFragment.isManualSearch()) {
             mContext.finish();
-        } else if (!mSingleFolderMode) {
-            onAccounts();
-        } else {
-            onShowFolderList();
         }
     }
 
