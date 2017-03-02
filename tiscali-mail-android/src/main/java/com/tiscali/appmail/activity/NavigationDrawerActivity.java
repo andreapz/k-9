@@ -272,7 +272,7 @@ public class NavigationDrawerActivity extends K9Activity
     private LinearLayout mBannerContainer;
     private NavigationDrawerActivityComponent mComponent;
 
-    private FrameLayout mBannerMargin;
+    private View mBannerMargin;
 
     private long mLastCallBanner;
 
@@ -413,7 +413,7 @@ public class NavigationDrawerActivity extends K9Activity
         mViewContainer = (FrameLayout) findViewById(R.id.content_frame);
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
         mBannerContainer = (LinearLayout) findViewById(R.id.banner_ll);
-        mBannerMargin = (FrameLayout) findViewById(R.id.view_bottom);
+        mBannerMargin = findViewById(R.id.view_bottom);
         initBannerView();
         initInterstitialView();
 
@@ -1453,17 +1453,53 @@ public class NavigationDrawerActivity extends K9Activity
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
-    public void setMarginVisibility(boolean visibility) {
-        mBannerMargin.setVisibility(visibility ? View.VISIBLE : View.GONE);
-        Log.i("APZ", "ADV visible:" + (visibility ? "Y" : "N"));
+    public void setMarginVisibility(final boolean visibility) {
+        Observable.empty().observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
+            @Override
+            public void onCompleted() {
+                mBannerMargin.setVisibility(visibility ? View.VISIBLE : View.GONE);
+                Log.i("APZ", "ADV visible:" + (visibility ? "Y" : "N"));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(Object o) {
+
+            }
+        });
+
+
+//        if (visibility) {
+//            mBannerMargin.animate().translationY(0).setListener(new AnimatorListenerAdapter() {
+//                @Override
+//                public void onAnimationEnd(Animator animation) {
+//                    super.onAnimationEnd(animation);
+//                    // mBottomNav.setVisibility(View.VISIBLE);
+//                }
+//            });
+//        } else {
+//            mBannerMargin.animate().translationY(mBannerMargin.getHeight())
+//                    .setListener(new AnimatorListenerAdapter() {
+//
+//                        @Override
+//                        public void onAnimationEnd(Animator animation) {
+//                            super.onAnimationEnd(animation);
+//                            // mBottomNav.setVisibility(View.GONE);
+//                        }
+//                    });
+//        }
     }
 
     public void updateMe(Me me, String json) {
 
-//        if (mMe == null) {
-//            mAdvManager.loadAdv(null, me, (LinearLayout) findViewById(R.id.banner_adv_ll),
-//                    mBannerMargin);
-//        }
+        if (mMe == null) {
+            mAdvManager.loadAdv(null, me, (LinearLayout) findViewById(R.id.banner_adv_ll),
+                    mBannerMargin);
+        }
 
         mMe = me;
 

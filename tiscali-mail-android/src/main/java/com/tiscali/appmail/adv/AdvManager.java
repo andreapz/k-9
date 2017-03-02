@@ -1,11 +1,17 @@
 package com.tiscali.appmail.adv;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.dotandmedia.android.sdk.AdConfigListener;
 import com.dotandmedia.android.sdk.AdListener;
+import com.dotandmedia.android.sdk.AdSizeConfig;
 import com.dotandmedia.android.sdk.AdView;
+import com.dotandmedia.android.sdk.DotAndMediaSDK;
 import com.dotandmedia.android.sdk.mraid.BannerSizeProperties;
 import com.tiscali.appmail.Account;
+import com.tiscali.appmail.K9;
 import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.NavigationDrawerActivity;
 import com.tiscali.appmail.activity.TiscaliUtility;
@@ -30,21 +36,22 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class AdvManager {
 
-    //MPT BANNER 320x50
+    // MPT BANNER 320x50
     private static final float BANNER_WIDTH_SMARTPHONE_HEAD = 320.0f;
     private static final float BANNER_HEIGHT_SMARTPHONE_HEAD = 50.0f;
 
-    //MPT BANNER 768x90
+    // MPT BANNER 768x90
     private static final float BANNER_WIDTH_TABLET_PORTRAIT = 768.0f;
     private static final float BANNER_HEIGHT_TABLET_PORTRAIT = 90.0f;
 
-    //MPT BANNER 1024x90
+    // MPT BANNER 1024x90
     private static final float BANNER_WIDTH_TABLET_LANDSCAPE = 1024.0f;
     private static final float BANNER_HEIGHT_TABLET_LANDSCAPE = 90.0f;
     private final Activity mActivity;
     private LinearLayout mLinearLayout;
     private Account mAccount;
     private View mBottomMargin;
+    private AdView mAdViewToAdd;
 
 
     public AdvManager(Activity activity) {
@@ -59,6 +66,7 @@ public class AdvManager {
      * </p>
      */
     private void removeAdView() {
+        mAdViewToAdd.removeAdListener();
         mLinearLayout.removeAllViews();
         Log.i("APZ", "adv removeAllViews");
     }
@@ -78,72 +86,85 @@ public class AdvManager {
             mAccount = account;
         }
 
-        boolean isActiveDotAndAdAdv = true; //Boolean.parseBoolean(TiscaliConfigRemote.getPreferenceStringByKey(context, TiscaliDotAndAd.TAG_DOTANDAD_ADV));
+        boolean isActiveDotAndAdAdv = true; // Boolean.parseBoolean(TiscaliConfigRemote.getPreferenceStringByKey(context,
+                                            // TiscaliDotAndAd.TAG_DOTANDAD_ADV));
 
-        if (//!Utility.hasConnectivity(context) ||
-                !isActiveDotAndAdAdv
-            //|| (noAdvPreApiLevel != null && Build.VERSION.SDK_INT < Integer.parseInt(noAdvPreApiLevel))
-                ) {
+        if (// !Utility.hasConnectivity(context) ||
+        !isActiveDotAndAdAdv
+        // || (noAdvPreApiLevel != null && Build.VERSION.SDK_INT <
+        // Integer.parseInt(noAdvPreApiLevel))
+        ) {
             removeAdView();
 
             return;
         }
 
         boolean isTabletDevice = TiscaliUtility.isTablet(mActivity);
-        boolean isPortraitOrientation = mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
+        boolean isPortraitOrientation = mActivity.getResources()
+                .getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true
+                        : false;
 
-        String mpo = !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpo_smartphone) : mActivity.getString(R.string.dotandad_adv_mpo_tablet);
-        String mpt = !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpt_smartphone_head)
-                : (isPortraitOrientation ? mActivity.getString(R.string.dotandad_adv_mpt_tablet_portrait) : mActivity.getString(R.string.dotandad_adv_mpt_tablet_landscape));
+        String mpo = !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpo_smartphone)
+                : mActivity.getString(R.string.dotandad_adv_mpo_tablet);
+        String mpt =
+                !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpt_smartphone_head)
+                        : (isPortraitOrientation
+                                ? mActivity.getString(R.string.dotandad_adv_mpt_tablet_portrait)
+                                : mActivity.getString(R.string.dotandad_adv_mpt_tablet_landscape));
 
-        //CID: Customer ID - MPO: Multipoint - MPT: Mediapoint
-        final AdView adViewToAdd = new AdView(mActivity, mActivity.getString(R.string.dotandad_adv_cid), mpo, mpt, Color.TRANSPARENT);
+        // CID: Customer ID - MPO: Multipoint - MPT: Mediapoint
+        mAdViewToAdd = new AdView(mActivity, mActivity.getString(R.string.dotandad_adv_cid), mpo,
+                mpt, Color.TRANSPARENT);
 
         Log.i("APZ", "adv params mpo:" + mpo + " " + " mpt:" + mpt);
 
         final LinearLayout linearLayoutAdvContainer = mLinearLayout;
 
-        adViewToAdd.setAdListener(getAdListener(adViewToAdd, linearLayoutAdvContainer));
+        mAdViewToAdd.setAdListener(getAdListener(mAdViewToAdd, linearLayoutAdvContainer));
 
-		/*
-        BANNER SMARTPHONE HEAD 320x50
-		BANNER TABLET PORTRAIT 768x90
-		BANNER TABLET LANDSCAPE 1024x90
-		*/
-        final float originalBannerWidth = !isTabletDevice ? BANNER_WIDTH_SMARTPHONE_HEAD : (isPortraitOrientation ? BANNER_WIDTH_TABLET_PORTRAIT : BANNER_WIDTH_TABLET_LANDSCAPE);
-        final float originalBannerHeight = !isTabletDevice ? BANNER_HEIGHT_SMARTPHONE_HEAD : (isPortraitOrientation ? BANNER_HEIGHT_TABLET_PORTRAIT : BANNER_HEIGHT_TABLET_LANDSCAPE);
+        /*
+         * BANNER SMARTPHONE HEAD 320x50 BANNER TABLET PORTRAIT 768x90 BANNER TABLET LANDSCAPE
+         * 1024x90
+         */
+        final float originalBannerWidth = !isTabletDevice ? BANNER_WIDTH_SMARTPHONE_HEAD
+                : (isPortraitOrientation ? BANNER_WIDTH_TABLET_PORTRAIT
+                        : BANNER_WIDTH_TABLET_LANDSCAPE);
+        final float originalBannerHeight = !isTabletDevice ? BANNER_HEIGHT_SMARTPHONE_HEAD
+                : (isPortraitOrientation ? BANNER_HEIGHT_TABLET_PORTRAIT
+                        : BANNER_HEIGHT_TABLET_LANDSCAPE);
 
         final float formFactor = originalBannerWidth / originalBannerHeight;
         float newBannerWidth = mActivity.getResources().getDisplayMetrics().widthPixels;
         float newBannerHeight = newBannerWidth / formFactor;
 
-        adViewToAdd.setLayoutParams(new ViewGroup.LayoutParams((int) newBannerWidth, (int) newBannerHeight));
+        mAdViewToAdd.setLayoutParams(
+                new ViewGroup.LayoutParams((int) newBannerWidth, (int) newBannerHeight));
 
         Log.i("APZ", "adv layout params w:" + newBannerWidth + " " + " h:" + newBannerHeight);
-//        //UTP Profile
-//        if (account != null) {
-//            try {
-//                final String utpAccountData = TiscaliUTP.getAccountData(account, activity);
-//
-//                if (!TextUtils.isEmpty(utpAccountData) && utpAccountData.length() > 40) {
-//                    // The HashMap to pass to the Adview
-//                    HashMap<String, String> custPar = new HashMap<String, String>();
-//
-//                    // Pass uvfc custom parameters to the HashMap
-//                    custPar.put("uvfc", utpAccountData.substring(40));
-//
-//                    // Set the custom parameters
-//                    adViewToAdd.setCustomParameters(custPar);
-//                }
-//            } catch (Exception e) {
-//                Log.e(K9.LOG_TAG, "Exception in TiscaliDotAndAd - addAdView - TiscaliUTP: " + e);
-//            }
-//        }
+        // //UTP Profile
+        // if (account != null) {
+        // try {
+        // final String utpAccountData = TiscaliUTP.getAccountData(account, activity);
+        //
+        // if (!TextUtils.isEmpty(utpAccountData) && utpAccountData.length() > 40) {
+        // // The HashMap to pass to the Adview
+        // HashMap<String, String> custPar = new HashMap<String, String>();
+        //
+        // // Pass uvfc custom parameters to the HashMap
+        // custPar.put("uvfc", utpAccountData.substring(40));
+        //
+        // // Set the custom parameters
+        // adViewToAdd.setCustomParameters(custPar);
+        // }
+        // } catch (Exception e) {
+        // Log.e(K9.LOG_TAG, "Exception in TiscaliDotAndAd - addAdView - TiscaliUTP: " + e);
+        // }
+        // }
 
         // Invalidate the view layout, this will schedule a layout pass of the view tree
-        adViewToAdd.requestLayout();
+        mAdViewToAdd.requestLayout();
 
-        linearLayoutAdvContainer.addView(adViewToAdd, 0);
+        linearLayoutAdvContainer.addView(mAdViewToAdd, 0);
 
         ((NavigationDrawerActivity) mActivity).setMarginVisibility(true);
 
@@ -151,7 +172,8 @@ public class AdvManager {
     }
 
     @NonNull
-    private AdListener getAdListener(final AdView adViewToAdd, final LinearLayout linearLayoutAdvContainer) {
+    private AdListener getAdListener(final AdView adViewToAdd,
+            final LinearLayout linearLayoutAdvContainer) {
         return new AdListener() {
             @Override
             public void handleRequest(String arg0) {
@@ -229,19 +251,23 @@ public class AdvManager {
             @Override
             public void onNotifySoundOn() {
                 Log.i("APZ", "onNotifySoundOn");
-                //onNotifySoundOn: indica che è stata completata l'erogazione di un'ADV con audio. Nel caso di app con suono in background quest'ultimo può essere riattivato
+                // onNotifySoundOn: indica che è stata completata l'erogazione di un'ADV con audio.
+                // Nel caso di app con suono in background quest'ultimo può essere riattivato
             }
 
             @Override
             public void onNotifySoundOff() {
                 Log.i("APZ", "onNotifySoundOff");
-                //onNotifySoundOff: indica che è stato erogato un'ADV con audio. Nel caso di app con suono in background quest'ultimo va disattivato.
+                // onNotifySoundOff: indica che è stato erogato un'ADV con audio. Nel caso di app
+                // con suono in background quest'ultimo va disattivato.
             }
 
             @Override
             public void onNotifyBannerSize(BannerSizeProperties bannerSizeProperties) {
                 Log.i("APZ", "onNotifyBannerSize");
-                adViewToAdd.setLayoutParams(new ViewGroup.LayoutParams(AdView.dpToPx(bannerSizeProperties.getWidth()), AdView.dpToPx(bannerSizeProperties.getHeight())));
+                adViewToAdd.setLayoutParams(
+                        new ViewGroup.LayoutParams(AdView.dpToPx(bannerSizeProperties.getWidth()),
+                                AdView.dpToPx(bannerSizeProperties.getHeight())));
             }
         };
     }
@@ -254,11 +280,11 @@ public class AdvManager {
 
         addAdView(account);
 
-        Observable.interval(30,//me.getAdv().getTiming().getMail().getInterval(),
-                30,//me.getAdv().getTiming().getMail().getShowtime(),
-                TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Object>() {
+        Observable
+                .interval(20, // me.getAdv().getTiming().getMail().getInterval(),
+                        30, // me.getAdv().getTiming().getMail().getShowtime(),
+                        TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
                     @Override
                     public void onCompleted() {
                         Log.i("APZ", "onCompleted");
@@ -276,6 +302,39 @@ public class AdvManager {
                         addAdView(account);
                     }
                 });
+    }
+
+    // Da chiamare al CREATE ed al RESUME delle singole schermate che ospitano i banner!!!
+    public static void onResume() {
+        // final String mpoConfig = "sdk_android_mraid_testapp_adconfig";
+        // final String mptConfig = "sdk_android";
+
+        final String mpoConfig =
+                K9.getAppContext().getResources().getString(R.string.dotandad_adv_mpo_smartphone);
+        final String mptConfig = K9.getAppContext().getResources()
+                .getString(R.string.dotandad_adv_mpt_smartphone_head);
+
+        // Eventuali parametri esterni
+        final Map<String, String> extParams = new HashMap<String, String>();
+
+        final AdConfigListener adConfigListener = new AdConfigListener() {
+            @Override
+            public boolean onAdConfigLoaded(Map<String, AdSizeConfig> adsConfig) {
+                // Config caricata posso preparare le griglie scorrendomi gli elementi si adsConfig
+                Log.i("APZ", "onAdConfigLoaded");
+                return true;
+            }
+
+            @Override
+            public boolean onAdConfigError() {
+                // Errore durante il load della config
+                Log.i("APZ", "onAdConfigError");
+                return false;
+            }
+
+        };
+        DotAndMediaSDK.getInstance().setAdConfigListener(adConfigListener);
+        DotAndMediaSDK.getInstance().loadAdSizeConfig(mpoConfig, mptConfig, extParams);
     }
 
 }

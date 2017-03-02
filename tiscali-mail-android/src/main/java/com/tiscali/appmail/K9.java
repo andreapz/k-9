@@ -10,8 +10,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import com.crashlytics.android.Crashlytics;
-import com.dotandmedia.android.sdk.AdConfigListener;
-import com.dotandmedia.android.sdk.AdSizeConfig;
+import com.dotandmedia.android.sdk.AdView;
 import com.dotandmedia.android.sdk.DotAndMediaSDK;
 import com.tiscali.appmail.Account.SortType;
 import com.tiscali.appmail.activity.MessageCompose;
@@ -638,45 +637,13 @@ public class K9 extends MultiDexApplication {
         String mpo = getResources().getString(R.string.dotandad_adv_mpo_smartphone);
         String cid = getResources().getString(R.string.dotandad_adv_cid);
 
-        // DotAndMediaSDK.getInstance().init(mpo, cid, getApplicationContext(),
-        // AdView.LogLevel.Debug,
-        // this);
+        DotAndMediaSDK.getInstance().init(mpo, cid, getApplicationContext(), AdView.LogLevel.Debug,
+                this);
     }
 
 
     public static Context getAppContext() {
         return K9.context;
-    }
-
-    // Da chiamare al CREATE ed al RESUME delle singole schermate che ospitano i banner!!!
-    public static void callLoadAdSizeConfig() {
-        // final String mpoConfig = "sdk_android_mraid_testapp_adconfig";
-        // final String mptConfig = "sdk_android";
-
-        final String mpoConfig =
-                K9.getAppContext().getResources().getString(R.string.dotandad_adv_mpo_smartphone);
-        final String mptConfig = K9.getAppContext().getResources()
-                .getString(R.string.dotandad_adv_mpt_smartphone_head);
-
-        // Eventuali parametri esterni
-        final Map<String, String> extParams = new HashMap<String, String>();
-
-        final AdConfigListener adConfigListener = new AdConfigListener() {
-            @Override
-            public boolean onAdConfigLoaded(Map<String, AdSizeConfig> adsConfig) {
-                // Config caricata posso preparare le griglie scorrendomi gli elementi si adsConfig
-                return true;
-            }
-
-            @Override
-            public boolean onAdConfigError() {
-                // Errore durante il load della config
-                return false;
-            }
-
-        };
-        DotAndMediaSDK.getInstance().setAdConfigListener(adConfigListener);
-        DotAndMediaSDK.getInstance().loadAdSizeConfig(mpoConfig, mptConfig, extParams);
     }
 
     /**
