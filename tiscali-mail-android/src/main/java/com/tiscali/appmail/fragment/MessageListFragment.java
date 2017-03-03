@@ -3121,6 +3121,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         void showBottomNav();
 
         void hideBottomNav();
+
+        void checkLifeCycle();
     }
 
     public interface MessageListFragmentGetListener {

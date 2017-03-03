@@ -2,7 +2,6 @@ package com.tiscali.appmail.adv;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.dotandmedia.android.sdk.AdConfigListener;
 import com.dotandmedia.android.sdk.AdListener;
@@ -28,6 +27,7 @@ import android.widget.LinearLayout;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
 /**
@@ -52,6 +52,7 @@ public class AdvManager {
     private Account mAccount;
     private View mBottomMargin;
     private AdView mAdViewToAdd;
+    private Subscription mSubscriber;
 
 
     public AdvManager(Activity activity) {
@@ -66,7 +67,9 @@ public class AdvManager {
      * </p>
      */
     private void removeAdView() {
-        mAdViewToAdd.removeAdListener();
+        if (mAdViewToAdd != null) {
+            mAdViewToAdd.removeAdListener();
+        }
         mLinearLayout.removeAllViews();
         Log.i("APZ", "adv removeAllViews");
     }
@@ -87,7 +90,7 @@ public class AdvManager {
         }
 
         boolean isActiveDotAndAdAdv = true; // Boolean.parseBoolean(TiscaliConfigRemote.getPreferenceStringByKey(context,
-                                            // TiscaliDotAndAd.TAG_DOTANDAD_ADV));
+        // TiscaliDotAndAd.TAG_DOTANDAD_ADV));
 
         if (// !Utility.hasConnectivity(context) ||
         !isActiveDotAndAdAdv
@@ -162,13 +165,31 @@ public class AdvManager {
         // }
 
         // Invalidate the view layout, this will schedule a layout pass of the view tree
-        mAdViewToAdd.requestLayout();
 
-        linearLayoutAdvContainer.addView(mAdViewToAdd, 0);
 
-        ((NavigationDrawerActivity) mActivity).setMarginVisibility(true);
+        Observable.empty().observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Object>() {
+                    @Override
+                    public void onCompleted() {
+                        mAdViewToAdd.requestLayout();
 
-        Log.i("APZ", "adv added");
+                        linearLayoutAdvContainer.addView(mAdViewToAdd, 0);
+
+                        ((NavigationDrawerActivity) mActivity).setMarginVisibility(true);
+
+                        Log.i("APZ", "adv added");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+            }
+
+                    @Override
+                    public void onNext(Object o) {
+
+            }
+                });
     }
 
     @NonNull
@@ -278,29 +299,37 @@ public class AdvManager {
         mLinearLayout = banner;
         mBottomMargin = margin;
 
+        // if (mAdViewToAdd != null) {
+        // return;
+        // }
+        // if (mSubscriber != null) {
+        // mSubscriber.unsubscribe();
+        // }
+
+        // removeAdView();
         addAdView(account);
 
-        Observable
-                .interval(me.getAdv().getTiming().getMail().getInterval(),
-                        me.getAdv().getTiming().getMail().getShowtime(), TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.i("APZ", "onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.i("APZ", "onError");
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-                        Log.i("APZ", "onNext");
-                        removeAdView();
-                        addAdView(account);
-                    }
-                });
+        // mSubscriber = Observable
+        // .interval(me.getAdv().getTiming().getMail().getInterval(),
+        // me.getAdv().getTiming().getMail().getShowtime(), TimeUnit.SECONDS)
+        // .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
+        // @Override
+        // public void onCompleted() {
+        // Log.i("APZ", "onCompleted");
+        // }
+        //
+        // @Override
+        // public void onError(Throwable e) {
+        // Log.i("APZ", "onError");
+        // }
+        //
+        // @Override
+        // public void onNext(Object o) {
+        // Log.i("APZ", "onNext " + o);
+        // removeAdView();
+        // addAdView(account);
+        // }
+        // });
     }
 
     // Da chiamare al CREATE ed al RESUME delle singole schermate che ospitano i banner!!!

@@ -123,12 +123,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     private static final int NEXT = 2;
 
     private static final int MAX_MESSAGES_COUNT = 99;
-    private final Activity mContext;
+    private final Activity mActivity;
     private final INavigationDrawerActivityListener mListener;
     private Intent mIntent;
 
     private boolean mStarted = false;
-
     private LayoutInflater mInflater;
     private Menu mMenu;
     private ActionBar mActionBar;
@@ -213,7 +212,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public void listFoldersFinished(Account account) {
             if (account.equals(mAccount)) {
                 // mHandler.progress(false);
-                MessagingController.getInstance(mContext).refreshListener(this);
+                MessagingController.getInstance(mActivity).refreshListener(this);
                 mHandler.dataChanged();
             }
             super.listFoldersFinished(account);
@@ -232,20 +231,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     FolderInfoHolder holder = mMailAdapter.getFolder(folder.getName());
 
                     if (holder == null) {
-                        holder = new FolderInfoHolder(mContext, folder, mAccount, -1);
+                        holder = new FolderInfoHolder(mActivity, folder, mAccount, -1);
                     } else {
-                        holder.populate(mContext, folder, mAccount, -1);
+                        holder.populate(mActivity, folder, mAccount, -1);
 
                     }
                     if (folder.isInTopGroup()
-                            || TiscaliUtility.isFolderInTopGroup(mContext, folder.getName())) {
+                            || TiscaliUtility.isFolderInTopGroup(mActivity, folder.getName())) {
                         topFolders.add(holder);
                     } else {
                         newFolders.add(holder);
                     }
                 }
                 Collections.sort(newFolders);
-                TiscaliUtility.sortFoldersInTopGroup(mContext, topFolders);
+                TiscaliUtility.sortFoldersInTopGroup(mActivity, topFolders);
                 topFolders.addAll(newFolders);
                 mHandler.newFolders(topFolders);
             }
@@ -282,14 +281,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             LocalFolder localFolder = null;
             try {
                 if (account != null && folderName != null) {
-                    if (!account.isAvailable(mContext)) {
+                    if (!account.isAvailable(mActivity)) {
                         Log.i(K9.LOG_TAG, "not refreshing folder of unavailable account");
                         return;
                     }
                     localFolder = account.getLocalStore().getFolder(folderName);
                     FolderInfoHolder folderHolder = mMailAdapter.getFolder(folderName);
                     if (folderHolder != null) {
-                        folderHolder.populate(mContext, localFolder, mAccount, -1);
+                        folderHolder.populate(mActivity, localFolder, mAccount, -1);
                         folderHolder.flaggedMessageCount = -1;
 
                         mHandler.dataChanged();
@@ -415,7 +414,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Inject
     public MailPresenter(INavigationDrawerActivityListener listener, Intent intent) {
         mListener = listener;
-        mContext = listener.getActivity();
+        mActivity = listener.getActivity();
         mIntent = intent;
     }
 
@@ -425,7 +424,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private void onRefresh(final boolean forceRemote) {
         if (mAccount != null) {
-            MessagingController.getInstance(mContext).listFolders(mAccount, forceRemote,
+            MessagingController.getInstance(mActivity).listFolders(mAccount, forceRemote,
                     mMessagingListener);
         }
     }
@@ -433,7 +432,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Nullable
     public void onCreateView() {
         mStarted = true;
-        mInflater = mContext.getLayoutInflater();
+        mInflater = mActivity.getLayoutInflater();
 
         FrameLayout container = mListener.getContainer();
 
@@ -443,20 +442,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             mInflater.inflate(R.layout.message_list, container, true);
             mViewSwitcher = (ViewSwitcher) container.findViewById(R.id.container);
             mViewSwitcher.setFirstInAnimation(
-                    AnimationUtils.loadAnimation(mContext, R.anim.slide_in_left));
+                    AnimationUtils.loadAnimation(mActivity, R.anim.slide_in_left));
             mViewSwitcher.setFirstOutAnimation(
-                    AnimationUtils.loadAnimation(mContext, R.anim.slide_out_right));
+                    AnimationUtils.loadAnimation(mActivity, R.anim.slide_out_right));
             mViewSwitcher.setSecondInAnimation(
-                    AnimationUtils.loadAnimation(mContext, R.anim.slide_in_right));
+                    AnimationUtils.loadAnimation(mActivity, R.anim.slide_in_right));
             mViewSwitcher.setSecondOutAnimation(
-                    AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left));
+                    AnimationUtils.loadAnimation(mActivity, R.anim.slide_out_left));
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
 
         initializeActionBar();
 
         if (!decodeExtras(mIntent)) {
-            Toast.makeText(mContext, "RETURN FRAGMENT", Toast.LENGTH_LONG);
+            Toast.makeText(mActivity, "RETURN FRAGMENT", Toast.LENGTH_LONG);
         }
 
         // if (mSavedInstanceState != null) {
@@ -466,7 +465,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mAccountUuid = accountUuids[0];
         // }
 
-        mAccount = Preferences.getPreferences(mContext).getAccount(mAccountUuid);
+        mAccount = Preferences.getPreferences(mActivity).getAccount(mAccountUuid);
 
         findFragments();
         initializeDisplayMode();
@@ -485,7 +484,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         mAccountsAdapter = new AccountsAdapter();
 
-        ((NavigationDrawerActivity) mContext).getComponent().injectMailPresenter(this);
+        ((NavigationDrawerActivity) mActivity).getComponent().injectMailPresenter(this);
         mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageListFragment);
     }
 
@@ -533,7 +532,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     // }
 
     private void findFragments() {
-        FragmentManager fragmentManager = mContext.getFragmentManager();
+        FragmentManager fragmentManager = mActivity.getFragmentManager();
         mMessageListFragment =
                 (MessageListFragment) fragmentManager.findFragmentById(R.id.message_list_container);
         mMessageViewFragment =
@@ -552,7 +551,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
      * @see #findFragments()
      */
     private void initializeFragments() {
-        FragmentManager fragmentManager = mContext.getFragmentManager();
+        FragmentManager fragmentManager = mActivity.getFragmentManager();
         fragmentManager.addOnBackStackChangedListener(this);
 
         boolean hasMessageListFragment = (mMessageListFragment != null);
@@ -579,7 +578,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
         // from notification
         if (mMessageViewFragment == null && mMessageReference != null) {
-            MessagingController.getInstance(mContext).setFlag(mAccount,
+            MessagingController.getInstance(mActivity).setFlag(mAccount,
                     mMessageReference.getFolderName(), mMessageReference.getUid(), Flag.SEEN, true);
             openMessage(mMessageReference);
         }
@@ -616,7 +615,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void initializeLayout() {
-        mMessageViewContainer = (ViewGroup) mContext.findViewById(R.id.message_view_container);
+        mMessageViewContainer = (ViewGroup) mActivity.findViewById(R.id.message_view_container);
 
         mMessageViewPlaceHolder =
                 mInflater.inflate(R.layout.empty_message_view, mMessageViewContainer, false);
@@ -624,7 +623,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private boolean useSplitView() {
         K9.SplitViewMode splitViewMode = K9.getSplitViewMode();
-        int orientation = mContext.getResources().getConfiguration().orientation;
+        int orientation = mActivity.getResources().getConfiguration().orientation;
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
@@ -632,7 +631,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void initializeActionBar() {
-        mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) mActivity).getSupportActionBar();
 
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actionbar_custom);
@@ -714,7 +713,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
                 String accountId = segmentList.get(0);
                 Collection<Account> accounts =
-                        Preferences.getPreferences(mContext).getAvailableAccounts();
+                        Preferences.getPreferences(mActivity).getAvailableAccounts();
                 for (Account account : accounts) {
                     if (String.valueOf(account.getAccountNumber()).equals(accountId)) {
                         String folderName = segmentList.get(1);
@@ -729,9 +728,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             // Handle shortcut intents
             String specialFolder = intent.getStringExtra(EXTRA_SPECIAL_FOLDER);
             if (SearchAccount.UNIFIED_INBOX.equals(specialFolder)) {
-                mSearch = SearchAccount.createUnifiedInboxAccount(mContext).getRelatedSearch();
+                mSearch = SearchAccount.createUnifiedInboxAccount(mActivity).getRelatedSearch();
             } else if (SearchAccount.ALL_MESSAGES.equals(specialFolder)) {
-                mSearch = SearchAccount.createAllMessagesAccount(mContext).getRelatedSearch();
+                mSearch = SearchAccount.createAllMessagesAccount(mActivity).getRelatedSearch();
             }
         } else if (intent.getStringExtra(SearchManager.QUERY) != null) {
             // check if this intent comes from the system search ( remote )
@@ -741,10 +740,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
                 // Query was received from Search Dialog
                 String query = intent.getStringExtra(SearchManager.QUERY).trim();
-                TiscaliSearchRecentSuggestionsProvider.saveSearch(mContext, query);
+                TiscaliSearchRecentSuggestionsProvider.saveSearch(mActivity, query);
 
                 // use this if generic title for search results is required
-                // mSearch = new LocalSearch(mContext.getString(R.string.search_results));
+                // mSearch = new LocalSearch(mActivity.getString(R.string.search_results));
                 // use this if searched string as toolbar title is required
                 mSearch = new LocalSearch(query);
 
@@ -806,7 +805,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private boolean updateDataWithNewSearch() {
 
-        Preferences prefs = Preferences.getPreferences(mContext.getApplicationContext());
+        Preferences prefs = Preferences.getPreferences(mActivity.getApplicationContext());
 
         String[] accountUuids = mSearch.getAccountUuids();
         if (mSearch.searchAllAccounts()) {
@@ -817,7 +816,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
-        if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(mContext))) {
+        if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(mActivity))) {
             Log.i(K9.LOG_TAG, "not opening MessageList of unavailable account");
             // onAccountUnavailable();
             return false;
@@ -832,12 +831,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void openMessage(MessageReference messageReference) {
-        Preferences prefs = Preferences.getPreferences(mContext.getApplicationContext());
+        Preferences prefs = Preferences.getPreferences(mActivity.getApplicationContext());
         Account account = prefs.getAccount(messageReference.getAccountUuid());
         String folderName = messageReference.getFolderName();
 
         if (folderName.equals(account.getDraftsFolderName())) {
-            MessageActions.actionEditDraft(mContext, messageReference);
+            MessageActions.actionEditDraft(mActivity, messageReference);
         } else {
             mMessageViewContainer.removeView(mMessageViewPlaceHolder);
 
@@ -846,7 +845,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             }
 
             MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-            FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+            FragmentTransaction ft = mActivity.getFragmentManager().beginTransaction();
             ft.replace(R.id.message_view_container, fragment);
             mMessageViewFragment = fragment;
             ft.commit();
@@ -1066,7 +1065,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         public void onUnmount(String providerId) {
             if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
 
-                mContext.
+                mActivity.
 
                         runOnUiThread(new Runnable() {
 
@@ -1087,10 +1086,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     protected void onAccountUnavailable() {
-        Toast.makeText(mContext, "Account Unavaible Finish Activity", Toast.LENGTH_LONG);
-        mContext.finish();
+        Toast.makeText(mActivity, "Account Unavaible Finish Activity", Toast.LENGTH_LONG);
+        mActivity.finish();
         // TODO inform user about account unavailability using Toast
-        Accounts.listAccounts(mContext);
+        Accounts.listAccounts(mActivity);
     }
 
     @Override
@@ -1100,10 +1099,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
 
-        StorageManager.getInstance((mContext).getApplication()).removeListener(mStorageListener);
+        StorageManager.getInstance((mActivity).getApplication()).removeListener(mStorageListener);
 
-        MessagingController.getInstance(mContext).removeListener(mMessagingListener);
-        mMessagingListener.onPause(mContext);
+        MessagingController.getInstance(mActivity).removeListener(mMessagingListener);
+        mMessagingListener.onPause(mActivity);
     }
 
     @Override
@@ -1113,20 +1112,20 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
 
-        if (mAccount != null && !mAccount.isAvailable(mContext)) {
+        if (mAccount != null && !mAccount.isAvailable(mActivity)) {
             onAccountUnavailable();
             return;
         }
-        StorageManager.getInstance(mContext.getApplication()).addListener(mStorageListener);
+        StorageManager.getInstance(mActivity.getApplication()).addListener(mStorageListener);
 
-        MessagingController.getInstance(mContext).addListener(mMessagingListener);
+        MessagingController.getInstance(mActivity).addListener(mMessagingListener);
 
         onRefresh(!REFRESH_REMOTE);
 
         if (mAccount != null) {
-            MessagingController.getInstance(mContext).cancelNotificationsForAccount(mAccount);
+            MessagingController.getInstance(mActivity).cancelNotificationsForAccount(mAccount);
         }
-        mMessagingListener.onResume(mContext);
+        mMessagingListener.onResume(mActivity);
     }
 
     @Override
@@ -1141,13 +1140,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mSearch = null;
         mFolderName = null;
 
-        mContext.invalidateOptionsMenu();
+        mActivity.invalidateOptionsMenu();
 
     }
 
 
     private void removeFragment(Fragment fragment) {
-        FragmentManager manager = mContext.getFragmentManager();
+        FragmentManager manager = mActivity.getFragmentManager();
         FragmentTransaction ft = manager.beginTransaction();
         ft.remove(fragment);
         ft.commit();
@@ -1155,7 +1154,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void hideFragment(Fragment fragment) {
-        FragmentManager manager = mContext.getFragmentManager();
+        FragmentManager manager = mActivity.getFragmentManager();
         FragmentTransaction ft = manager.beginTransaction();
         ft.hide(fragment);
         ft.commit();
@@ -1357,8 +1356,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
              * FIXME case KeyEvent.KEYCODE_Z: { mMessageViewFragment.zoom(event); return true; }
              */
             case KeyEvent.KEYCODE_H: {
-                Toast toast = Toast.makeText(mContext,
-                        mContext.getString(R.string.message_list_help_key), Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(mActivity,
+                        mActivity.getString(R.string.message_list_help_key), Toast.LENGTH_LONG);
                 toast.show();
                 return true;
             }
@@ -1391,7 +1390,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 return true;
             }
         }
-        Toast.makeText(mContext, "onKeyUp fragment", Toast.LENGTH_LONG);
+        Toast.makeText(mActivity, "onKeyUp fragment", Toast.LENGTH_LONG);
         return true;
         // return super.onKeyUp(keyCode, event);
     }
@@ -1426,15 +1425,16 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
 
-        mContext.getMenuInflater().inflate(R.menu.message_list_option, menu);
+        mActivity.getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
         mMenuButtonCheckMail = menu.findItem(R.id.check_mail);
 
         mSearchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.search));
         SearchManager searchManager =
-                (SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE);
+                (SearchManager) mActivity.getSystemService(Context.SEARCH_SERVICE);
         // NavigationDrawerActivity is search activity
-        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(mContext.getComponentName()));
+        mSearchView
+                .setSearchableInfo(searchManager.getSearchableInfo(mActivity.getComponentName()));
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
     }
 
@@ -1599,7 +1599,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void onToggleTheme() {
-        Toast.makeText(mContext, "TOGGLE THEME NOT WORKING", Toast.LENGTH_LONG);
+        Toast.makeText(mActivity, "TOGGLE THEME NOT WORKING", Toast.LENGTH_LONG);
         // if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
         // K9.setK9MessageViewThemeSetting(K9.Theme.LIGHT);
         // } else {
@@ -1609,7 +1609,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         // new Thread(new Runnable() {
         // @Override
         // public void run() {
-        // Context appContext = mContext.getApplicationContext();
+        // Context appContext = mActivity.getApplicationContext();
         // Preferences prefs = Preferences.getPreferences(appContext);
         // StorageEditor editor = prefs.getStorage().edit();
         // K9.save(editor);
@@ -1644,7 +1644,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void updateMenu() {
-        Toast.makeText(mContext, "invalidateOptionsMenu", Toast.LENGTH_LONG);
+        Toast.makeText(mActivity, "invalidateOptionsMenu", Toast.LENGTH_LONG);
         // invalidateOptionsMenu();
         if (mMenu == null) {
             return;
@@ -1654,11 +1654,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             // Set title of menu item to toggle the read state of the currently displayed message
             if (mMessageViewFragment != null && mMessageViewFragment.isMessageRead()) {
                 int[] attrs = new int[] {R.attr.iconActionMarkAsUnread};
-                TypedArray ta = mContext.obtainStyledAttributes(attrs);
+                TypedArray ta = mActivity.obtainStyledAttributes(attrs);
                 mMenu.findItem(R.id.toggle_unread).setIcon(ta.getDrawable(0));
             } else {
                 int[] attrs = new int[] {R.attr.iconActionMarkAsRead};
-                TypedArray ta = mContext.obtainStyledAttributes(attrs);
+                TypedArray ta = mActivity.obtainStyledAttributes(attrs);
                 mMenu.findItem(R.id.toggle_unread).setIcon(ta.getDrawable(0));
             }
         }
@@ -1666,29 +1666,29 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setActionBarUp() {
-        if (mContext instanceof INavigationDrawerActivityListener) {
-            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(false);
+        if (mActivity instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mActivity).setDrawerEnable(false);
         }
     }
 
     @Override
     public void setActionBarToggle() {
-        if (mContext instanceof INavigationDrawerActivityListener) {
-            ((INavigationDrawerActivityListener) mContext).setDrawerEnable(true);
+        if (mActivity instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mActivity).setDrawerEnable(true);
         }
     }
 
     @Override
     public void showBottomNav() {
-        if (mContext instanceof INavigationDrawerActivityListener) {
-            ((INavigationDrawerActivityListener) mContext).showBottomNav();
+        if (mActivity instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mActivity).showBottomNav();
         }
     }
 
     @Override
     public void hideBottomNav() {
-        if (mContext instanceof INavigationDrawerActivityListener) {
-            ((INavigationDrawerActivityListener) mContext).hideBottomNav();
+        if (mActivity instanceof INavigationDrawerActivityListener) {
+            ((INavigationDrawerActivityListener) mActivity).hideBottomNav();
         }
     }
 
@@ -1747,7 +1747,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setProgress(boolean b) {
-        Toast.makeText(mContext, "setProgressBarIndeterminateVisibility not working",
+        Toast.makeText(mActivity, "setProgressBarIndeterminateVisibility not working",
                 Toast.LENGTH_LONG);
         // setProgressBarIndeterminateVisibility(enable);
     }
@@ -1820,13 +1820,13 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void setMessageListProgress(int progress) {
-        Toast.makeText(mContext, "setProgress NOT WORKING", Toast.LENGTH_LONG);
+        Toast.makeText(mActivity, "setProgress NOT WORKING", Toast.LENGTH_LONG);
         // setProgress(progress);
     }
 
     @Override
     public void onResendMessage(MessageReference messageReference) {
-        MessageActions.actionEditDraft(mContext, messageReference);
+        MessageActions.actionEditDraft(mActivity, messageReference);
     }
 
     @Override
@@ -1836,7 +1836,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onForward(MessageReference messageReference, Parcelable decryptionResultForReply) {
-        MessageActions.actionForward(mContext, messageReference, decryptionResultForReply);
+        MessageActions.actionForward(mActivity, messageReference, decryptionResultForReply);
     }
 
     @Override
@@ -1846,7 +1846,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onReply(MessageReference messageReference, Parcelable decryptionResultForReply) {
-        MessageActions.actionReply(mContext, messageReference, false, decryptionResultForReply);
+        MessageActions.actionReply(mActivity, messageReference, false, decryptionResultForReply);
     }
 
     @Override
@@ -1856,12 +1856,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void onReplyAll(MessageReference messageReference, Parcelable decryptionResultForReply) {
-        MessageActions.actionReply(mContext, messageReference, true, decryptionResultForReply);
+        MessageActions.actionReply(mActivity, messageReference, true, decryptionResultForReply);
     }
 
     @Override
     public void onCompose(Account account) {
-        MessageActions.actionCompose(mContext, account);
+        MessageActions.actionCompose(mActivity, account);
     }
 
     @Override
@@ -1877,7 +1877,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
-        FragmentTransaction ft = mContext.getFragmentManager().beginTransaction();
+        FragmentTransaction ft = mActivity.getFragmentManager().beginTransaction();
 
         ft.replace(R.id.message_list_container, fragment);
         if (addToBackStack) {
@@ -1929,9 +1929,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             mSearchView.setAppSearchData(appData);
         } else {
             // TODO Handle the case where we're searching from within a search result.
-            // mContext.startSearch(null, false, null, false);
+            // mActivity.startSearch(null, false, null, false);
         }
-        Toast.makeText(mContext, "startSearch not working", Toast.LENGTH_LONG);
+        Toast.makeText(mActivity, "startSearch not working", Toast.LENGTH_LONG);
 
 
         return true;
@@ -1958,21 +1958,29 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     @Override
     public void goBack() {
-        FragmentManager fragmentManager = mContext.getFragmentManager();
+        FragmentManager fragmentManager = mActivity.getFragmentManager();
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             showMessageList();
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else if (mMessageListFragment.isManualSearch()) {
-            mContext.finish();
+            mActivity.finish();
+        }
+    }
+
+    @Override
+    public void checkLifeCycle() {
+        if (mActionBar == null) {
+            NavigationDrawerActivity.listMessage(mActivity, mAccount.getUuid());
+            mActivity.finish();
         }
     }
 
     private void createFlaggedSearch(Account account, FolderInfoHolder folder) {
-        String searchTitle = mContext.getString(
-                R.string.search_title, mContext.getString(R.string.message_list_title,
+        String searchTitle = mActivity.getString(
+                R.string.search_title, mActivity.getString(R.string.message_list_title,
                         account.getDescription(), folder.displayName),
-                mContext.getString(R.string.flagged_modifier));
+                mActivity.getString(R.string.flagged_modifier));
 
         LocalSearch search = new LocalSearch(searchTitle);
         search.and(SearchSpecification.SearchField.FLAGGED, "1",
@@ -1984,10 +1992,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void createUnreadSearch(Account account, FolderInfoHolder folder) {
-        String searchTitle = mContext.getString(
-                R.string.search_title, mContext.getString(R.string.message_list_title,
+        String searchTitle = mActivity.getString(
+                R.string.search_title, mActivity.getString(R.string.message_list_title,
                         account.getDescription(), folder.displayName),
-                mContext.getString(R.string.unread_modifier));
+                mActivity.getString(R.string.unread_modifier));
 
         LocalSearch search = new LocalSearch(searchTitle);
         search.and(SearchSpecification.SearchField.READ, "1",
@@ -2001,42 +2009,42 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     public void showDialogSettings(final Account account) {
         mListener.closeDrawer();
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
         builder.setItems(R.array.settings_titles, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     // account settings
                     case 0:
                         AccountSettings.actionSettings(mListener.getActivity(), account);
-                        mLogManager.track(mContext
+                        mLogManager.track(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Settings_Account));
                         break;
                     // global settings
                     case 1:
                         Prefs.actionPrefs(mListener.getActivity());
-                        mLogManager.track(mContext
+                        mLogManager.track(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Settings_Global));
                         break;
                     // update account
                     case 2:
-                        if (mContext instanceof INavigationDrawerActivityListener) {
-                            ((INavigationDrawerActivityListener) mContext).updateAccount(mAccount);
-                            mLogManager.track(mContext
+                        if (mActivity instanceof INavigationDrawerActivityListener) {
+                            ((INavigationDrawerActivityListener) mActivity).updateAccount(mAccount);
+                            mLogManager.track(mActivity
                                     .getString(R.string.com_tiscali_appmail_Mail_Update_Account));
                         }
                         break;
                     // delete account
                     case 3:
                         showDeleteAccountDialog();
-                        mLogManager.track(mContext
+                        mLogManager.track(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Remove_Account));
                         break;
                     // informations
                     case 4:
-                        if (mContext instanceof INavigationDrawerActivityListener) {
-                            ((INavigationDrawerActivityListener) mContext).showInformations();
+                        if (mActivity instanceof INavigationDrawerActivityListener) {
+                            ((INavigationDrawerActivityListener) mActivity).showInformations();
                             mLogManager
-                                    .track(mContext.getString(R.string.com_tiscali_appmail_Info));
+                                    .track(mActivity.getString(R.string.com_tiscali_appmail_Info));
                         }
                         break;
                 }
@@ -2046,15 +2054,15 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     }
 
     private void showDeleteAccountDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
         builder.setTitle(R.string.account_delete_dlg_title);
-        builder.setMessage(mContext.getString(R.string.account_delete_dlg_instructions_fmt,
+        builder.setMessage(mActivity.getString(R.string.account_delete_dlg_instructions_fmt,
                 mAccount.getDescription()));
         builder.setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 boolean isMainAccount =
-                        Preferences.getPreferences(mContext).getAccounts().get(0).equals(mAccount)
+                        Preferences.getPreferences(mActivity).getAccounts().get(0).equals(mAccount)
                                 ? true : false;
                 deleteAccount(isMainAccount);
                 refreshView();
@@ -2068,7 +2076,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         try {
             // delete from db
             if (isMainAccount) {
-                for (Account account : Preferences.getPreferences(mContext).getAccounts()) {
+                for (Account account : Preferences.getPreferences(mActivity).getAccounts()) {
                     account.getLocalStore().delete();
                 }
             } else {
@@ -2079,19 +2087,19 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             // are currently not inserted to be left
         }
         if (isMainAccount) {
-            for (Account account : Preferences.getPreferences(mContext).getAccounts()) {
-                MessagingController.getInstance(mContext).deleteAccount(account);
-                Preferences.getPreferences(mContext).deleteAccount(account);
+            for (Account account : Preferences.getPreferences(mActivity).getAccounts()) {
+                MessagingController.getInstance(mActivity).deleteAccount(account);
+                Preferences.getPreferences(mActivity).deleteAccount(account);
             }
         } else {
-            MessagingController.getInstance(mContext).deleteAccount(mAccount);
-            Preferences.getPreferences(mContext).deleteAccount(mAccount);
+            MessagingController.getInstance(mActivity).deleteAccount(mAccount);
+            Preferences.getPreferences(mActivity).deleteAccount(mAccount);
         }
-        K9.setServicesEnabled(mContext);
+        K9.setServicesEnabled(mActivity);
     }
 
     private void refreshView() {
-        NavigationDrawerActivity.listMessage(mContext, null);
+        NavigationDrawerActivity.listMessage(mActivity, null);
     }
 
     public class MailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -2168,7 +2176,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             if (holder instanceof HeaderViewHolder) {
                 final HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
                 if (mAccount != null) {
-                    headerViewHolder.mSectionName.setText(mContext.getString(R.string.tab_mail),
+                    headerViewHolder.mSectionName.setText(mActivity.getString(R.string.tab_mail),
                             TextView.BufferType.NORMAL);
                     headerViewHolder.mAccountTv.setText(mAccount.getEmail());
                     headerViewHolder.mAccountDisplayNameTv.setText(mAccount.getName());
@@ -2197,10 +2205,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 // row background
                 if (mailViewHolder.itemView.isSelected()) {
                     mailViewHolder.mContainerRl.setBackgroundColor(
-                            ContextCompat.getColor(mContext, R.color.colorItemSelected));
+                            ContextCompat.getColor(mActivity, R.color.colorItemSelected));
                 } else {
                     mailViewHolder.mContainerRl.setBackgroundColor(
-                            ContextCompat.getColor(mContext, android.R.color.transparent));
+                            ContextCompat.getColor(mActivity, android.R.color.transparent));
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -2378,8 +2386,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 mFolders.clear();
                 mListener.setDrawerListAdapter(mMailAdapter);
                 // update folders for new current account
-                if (mContext instanceof INavigationDrawerActivityListener) {
-                    ((INavigationDrawerActivityListener) mContext).updateAccount(mAccount);
+                if (mActivity instanceof INavigationDrawerActivityListener) {
+                    ((INavigationDrawerActivityListener) mActivity).updateAccount(mAccount);
                 }
                 // show default folder for new current account
                 LocalSearch search = new LocalSearch(account.getAutoExpandFolderName());
@@ -2393,17 +2401,17 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             @Override
             public void onAddAccountClick() {
                 super.onAddAccountClick();
-                AccountSetupBasics.actionNewAccount(mContext);
+                AccountSetupBasics.actionNewAccount(mActivity);
             }
         };
 
         public void updateData() {
             mItems.clear();
             // header
-            mItems.add(new HeaderMenu(mContext));
+            mItems.add(new HeaderMenu(mActivity));
             // add account
-            mItems.add(new AddAccountItem(mContext));
-            mItems.addAll(Preferences.getPreferences(mContext).getAccounts());
+            mItems.add(new AddAccountItem(mActivity));
+            mItems.addAll(Preferences.getPreferences(mActivity).getAccounts());
             if (mAccount != null) {
                 mItems.remove(mAccount);
             }
@@ -2506,7 +2514,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     class MailPresenterHandler extends Handler {
 
         public void newFolders(final List<FolderInfoHolder> newFolders) {
-            mContext.runOnUiThread(new Runnable() {
+            mActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     if (!mFolders.isEmpty()) {
                         mFolders.clear();
@@ -2519,30 +2527,30 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         }
 
         public void workingAccount(final int res) {
-            mContext.runOnUiThread(new Runnable() {
+            mActivity.runOnUiThread(new Runnable() {
                 public void run() {
-                    String toastText = mContext.getString(res, mAccount.getDescription());
-                    Toast toast = Toast.makeText(mContext, toastText, Toast.LENGTH_SHORT);
+                    String toastText = mActivity.getString(res, mAccount.getDescription());
+                    Toast toast = Toast.makeText(mActivity, toastText, Toast.LENGTH_SHORT);
                     toast.show();
                 }
             });
         }
 
         public void accountSizeChanged(final long oldSize, final long newSize) {
-            mContext.runOnUiThread(new Runnable() {
+            mActivity.runOnUiThread(new Runnable() {
                 public void run() {
-                    String toastText = mContext.getString(R.string.account_size_changed,
-                            mAccount.getDescription(), SizeFormatter.formatSize(mContext, oldSize),
-                            SizeFormatter.formatSize(mContext, newSize));
+                    String toastText = mActivity.getString(R.string.account_size_changed,
+                            mAccount.getDescription(), SizeFormatter.formatSize(mActivity, oldSize),
+                            SizeFormatter.formatSize(mActivity, newSize));
 
-                    Toast toast = Toast.makeText(mContext, toastText, Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(mActivity, toastText, Toast.LENGTH_LONG);
                     toast.show();
                 }
             });
         }
 
         public void folderLoading(final String folder, final boolean loading) {
-            mContext.runOnUiThread(new Runnable() {
+            mActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     FolderInfoHolder folderHolder = mMailAdapter.getFolder(folder);
 
@@ -2575,7 +2583,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         // }
 
         public void dataChanged() {
-            mContext.runOnUiThread(new Runnable() {
+            mActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     mMailAdapter.notifyDataSetChanged();
                 }
