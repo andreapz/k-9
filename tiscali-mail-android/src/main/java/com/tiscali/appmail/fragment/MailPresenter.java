@@ -2214,8 +2214,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     // icon
                     if (mailViewHolder.itemView.isSelected()) {
+                        // FIXME remove the next line after new icons release
+                        mailViewHolder.mFolderIconIv.setColorFilter(
+                                ContextCompat.getColor(mContext, R.color.colorPrimary));
                         mailViewHolder.mFolderIconIv.setImageAlpha(255);
                     } else {
+                        // FIXME remove the next line after new icons release
+                        mailViewHolder.mFolderIconIv.setColorFilter(
+                                ContextCompat.getColor(mContext, android.R.color.black));
                         mailViewHolder.mFolderIconIv.setImageAlpha(138);
                     }
                 }
