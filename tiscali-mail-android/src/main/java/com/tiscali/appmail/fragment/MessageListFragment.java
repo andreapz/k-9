@@ -967,6 +967,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     public void onResume() {
         super.onResume();
         Log.i("APZ", "MessageListFragment OnResume");
+
         Context appContext = getActivity().getApplicationContext();
 
         mSenderAboveSubject = K9.messageListSenderAboveSubject();
@@ -1003,6 +1004,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         if (mAccount != null && mFolderName != null && !mSearch.isManualSearch()) {
             mController.getFolderUnreadMessageCount(mAccount, mFolderName, mListener);
         }
+
+        mFragmentListener.checkLifeCycle();
 
         updateTitle();
     }

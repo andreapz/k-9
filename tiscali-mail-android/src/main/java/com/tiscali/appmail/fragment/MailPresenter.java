@@ -568,10 +568,11 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             Fragment f = fragmentManager.findFragmentById(R.id.message_list_container);
 
             if (f instanceof MessageListFragment) {
-                ft.show(f);
-            } else {
-                ft.add(R.id.message_list_container, mMessageListFragment);
+                ft.remove(f);
             }
+
+            ft.add(R.id.message_list_container, mMessageListFragment);
+
             isMediaListFragmentAttached = true;
         }
         ft.commit();
