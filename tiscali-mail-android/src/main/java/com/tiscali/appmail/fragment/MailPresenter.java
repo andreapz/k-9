@@ -408,6 +408,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return mMessageListFragment;
     }
 
+    public MessageViewFragment getMessageViewFragment() {
+        return mMessageViewFragment;
+    }
+
     public enum DisplayMode {
         MESSAGE_LIST, MESSAGE_VIEW, SPLIT_VIEW
     }

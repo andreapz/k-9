@@ -41,6 +41,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -71,6 +73,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     public static final int REQUEST_MASK_CRYPTO_PRESENTER = (1 << 9);
     private ImageButton mNextBtn;
     private ImageButton mPreviousBtn;
+    private AttachmentController mAttachmentController;
 
     public static MessageViewFragment newInstance(MessageReference reference) {
         MessageViewFragment fragment = new MessageViewFragment();
@@ -291,6 +294,17 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
             } else {
                 mMessageView.getMessageHeaderView().hideCryptoStatus();
             }
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case AttachmentController.REQUEST_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (mAttachmentController != null) {
+                    mAttachmentController.onRequestPermissionsResult(requestCode, permissions,
+                            grantResults);
+                }
         }
     }
 
@@ -622,7 +636,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         }
     }
 
-    private String getDialogTag(int dialogId) {
+    public String getDialogTag(int dialogId) {
         return String.format(Locale.US, "dialog-%d", dialogId);
     }
 
@@ -655,12 +669,27 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
                 mDstFolder = null;
                 break;
             }
+            case R.id.dialog_change_permission: {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+                break;
+            }
+
         }
     }
 
     @Override
     public void doNegativeClick(int dialogId) {
-        /* do nothing */
+        switch (dialogId) {
+            case R.id.dialog_explain_permission:
+                if (mAttachmentController != null) {
+                    mAttachmentController.requestExternalPermission(getActivity());
+                }
+                break;
+        };
     }
 
     @Override
@@ -706,6 +735,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     public Context getApplicationContext() {
         return mContext;
     }
+
 
     public void disableAttachmentButtons(AttachmentViewInfo attachment) {
         // mMessageView.disableAttachmentButtons(attachment);
@@ -916,6 +946,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     }
 
     private AttachmentController getAttachmentController(AttachmentViewInfo attachment) {
-        return new AttachmentController(mController, downloadManager, this, attachment);
+        mAttachmentController =
+                new AttachmentController(mController, downloadManager, this, attachment);
+        return mAttachmentController;
     }
 }
