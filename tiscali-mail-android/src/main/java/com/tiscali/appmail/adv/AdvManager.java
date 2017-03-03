@@ -2,7 +2,6 @@ package com.tiscali.appmail.adv;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.dotandmedia.android.sdk.AdConfigListener;
 import com.dotandmedia.android.sdk.AdListener;
@@ -19,16 +18,11 @@ import com.tiscali.appmail.api.model.Me;
 
 import android.app.Activity;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by andreaputzu on 01/03/17.
@@ -49,9 +43,6 @@ public class AdvManager {
     private static final float BANNER_HEIGHT_TABLET_LANDSCAPE = 90.0f;
     private final Activity mActivity;
     private LinearLayout mLinearLayout;
-    private Account mAccount;
-    private View mBottomMargin;
-    private AdView mAdViewToAdd;
 
 
     public AdvManager(Activity activity) {
@@ -65,8 +56,10 @@ public class AdvManager {
      * This will remove all DotAndAd AdViews.
      * </p>
      */
-    private void removeAdView() {
-        mAdViewToAdd.removeAdListener();
+    public void removeAdView() {
+        // if (mAdViewToAdd != null) {
+        // mAdViewToAdd.removeAdListener();
+        // }
         mLinearLayout.removeAllViews();
         Log.i("APZ", "adv removeAllViews");
     }
@@ -82,45 +75,40 @@ public class AdvManager {
      */
     private void addAdView(final Account account) {
 
-        if (account != null) {
-            mAccount = account;
-        }
-
         boolean isActiveDotAndAdAdv = true; // Boolean.parseBoolean(TiscaliConfigRemote.getPreferenceStringByKey(context,
-                                            // TiscaliDotAndAd.TAG_DOTANDAD_ADV));
+        // TiscaliDotAndAd.TAG_DOTANDAD_ADV));
 
-        if (// !Utility.hasConnectivity(context) ||
-        !isActiveDotAndAdAdv
-        // || (noAdvPreApiLevel != null && Build.VERSION.SDK_INT <
-        // Integer.parseInt(noAdvPreApiLevel))
-        ) {
-            removeAdView();
-
-            return;
-        }
+        // if (// !Utility.hasConnectivity(context) ||
+        // !isActiveDotAndAdAdv
+        // // || (noAdvPreApiLevel != null && Build.VERSION.SDK_INT <
+        // // Integer.parseInt(noAdvPreApiLevel))
+        // ) {
+        //
+        // return;
+        // }
 
         boolean isTabletDevice = TiscaliUtility.isTablet(mActivity);
         boolean isPortraitOrientation = mActivity.getResources()
                 .getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true
-                        : false;
+                : false;
 
         String mpo = !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpo_smartphone)
                 : mActivity.getString(R.string.dotandad_adv_mpo_tablet);
         String mpt =
                 !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpt_smartphone_head)
                         : (isPortraitOrientation
-                                ? mActivity.getString(R.string.dotandad_adv_mpt_tablet_portrait)
-                                : mActivity.getString(R.string.dotandad_adv_mpt_tablet_landscape));
+                        ? mActivity.getString(R.string.dotandad_adv_mpt_tablet_portrait)
+                        : mActivity.getString(R.string.dotandad_adv_mpt_tablet_landscape));
 
         // CID: Customer ID - MPO: Multipoint - MPT: Mediapoint
-        mAdViewToAdd = new AdView(mActivity, mActivity.getString(R.string.dotandad_adv_cid), mpo,
-                mpt, Color.TRANSPARENT);
+        AdView adViewToAdd = new AdView(mActivity, //mActivity.getString(R.string.dotandad_adv_cid), mpo,
+                mpt, null); //Color.TRANSPARENT
 
         Log.i("APZ", "adv params mpo:" + mpo + " " + " mpt:" + mpt);
 
         final LinearLayout linearLayoutAdvContainer = mLinearLayout;
 
-        mAdViewToAdd.setAdListener(getAdListener(mAdViewToAdd, linearLayoutAdvContainer));
+        adViewToAdd.setAdListener(getAdListener(adViewToAdd, linearLayoutAdvContainer));
 
         /*
          * BANNER SMARTPHONE HEAD 320x50 BANNER TABLET PORTRAIT 768x90 BANNER TABLET LANDSCAPE
@@ -128,16 +116,16 @@ public class AdvManager {
          */
         final float originalBannerWidth = !isTabletDevice ? BANNER_WIDTH_SMARTPHONE_HEAD
                 : (isPortraitOrientation ? BANNER_WIDTH_TABLET_PORTRAIT
-                        : BANNER_WIDTH_TABLET_LANDSCAPE);
+                : BANNER_WIDTH_TABLET_LANDSCAPE);
         final float originalBannerHeight = !isTabletDevice ? BANNER_HEIGHT_SMARTPHONE_HEAD
                 : (isPortraitOrientation ? BANNER_HEIGHT_TABLET_PORTRAIT
-                        : BANNER_HEIGHT_TABLET_LANDSCAPE);
+                : BANNER_HEIGHT_TABLET_LANDSCAPE);
 
         final float formFactor = originalBannerWidth / originalBannerHeight;
         float newBannerWidth = mActivity.getResources().getDisplayMetrics().widthPixels;
         float newBannerHeight = newBannerWidth / formFactor;
 
-        mAdViewToAdd.setLayoutParams(
+        adViewToAdd.setLayoutParams(
                 new ViewGroup.LayoutParams((int) newBannerWidth, (int) newBannerHeight));
 
         Log.i("APZ", "adv layout params w:" + newBannerWidth + " " + " h:" + newBannerHeight);
@@ -162,18 +150,37 @@ public class AdvManager {
         // }
 
         // Invalidate the view layout, this will schedule a layout pass of the view tree
-        mAdViewToAdd.requestLayout();
 
-        linearLayoutAdvContainer.addView(mAdViewToAdd, 0);
+        adViewToAdd.requestLayout();
+
+        linearLayoutAdvContainer.addView(adViewToAdd, 0);
 
         ((NavigationDrawerActivity) mActivity).setMarginVisibility(true);
 
         Log.i("APZ", "adv added");
+
+        // Observable.empty().observeOn(AndroidSchedulers.mainThread())
+        // .subscribe(new Subscriber<Object>() {
+        // @Override
+        // public void onCompleted() {
+        //
+        // }
+        //
+        // @Override
+        // public void onError(Throwable e) {
+        //
+        // }
+        //
+        // @Override
+        // public void onNext(Object o) {
+        //
+        // }
+        // });
     }
 
     @NonNull
     private AdListener getAdListener(final AdView adViewToAdd,
-            final LinearLayout linearLayoutAdvContainer) {
+                                     final LinearLayout linearLayoutAdvContainer) {
         return new AdListener() {
             @Override
             public void handleRequest(String arg0) {
@@ -183,6 +190,7 @@ public class AdvManager {
             @Override
             public boolean onAdSkippedByFreq() {
                 linearLayoutAdvContainer.removeView(adViewToAdd);
+                ((NavigationDrawerActivity) mActivity).setMarginVisibility(false);
                 Log.i("APZ", "onAdSkippedByFreq");
                 return false;
             }
@@ -240,6 +248,7 @@ public class AdvManager {
             public void onNoAdv() {
                 Log.i("APZ", "onNoAdv");
                 linearLayoutAdvContainer.removeView(adViewToAdd);
+                ((NavigationDrawerActivity) mActivity).setMarginVisibility(false);
             }
 
             @Override
@@ -276,32 +285,36 @@ public class AdvManager {
     public void loadAdv(final Account account, final Me me, LinearLayout banner, View margin) {
 
         mLinearLayout = banner;
-        mBottomMargin = margin;
+
+        // if (mAdViewToAdd != null) {
+        // return;
+        // }
+        // if (mSubscriber != null) {
+        // mSubscriber.unsubscribe();
+        // }
 
         addAdView(account);
 
-        Observable
-                .interval(20, // me.getAdv().getTiming().getMail().getInterval(),
-                        30, // me.getAdv().getTiming().getMail().getShowtime(),
-                        TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.i("APZ", "onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.i("APZ", "onError");
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-                        Log.i("APZ", "onNext");
-                        removeAdView();
-                        addAdView(account);
-                    }
-                });
+        // mSubscriber = Observable
+        // .interval(me.getAdv().getTiming().getMail().getInterval(),
+        // me.getAdv().getTiming().getMail().getShowtime(), TimeUnit.SECONDS)
+        // .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Object>() {
+        // @Override
+        // public void onCompleted() {
+        // Log.i("APZ", "onCompleted");
+        // }
+        //
+        // @Override
+        // public void onError(Throwable e) {
+        // Log.i("APZ", "onError");
+        // }
+        //
+        // @Override
+        // public void onNext(Object o) {
+        // Log.i("APZ", "onNext " + o);
+        // addAdView(account);
+        // }
+        // });
     }
 
     // Da chiamare al CREATE ed al RESUME delle singole schermate che ospitano i banner!!!
