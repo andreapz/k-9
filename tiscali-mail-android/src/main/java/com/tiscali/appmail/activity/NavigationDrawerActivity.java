@@ -415,9 +415,6 @@ public class NavigationDrawerActivity extends K9Activity
         mBannerContainer = (LinearLayout) findViewById(R.id.banner_ll);
         mBannerMargin = findViewById(R.id.view_bottom);
 
-        mAdvManager.loadAdv(null, null, (LinearLayout) findViewById(R.id.banner_adv_ll),
-                mBannerMargin);
-
         initBannerView();
         initInterstitialView();
 
@@ -1169,12 +1166,15 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.onResume();
         }
         mApiController.addListener(this);
+
+        mAdvManager.loadAdv(null, null, (LinearLayout) findViewById(R.id.banner_adv_ll),
+                mBannerMargin);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
+        Log.i("APZ", NavigationDrawerActivity.class.getName() + " OnPause");
         if (mMailPresenter != null) {
             mMailPresenter.onPause();
         }
@@ -1188,6 +1188,8 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.onPause();
         }
         mApiController.removeListener(this);
+
+        mAdvManager.removeAdView();
     }
 
     private void onImport() {
