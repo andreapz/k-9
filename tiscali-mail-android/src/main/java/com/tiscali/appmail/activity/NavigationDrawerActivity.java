@@ -416,6 +416,7 @@ public class NavigationDrawerActivity extends K9Activity
         mBottomNav.setOnNavigationItemSelectedListener(mBottomNavigationItemSelectedListener);
         mBannerContainer = (LinearLayout) findViewById(R.id.banner_ll);
         mBannerMargin = findViewById(R.id.view_bottom);
+
         initBannerView();
         initInterstitialView();
 
@@ -1157,7 +1158,7 @@ public class NavigationDrawerActivity extends K9Activity
     @Override
     protected void onResume() {
         super.onResume();
-
+        Log.i("APZ", NavigationDrawerActivity.class.getName() + " OnResume");
         if (!(this instanceof Search)) {
             // necessary b/c no guarantee Search.onStop will be called before
             // MessageList.onResume
@@ -1178,12 +1179,15 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.onResume();
         }
         mApiController.addListener(this);
+
+        mAdvManager.loadAdv(null, null, (LinearLayout) findViewById(R.id.banner_adv_ll),
+                mBannerMargin);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
+        Log.i("APZ", NavigationDrawerActivity.class.getName() + " OnPause");
         if (mMailPresenter != null) {
             mMailPresenter.onPause();
         }
@@ -1197,6 +1201,8 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.onPause();
         }
         mApiController.removeListener(this);
+
+        mAdvManager.removeAdView();
     }
 
     private void onImport() {
@@ -1507,11 +1513,6 @@ public class NavigationDrawerActivity extends K9Activity
     }
 
     public void updateMe(Me me, String json) {
-
-        if (mMe == null) {
-            mAdvManager.loadAdv(null, me, (LinearLayout) findViewById(R.id.banner_adv_ll),
-                    mBannerMargin);
-        }
 
         mMe = me;
 
