@@ -140,7 +140,7 @@ public class Prefs extends K9PreferenceActivity {
     private ListPreference mLockScreenNotificationVisibility;
     private Preference mAttachmentPathPreference;
 
-    private CheckBoxPreference mBackgroundAsUnreadIndicator;
+    // private CheckBoxPreference mBackgroundAsUnreadIndicator;
     private CheckBoxPreference mThreadedView;
     // private ListPreference mSplitViewMode;
 
@@ -264,9 +264,9 @@ public class Prefs extends K9PreferenceActivity {
         // PREFERENCE_MESSAGELIST_COLORIZE_MISSING_CONTACT_PICTURES);
         // mColorizeMissingContactPictures.setChecked(K9.isColorizeMissingContactPictures());
 
-        mBackgroundAsUnreadIndicator =
-                (CheckBoxPreference) findPreference(PREFERENCE_BACKGROUND_AS_UNREAD_INDICATOR);
-        mBackgroundAsUnreadIndicator.setChecked(K9.useBackgroundAsUnreadIndicator());
+        // mBackgroundAsUnreadIndicator =
+        // (CheckBoxPreference) findPreference(PREFERENCE_BACKGROUND_AS_UNREAD_INDICATOR);
+        // mBackgroundAsUnreadIndicator.setChecked(K9.useBackgroundAsUnreadIndicator());
 
         // mChangeContactNameColor =
         // (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
@@ -464,7 +464,7 @@ public class Prefs extends K9PreferenceActivity {
         K9.setShowContactName(mShowContactName.isChecked());
         // K9.setShowContactPicture(mShowContactPicture.isChecked());
         // K9.setColorizeMissingContactPictures(mColorizeMissingContactPictures.isChecked());
-        K9.setUseBackgroundAsUnreadIndicator(mBackgroundAsUnreadIndicator.isChecked());
+        // K9.setUseBackgroundAsUnreadIndicator(mBackgroundAsUnreadIndicator.isChecked());
         K9.setThreadedViewEnabled(mThreadedView.isChecked());
         // K9.setChangeContactNameColor(mChangeContactNameColor.isChecked());
         K9.setMessageViewFixedWidthFont(mFixedWidth.isChecked());
