@@ -241,7 +241,7 @@ public class K9 extends MultiDexApplication {
     private static SortType mSortType;
     private static Map<SortType, Boolean> mSortAscending = new HashMap<SortType, Boolean>();
 
-    private static boolean sUseBackgroundAsUnreadIndicator = true;
+    private static boolean sUseBackgroundAsUnreadIndicator = false;
     private static boolean sThreadedViewEnabled = true;
     private static SplitViewMode sSplitViewMode = SplitViewMode.NEVER;
     private static boolean sColorizeMissingContactPictures = false;

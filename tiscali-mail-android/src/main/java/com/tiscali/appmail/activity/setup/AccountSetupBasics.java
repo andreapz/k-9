@@ -35,6 +35,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -105,6 +106,9 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
 
         ((K9) getApplication()).getComponent().inject(this);
         mLogManager.track(R.string.com_tiscali_appmail_Login);
+
+        getSupportActionBar().setLogo(ContextCompat.getDrawable(this, R.drawable.t_logo_header));
+
     }
 
     private void initializeViewListeners() {

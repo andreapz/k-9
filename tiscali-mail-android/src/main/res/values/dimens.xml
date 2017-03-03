@@ -22,6 +22,9 @@
     <dimen name="search_bar_width">@dimen/abc_search_view_preferred_width</dimen>
 
     <dimen name="search_suggestion_row_height">58dp</dimen>
-    v
     <dimen name="search_suggestion_row_icon_size">48dp</dimen>
+
+    <!--https://material.io/guidelines/components/lists.html#lists-specs -->
+    <!--three lines item -->
+    <dimen name="message_list_item_height">88dp</dimen>
 </resources>

@@ -139,8 +139,7 @@
 
         <activity
             android:name="com.tiscali.appmail.activity.setup.AccountSetupBasics"
-            android:configChanges="locale"
-            android:label="@string/account_setup_basics_title" />
+            android:configChanges="locale" />
 
         <activity
             android:name="com.tiscali.appmail.activity.setup.AccountSetupAccountType"
