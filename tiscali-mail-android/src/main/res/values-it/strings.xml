@@ -1039,5 +1039,5 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="contacts_permission_message_dialog">Consenti di accedere ai contatti per poter scegliere il destinatario della email</string>
     <string name="contacts_change_permission_message_dialog">Non puoi selezionare il destinatario della email. Per favore consenti l\'accesso ai contatti</string>
     <string name="write_external_permission_message_dialog">Consenti di accedere alla memoria per poter salvare il file</string>
-    <string name="write_external_change_permission_message_dialog">Non puoi salvare il file.Per favore consenti l\'accesso alla memoria</string>
+    <string name="write_external_change_permission_message_dialog">Non puoi salvare il file. Per favore consenti l\'accesso alla memoria</string>
 </resources>
