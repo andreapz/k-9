@@ -207,5 +207,4 @@
         <item name="suggestionRowLayout">@layout/abc_search_dropdown_item_icons_2line</item>
     </style>
 
-
 </resources>

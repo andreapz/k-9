@@ -17,6 +17,8 @@ import com.tiscali.appmail.R;
 import com.tiscali.appmail.cache.TemporaryAttachmentStore;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.controller.MessagingListener;
+import com.tiscali.appmail.fragment.ConfirmationDialogFragment;
+import com.tiscali.appmail.helper.AppPermissionsUtils;
 import com.tiscali.appmail.helper.FileHelper;
 import com.tiscali.appmail.mail.Message;
 import com.tiscali.appmail.mail.Part;
@@ -25,6 +27,9 @@ import com.tiscali.appmail.mailstore.AttachmentViewInfo;
 import com.tiscali.appmail.mailstore.LocalMessage;
 import com.tiscali.appmail.mailstore.LocalPart;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -34,11 +39,14 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 
 public class AttachmentController {
+    public static final int REQUEST_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE = 101;
     private final Context context;
     private final MessagingController controller;
     private final MessageViewFragment messageViewFragment;
@@ -68,7 +76,87 @@ public class AttachmentController {
     }
 
     public void saveAttachmentTo(String directory) {
-        saveAttachmentTo(new File(directory));
+        if (!AppPermissionsUtils.isPermissionGranted(context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (messageViewFragment != null && messageViewFragment.getActivity() != null) {
+                checkContactsPermission(messageViewFragment.getActivity());
+            }
+        } else {
+            saveAttachmentTo(new File(directory));
+        }
+
+    }
+
+    public void requestExternalPermission(Activity activity) {
+        AppPermissionsUtils.requestPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                REQUEST_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE);
+    }
+
+    public void checkContactsPermission(Activity activity) {
+
+        // permission already asked, show an explanation
+        if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (messageViewFragment != null && messageViewFragment.getActivity() != null) {
+                int dialogId = R.id.dialog_explain_permission;
+                String title = null;
+                String message =
+                        activity.getString(R.string.write_external_permission_message_dialog);
+                String confirmText = null;
+                String cancelText = activity.getString(android.R.string.ok);
+
+                DialogFragment dialogfragment = ConfirmationDialogFragment.newInstance(dialogId,
+                        title, message, confirmText, cancelText, false);
+                dialogfragment.setTargetFragment(messageViewFragment, dialogId);
+                dialogfragment.show(messageViewFragment.getFragmentManager(),
+                        messageViewFragment.getDialogTag(dialogId));
+            }
+
+
+        } else {
+
+            // No explanation needed, we can request the permission.
+            requestExternalPermission(activity);
+        }
+
+    }
+
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (AppPermissionsUtils.isPermissionGranted(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE, permissions, grantResults)) {
+                    // permission to write external storage has granted
+                } else {
+
+                    if (messageViewFragment != null && messageViewFragment.getActivity() != null) {
+                        if (AppPermissionsUtils.shouldAskToChangeSettings(
+                                messageViewFragment.getActivity(),
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                            int dialogId = R.id.dialog_change_permission;
+                            String title = null;
+                            String message = messageViewFragment.getActivity().getString(
+                                    R.string.write_external_change_permission_message_dialog);
+                            String confirmText = messageViewFragment.getActivity()
+                                    .getString(android.R.string.ok);
+                            String cancelText = messageViewFragment.getActivity()
+                                    .getString(android.R.string.cancel);
+
+                            DialogFragment dialogfragment = ConfirmationDialogFragment.newInstance(
+                                    dialogId, title, message, confirmText, cancelText, false);
+                            dialogfragment.setTargetFragment(messageViewFragment, dialogId);
+                            dialogfragment.show(messageViewFragment.getFragmentManager(),
+                                    messageViewFragment.getDialogTag(dialogId));
+                        }
+
+                    }
+
+                }
+                break;
+        }
     }
 
     private void downloadAndViewAttachment(LocalPart localPart) {

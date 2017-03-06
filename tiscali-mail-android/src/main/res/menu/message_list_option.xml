@@ -187,10 +187,10 @@
         android:title="@string/batch_select_all" />
 
     <!-- MessageList -->
-    <item
-        android:id="@+id/mark_all_as_read"
-        app:showAsAction="never"
-        android:title="@string/mark_all_as_read" />
+    <!--<item-->
+    <!--android:id="@+id/mark_all_as_read"-->
+    <!--app:showAsAction="never"-->
+    <!--android:title="@string/mark_all_as_read" />-->
 
     <!-- MessageList -->
     <item
@@ -201,10 +201,10 @@
         android:title="@string/send_messages_action" />
 
     <!-- MessageList -->
-    <item
-        android:id="@+id/expunge"
-        app:showAsAction="never"
-        android:title="@string/expunge_action" />
+    <!--<item-->
+    <!--android:id="@+id/expunge"-->
+    <!--app:showAsAction="never"-->
+    <!--android:title="@string/expunge_action" />-->
 
     <!-- MessageView -->
     <item

@@ -3,10 +3,12 @@
     <dimen name="margin_standard_4dp">4dp</dimen>
     <dimen name="margin_standard_8dp">8dp</dimen>
     <dimen name="margin_standard_16dp">16dp</dimen>
+    <dimen name="margin_standard_20dp">20dp</dimen>
     <dimen name="margin_standard_24dp">24dp</dimen>
     <dimen name="margin_standard_48dp">48dp</dimen>
     <dimen name="margin_standard_56dp">56dp</dimen>
     <dimen name="margin_standard_72dp">72dp</dimen>
+    <dimen name="mail_list_item_bottom_padding">10dp</dimen>
 
     <dimen name="text_size_medium">18sp</dimen>
 
@@ -14,7 +16,6 @@
 
     <!-- OnBoarding -->
     <dimen name="dots_height">30dp</dimen>
-    <dimen name="dots_margin_bottom">20dp</dimen>
 
     <!-- action bar size: as defined in support library -->
     <dimen name="action_bar_height">@dimen/abc_action_bar_default_height_material</dimen>
@@ -22,6 +23,9 @@
     <dimen name="search_bar_width">@dimen/abc_search_view_preferred_width</dimen>
 
     <dimen name="search_suggestion_row_height">58dp</dimen>
-    v
     <dimen name="search_suggestion_row_icon_size">48dp</dimen>
+
+    <!--https://material.io/guidelines/components/lists.html#lists-specs -->
+    <!--three lines item -->
+    <dimen name="message_list_item_height">88dp</dimen>
 </resources>

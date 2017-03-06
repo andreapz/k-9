@@ -1254,4 +1254,6 @@ Please submit bug reports, contribute new features and ask questions at
     <!-- contacts permission explanation dialog -->
     <string name="contacts_permission_message_dialog">Allow contacts access to select email recipient</string>
     <string name="contacts_change_permission_message_dialog">You cannot select email recipient.Please allow contacts access</string>
+    <string name="write_external_permission_message_dialog">Allow storage access to save attachment recipient</string>
+    <string name="write_external_change_permission_message_dialog">You cannot save attachment.Please allow storage access</string>
 </resources>

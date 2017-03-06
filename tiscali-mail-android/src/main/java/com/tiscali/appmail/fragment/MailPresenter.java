@@ -405,6 +405,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         return mMessageListFragment;
     }
 
+    public MessageViewFragment getMessageViewFragment() {
+        return mMessageViewFragment;
+    }
+
     public enum DisplayMode {
         MESSAGE_LIST, MESSAGE_VIEW, SPLIT_VIEW
     }
@@ -1020,21 +1024,21 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             menu.findItem(R.id.set_sort).setVisible(false);
             menu.findItem(R.id.select_all).setVisible(false);
             menu.findItem(R.id.send_messages).setVisible(false);
-            menu.findItem(R.id.expunge).setVisible(false);
-            menu.findItem(R.id.mark_all_as_read).setVisible(false);
+            // menu.findItem(R.id.expunge).setVisible(false);
+            // menu.findItem(R.id.mark_all_as_read).setVisible(false);
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
             menu.findItem(R.id.select_all).setVisible(true);
-            menu.findItem(R.id.mark_all_as_read)
-                    .setVisible(mMessageListFragment.isMarkAllAsReadSupported());
+            // menu.findItem(R.id.mark_all_as_read)
+            // .setVisible(mMessageListFragment.isMarkAllAsReadSupported());
 
             if (!mMessageListFragment.isSingleAccountMode()) {
-                menu.findItem(R.id.expunge).setVisible(false);
+                // menu.findItem(R.id.expunge).setVisible(false);
                 menu.findItem(R.id.send_messages).setVisible(false);
             } else {
                 menu.findItem(R.id.send_messages).setVisible(mMessageListFragment.isOutbox());
-                menu.findItem(R.id.expunge).setVisible(mMessageListFragment.isRemoteFolder()
-                        && mMessageListFragment.isAccountExpungeCapable());
+                // menu.findItem(R.id.expunge).setVisible(mMessageListFragment.isRemoteFolder()
+                // && mMessageListFragment.isAccountExpungeCapable());
             }
 
             menu.findItem(R.id.check_mail).setVisible(mMessageListFragment.isCheckMailSupported());
@@ -1498,10 +1502,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 mMessageListFragment.onRemoteSearch();
                 return true;
             }
-            case R.id.mark_all_as_read: {
-                mMessageListFragment.confirmMarkAllAsRead();
-                return true;
-            }
+            // case R.id.mark_all_as_read: {
+            // mMessageListFragment.confirmMarkAllAsRead();
+            // return true;
+            // }
             // MessageView
             case R.id.next_message: {
                 showNextMessage();
@@ -1578,10 +1582,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 mMessageListFragment.onSendPendingMessages();
                 return true;
             }
-            case R.id.expunge: {
-                mMessageListFragment.onExpunge();
-                return true;
-            }
+            // case R.id.expunge: {
+            // mMessageListFragment.onExpunge();
+            // return true;
+            // }
             default: {
                 return true; // super.onOptionsItemSelected(item);
             }
@@ -2206,14 +2210,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     // icon
                     if (mailViewHolder.itemView.isSelected()) {
-                        // FIXME remove the next line after new icons release
-                        mailViewHolder.mFolderIconIv.setColorFilter(
-                                ContextCompat.getColor(mActivity, R.color.colorPrimary));
                         mailViewHolder.mFolderIconIv.setImageAlpha(255);
                     } else {
-                        // FIXME remove the next line after new icons release
-                        mailViewHolder.mFolderIconIv.setColorFilter(
-                                ContextCompat.getColor(mActivity, android.R.color.black));
                         mailViewHolder.mFolderIconIv.setImageAlpha(138);
                     }
                 }

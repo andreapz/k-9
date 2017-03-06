@@ -53,6 +53,7 @@ import com.tiscali.appmail.search.LocalSearch;
 import com.tiscali.appmail.search.SearchSpecification;
 import com.tiscali.appmail.service.TiscaliAppFirebaseInstanceIDService;
 import com.tiscali.appmail.service.TiscaliAppFirebaseMessagingService;
+import com.tiscali.appmail.ui.messageview.AttachmentController;
 import com.tiscali.appmail.ui.messageview.MessageViewFragment;
 
 import android.animation.Animator;
@@ -70,6 +71,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
@@ -700,6 +702,17 @@ public class NavigationDrawerActivity extends K9Activity
 
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case AttachmentController.REQUEST_CODE_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (mMailPresenter != null && mMailPresenter.getMessageViewFragment() != null) {
+                    mMailPresenter.getMessageViewFragment().onRequestPermissionsResult(requestCode,
+                            permissions, grantResults);
+                }
+        }
+    }
 
     private Account getAccount(List<Account> accounts, LocalSearch localSearch) {
         for (Account cAccount : accounts) {
@@ -1647,4 +1660,6 @@ public class NavigationDrawerActivity extends K9Activity
 
         return mNewsPresenter;
     }
+
+
 }

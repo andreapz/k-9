@@ -90,6 +90,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -1330,15 +1331,15 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         }
     }
 
-    public void onExpunge() {
-        if (mCurrentFolder != null) {
-            onExpunge(mAccount, mCurrentFolder.name);
-        }
-    }
-
-    private void onExpunge(final Account account, String folderName) {
-        mController.expunge(account, folderName);
-    }
+    // public void onExpunge() {
+    // if (mCurrentFolder != null) {
+    // onExpunge(mAccount, mCurrentFolder.name);
+    // }
+    // }
+    //
+    // private void onExpunge(final Account account, String folderName) {
+    // mController.expunge(account, folderName);
+    // }
 
     private void showDialog(int dialogId) {
         DialogFragment fragment;
@@ -1448,12 +1449,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 onSendPendingMessages();
                 return true;
             }
-            case R.id.expunge: {
-                if (mCurrentFolder != null) {
-                    onExpunge(mAccount, mCurrentFolder.name);
-                }
-                return true;
-            }
+            // case R.id.expunge: {
+            // if (mCurrentFolder != null) {
+            // onExpunge(mAccount, mCurrentFolder.name);
+            // }
+            // return true;
+            // }
             default: {
                 return super.onOptionsItemSelected(item);
             }
@@ -1974,19 +1975,25 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             }
 
             // Background color
-            if (selected || K9.useBackgroundAsUnreadIndicator()) {
-                int res;
-                if (selected) {
-                    res = R.attr.messageListSelectedBackgroundColor;
-                } else if (read) {
-                    res = R.attr.messageListReadItemBackgroundColor;
-                } else {
-                    res = R.attr.messageListUnreadItemBackgroundColor;
-                }
-
-                TypedValue outValue = new TypedValue();
-                getActivity().getTheme().resolveAttribute(res, outValue, true);
-                view.setBackgroundColor(outValue.data);
+            // if (selected || K9.useBackgroundAsUnreadIndicator()) {
+            // int res;
+            // if (selected) {
+            // res = R.attr.messageListSelectedBackgroundColor;
+            // } else if (read) {
+            // res = R.attr.messageListReadItemBackgroundColor;
+            // } else {
+            // res = R.attr.messageListUnreadItemBackgroundColor;
+            // }
+            //
+            // TypedValue outValue = new TypedValue();
+            // getActivity().getTheme().resolveAttribute(res, outValue, true);
+            // view.setBackgroundColor(outValue.data);
+            // } else {
+            // view.setBackgroundColor(Color.TRANSPARENT);
+            // }
+            if (selected) {
+                view.setBackgroundColor(
+                        ContextCompat.getColor(mContext, R.color.colorItemSelected));
             } else {
                 view.setBackgroundColor(Color.TRANSPARENT);
             }
@@ -2917,10 +2924,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 mActiveMessage = null;
                 break;
             }
-            case R.id.dialog_confirm_mark_all_as_read: {
-                markAllAsRead();
-                break;
-            }
+            // case R.id.dialog_confirm_mark_all_as_read: {
+            // markAllAsRead();
+            // break;
+            // }
         }
     }
 
@@ -3643,19 +3650,19 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         return mInitialized;
     }
 
-    public boolean isMarkAllAsReadSupported() {
-        return (isSingleAccountMode() && isSingleFolderMode());
-    }
-
-    public void confirmMarkAllAsRead() {
-        showDialog(R.id.dialog_confirm_mark_all_as_read);
-    }
-
-    public void markAllAsRead() {
-        if (isMarkAllAsReadSupported()) {
-            mController.markAllMessagesRead(mAccount, mFolderName);
-        }
-    }
+    // public boolean isMarkAllAsReadSupported() {
+    // return (isSingleAccountMode() && isSingleFolderMode());
+    // }
+    //
+    // public void confirmMarkAllAsRead() {
+    // showDialog(R.id.dialog_confirm_mark_all_as_read);
+    // }
+    //
+    // public void markAllAsRead() {
+    // if (isMarkAllAsReadSupported()) {
+    // mController.markAllMessagesRead(mAccount, mFolderName);
+    // }
+    // }
 
     public boolean isCheckMailSupported() {
         return (mAllAccounts || !isSingleAccountMode() || !isSingleFolderMode()

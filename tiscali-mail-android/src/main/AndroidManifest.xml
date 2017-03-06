@@ -24,7 +24,7 @@
 
     <!-- dangerous permissions -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <!-- Needed to mark a contact as contacted -->
+    <!-- Needed to mark a contact as contacted  -->
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
@@ -139,8 +139,7 @@
 
         <activity
             android:name="com.tiscali.appmail.activity.setup.AccountSetupBasics"
-            android:configChanges="locale"
-            android:label="@string/account_setup_basics_title" />
+            android:configChanges="locale" />
 
         <activity
             android:name="com.tiscali.appmail.activity.setup.AccountSetupAccountType"
