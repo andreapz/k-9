@@ -5,7 +5,7 @@
     <item android:bottom="0dp">
         <bitmap
             android:gravity="center"
-            android:src="@drawable/t_logo_header" />
+            android:src="@drawable/splash" />
     </item>
     <!--<item android:bottom="100dp">-->
     <!--<bitmap-->

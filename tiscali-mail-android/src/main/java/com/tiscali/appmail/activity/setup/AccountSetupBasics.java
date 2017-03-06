@@ -89,6 +89,13 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_setup_basics);
+
+        // logo too big
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setIcon(ContextCompat.getDrawable(this, R.drawable.t_logo_header));
+
+
         mEmailView = (EditText) findViewById(R.id.account_email);
         TextView emailDomainTv = (TextView) findViewById(R.id.account_domain);
         mPasswordView = (EditText) findViewById(R.id.account_password);
@@ -106,9 +113,6 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
 
         ((K9) getApplication()).getComponent().inject(this);
         mLogManager.track(R.string.com_tiscali_appmail_Login);
-
-        getSupportActionBar().setLogo(ContextCompat.getDrawable(this, R.drawable.t_logo_header));
-
     }
 
     private void initializeViewListeners() {
