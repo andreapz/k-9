@@ -90,6 +90,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -1990,7 +1991,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             // } else {
             // view.setBackgroundColor(Color.TRANSPARENT);
             // }
-            view.setBackgroundColor(Color.TRANSPARENT);
+            if (selected) {
+                view.setBackgroundColor(
+                        ContextCompat.getColor(mContext, R.color.colorItemSelected));
+            } else {
+                view.setBackgroundColor(Color.TRANSPARENT);
+            }
 
             if (mActiveMessage != null) {
                 String uid = cursor.getString(UID_COLUMN);
