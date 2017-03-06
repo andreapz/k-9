@@ -94,8 +94,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.AbsoluteSizeSpan;
@@ -1923,18 +1925,27 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             int threadCount = (mThreadedList) ? cursor.getInt(THREAD_COUNT_COLUMN) : 0;
 
-            String subject = cursor.getString(SUBJECT_COLUMN);
-            if (TextUtils.isEmpty(subject)) {
-                subject = getString(R.string.general_no_subject);
+            String subjectString = cursor.getString(SUBJECT_COLUMN);
+            if (TextUtils.isEmpty(subjectString)) {
+                subjectString = getString(R.string.general_no_subject);
             } else if (threadCount > 1) {
                 // If this is a thread, strip the RE/FW from the subject. "Be like Outlook."
-                subject = Utility.stripSubject(subject);
+                subjectString = Utility.stripSubject(subjectString);
             }
 
             boolean read = (cursor.getInt(READ_COLUMN) == 1);
             boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
             boolean answered = (cursor.getInt(ANSWERED_COLUMN) == 1);
             boolean forwarded = (cursor.getInt(FORWARDED_COLUMN) == 1);
+
+            String boldSubject = "<b>" + subjectString + "</b>";;
+            subjectString = read ? subjectString : boldSubject;
+            Spanned subject;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                subject = Html.fromHtml(subjectString, Html.FROM_HTML_MODE_LEGACY);
+            } else {
+                subject = Html.fromHtml(subjectString);
+            }
 
             boolean hasAttachments = (cursor.getInt(ATTACHMENT_COUNT_COLUMN) > 0);
 
@@ -1944,7 +1955,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             long uniqueId = cursor.getLong(mUniqueIdColumn);
             boolean selected = mSelected.contains(uniqueId);
-
 
             holder.chip.setBackgroundColor(account.getChipColor());
 
