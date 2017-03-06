@@ -2479,8 +2479,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 } else {
                     final Account account = getItem(position);
                     // icon
-                    accountViewHolder.mAccountIconIv
-                            .setImageResource(R.drawable.ic_email_black_24dp);
+                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_email_grey);
 
                     // Name
                     if (mAccount.getEmail() != null) {
