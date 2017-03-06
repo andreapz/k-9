@@ -127,7 +127,8 @@ public class Account implements BaseAccount, StoreConfig {
     };
 
     // if this color changes, change R.color.colorStar too
-    private static final int STAR_COLOR = Color.parseColor("#FFB734");
+    // private static final int STAR_COLOR = Color.parseColor("#FFB734");
+    private static final int STAR_COLOR = Color.parseColor("#0098A7");
 
     public enum SortType {
         SORT_DATE(R.string.sort_earliest_first, R.string.sort_latest_first, false), SORT_ARRIVAL(
