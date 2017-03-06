@@ -543,6 +543,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private void removeMessageListFragment() {
         if (mMessageListFragment != null) {
+            mMessageListFragment.removeActionMode();
             FragmentTransaction ft = mActivity.getFragmentManager().beginTransaction();
             ft.remove(mMessageListFragment);
             mMessageListFragment = null;
