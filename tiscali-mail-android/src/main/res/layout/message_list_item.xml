@@ -3,6 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
+    android:paddingTop="@dimen/margin_standard_8dp"
+    android:paddingBottom="@dimen/mail_list_item_bottom_padding"
     android:layout_gravity="center_vertical">
 
     <View
