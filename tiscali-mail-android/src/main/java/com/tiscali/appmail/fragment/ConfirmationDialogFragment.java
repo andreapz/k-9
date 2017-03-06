@@ -122,7 +122,10 @@ public class ConfirmationDialogFragment extends DialogFragment
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        mListener = (ConfirmationDialogFragmentListener) getActivity();
+        if (getActivity() instanceof ConfirmationDialogFragmentListener) {
+            mListener = (ConfirmationDialogFragmentListener) getActivity();
+
+        }
         super.onActivityCreated(savedInstanceState);
     }
 
