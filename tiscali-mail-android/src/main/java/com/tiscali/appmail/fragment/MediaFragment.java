@@ -484,16 +484,19 @@ public class MediaFragment extends Fragment {
                 mFragmentListener.enableActionBarProgress(false);
             }
             if (mType.equals(MediaPresenter.Type.OFFERS)) {
-                String title = view.getTitle();
-                if (title.contains(" ")) {
-                    title = title.substring(0, title.indexOf(" "));
-                }
-                String titleEncode = title.replaceAll("%20", " ");
-                if (!titleEncode.equals("about:blank")) {
-                    if (mFragmentListener != null) {
-                        mFragmentListener.setPageTitle(titleEncode);
+                if (view.getTitle() != null) {
+                    String title = view.getTitle();
+                    if (title.contains(" ")) {
+                        title = title.substring(0, title.indexOf(" "));
+                    }
+                    String titleEncode = title.replaceAll("%20", " ");
+                    if (!titleEncode.equals("about:blank")) {
+                        if (mFragmentListener != null) {
+                            mFragmentListener.setPageTitle(titleEncode);
+                        }
                     }
                 }
+
 
             } else {
                 view.loadUrl(JAVASCRIPT_TISCALI_APP_GET_TITLE);
