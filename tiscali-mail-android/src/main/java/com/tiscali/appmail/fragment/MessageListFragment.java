@@ -1864,23 +1864,24 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             if (mSenderAboveSubject) {
                 holder.from = (TextView) view.findViewById(R.id.subject);
-                mFontSizes.setViewTextSize(holder.from, mFontSizes.getMessageListSender());
+                // mFontSizes.setViewTextSize(holder.from, mFontSizes.getMessageListSender());
 
             } else {
                 holder.subject = (TextView) view.findViewById(R.id.subject);
-                mFontSizes.setViewTextSize(holder.subject, mFontSizes.getMessageListSubject());
+                // mFontSizes.setViewTextSize(holder.subject, mFontSizes.getMessageListSubject());
 
             }
 
-            mFontSizes.setViewTextSize(holder.date, mFontSizes.getMessageListDate());
+            // mFontSizes.setViewTextSize(holder.date, mFontSizes.getMessageListDate());
 
 
             // 1 preview line is needed even if it is set to 0, because subject is part of the same
             // text view
             holder.preview.setLines(Math.max(mPreviewLines, 1));
-            mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
+            // mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
             holder.threadCount = (TextView) view.findViewById(R.id.thread_count);
-            mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject()); // thread
+            // mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject());
+            // // thread
             // count
             // is
             // next
@@ -1895,7 +1896,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             holder.selected = (CheckBox) view.findViewById(R.id.selected_checkbox);
             holder.selected.setOnClickListener(holder);
-
 
             view.setTag(holder);
 

@@ -85,6 +85,14 @@
 
     </style>
 
+    <style name="RobotoRegular16" parent="RobotoRegular">
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="RobotoRegular14" parent="RobotoRegular">
+        <item name="android:textSize">14sp</item>
+    </style>
+
     <style name="RobotoRegular14White" parent="RobotoRegular">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">14sp</item>
