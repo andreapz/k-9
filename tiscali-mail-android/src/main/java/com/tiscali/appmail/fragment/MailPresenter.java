@@ -159,8 +159,6 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private int mLastDirection = (K9.messageViewShowNext()) ? NEXT : PREVIOUS;
 
-    private boolean isMediaListFragmentAttached = false;
-
     /**
      * {@code true} when the message list was displayed once. This is used in
      * {@link # onBackPressed()} to decide whether to go from the message view to the message list
@@ -545,7 +543,12 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
 
     private void removeMessageListFragment() {
         if (mMessageListFragment != null) {
-            hideFragment(mMessageListFragment);
+            mMessageListFragment.removeActionMode();
+            FragmentTransaction ft = mActivity.getFragmentManager().beginTransaction();
+            ft.remove(mMessageListFragment);
+            mMessageListFragment = null;
+            ft.commit();
+            // hideFragment(mMessageListFragment);
         }
     }
 
@@ -563,23 +566,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (!hasMessageListFragment) {
             mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
                     (K9.isThreadedViewEnabled() && !mNoThreading));
-        }
-
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        if (isMediaListFragmentAttached) {
-            ft.show(mMessageListFragment);
-        } else {
-            Fragment f = fragmentManager.findFragmentById(R.id.message_list_container);
-
-            if (f instanceof MessageListFragment) {
-                ft.remove(f);
-            }
-
+            FragmentTransaction ft = fragmentManager.beginTransaction();
             ft.add(R.id.message_list_container, mMessageListFragment);
-
-            isMediaListFragmentAttached = true;
+            ft.commit();
         }
-        ft.commit();
 
         // from notification
         if (mMessageViewFragment == null && mMessageReference != null) {
@@ -1976,7 +1966,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
     @Override
     public void checkLifeCycle() {
         if (mActionBar == null) {
-            NavigationDrawerActivity.listMessage(mActivity, mAccount.getUuid());
+            String uuid = (mAccount == null) ? null : mAccount.getUuid();
+            Log.i("APZ", "Restart activity for account:" + ((uuid == null) ? "null" : uuid));
+            NavigationDrawerActivity.listMessage(mActivity, uuid);
             mActivity.finish();
         }
     }

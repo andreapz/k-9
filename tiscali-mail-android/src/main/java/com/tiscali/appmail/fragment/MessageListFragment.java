@@ -1681,6 +1681,15 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         return AdapterView.INVALID_POSITION;
     }
 
+
+    public void removeActionMode() {
+        if (mActionMode != null) {
+            // mActionModeCallback.onDestroyActionMode(mActionMode);
+            mActionMode.finish();
+            mActionMode = null;
+        }
+    }
+
     class MessageListActivityListener extends ActivityListener {
         @Override
         public void remoteSearchFailed(String folder, final String err) {
