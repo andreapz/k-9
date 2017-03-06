@@ -112,7 +112,7 @@
             android:layout_height="@dimen/margin_standard_56dp"
             android:layout_gravity="right"
             android:src="@drawable/ic_keyboard_arrow_left_black_24dp"
-            android:background="@drawable/rounded_corners_transparent"
+            android:background="@drawable/selector_message_arrow"
             android:layout_marginRight="@dimen/margin_standard_4dp" />
 
         <ImageButton
@@ -120,7 +120,7 @@
             android:layout_width="@dimen/margin_standard_56dp"
             android:layout_height="@dimen/margin_standard_56dp"
             android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
-            android:background="@drawable/rounded_corners_transparent"
+            android:background="@drawable/selector_message_arrow"
             android:layout_marginRight="@dimen/margin_standard_4dp" />
 
     </LinearLayout>
