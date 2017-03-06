@@ -1107,9 +1107,9 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             return;
         }
 
-        if (mMessageListFragment == null) {
-            initializeFragments();
-        }
+        // if (mMessageListFragment == null) {
+        // initializeFragments();
+        // }
 
         if (mAccount != null && !mAccount.isAvailable(mActivity)) {
             onAccountUnavailable();
@@ -2017,14 +2017,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     // account settings
                     case 0:
                         AccountSettings.actionSettings(mListener.getActivity(), account);
-                        removeMessageListFragment();
+                        // removeMessageListFragment();
                         mLogManager.track(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Settings_Account));
                         break;
                     // global settings
                     case 1:
                         Prefs.actionPrefs(mListener.getActivity());
-                        removeMessageListFragment();
+                        // removeMessageListFragment();
                         mLogManager.track(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Settings_Global));
                         break;
@@ -2479,7 +2479,8 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                 } else {
                     final Account account = getItem(position);
                     // icon
-                    accountViewHolder.mAccountIconIv.setImageResource(R.drawable.ic_email_grey);
+                    accountViewHolder.mAccountIconIv
+                            .setImageResource(R.drawable.ic_email_black_24dp);
 
                     // Name
                     if (mAccount.getEmail() != null) {
