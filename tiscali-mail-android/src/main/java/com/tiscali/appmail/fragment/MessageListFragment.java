@@ -1974,22 +1974,23 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             }
 
             // Background color
-            if (selected || K9.useBackgroundAsUnreadIndicator()) {
-                int res;
-                if (selected) {
-                    res = R.attr.messageListSelectedBackgroundColor;
-                } else if (read) {
-                    res = R.attr.messageListReadItemBackgroundColor;
-                } else {
-                    res = R.attr.messageListUnreadItemBackgroundColor;
-                }
-
-                TypedValue outValue = new TypedValue();
-                getActivity().getTheme().resolveAttribute(res, outValue, true);
-                view.setBackgroundColor(outValue.data);
-            } else {
-                view.setBackgroundColor(Color.TRANSPARENT);
-            }
+            // if (selected || K9.useBackgroundAsUnreadIndicator()) {
+            // int res;
+            // if (selected) {
+            // res = R.attr.messageListSelectedBackgroundColor;
+            // } else if (read) {
+            // res = R.attr.messageListReadItemBackgroundColor;
+            // } else {
+            // res = R.attr.messageListUnreadItemBackgroundColor;
+            // }
+            //
+            // TypedValue outValue = new TypedValue();
+            // getActivity().getTheme().resolveAttribute(res, outValue, true);
+            // view.setBackgroundColor(outValue.data);
+            // } else {
+            // view.setBackgroundColor(Color.TRANSPARENT);
+            // }
+            view.setBackgroundColor(Color.TRANSPARENT);
 
             if (mActiveMessage != null) {
                 String uid = cursor.getString(UID_COLUMN);
