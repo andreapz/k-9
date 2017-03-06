@@ -50,8 +50,16 @@ abstract class BaseNotifications {
 
     protected NotificationCompat.Builder createAndInitializeNotificationBuilder(Account account) {
         return controller.createNotificationBuilder().setSmallIcon(getNewMailNotificationIcon())
-                .setColor(account.getChipColor()).setWhen(System.currentTimeMillis())
-                .setAutoCancel(true);
+                .setColor(getColor()) // account.getChipColor()
+                .setWhen(System.currentTimeMillis()).setAutoCancel(true);
+    }
+
+    private int getColor() {
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        // return ContextCompatApi23.getColor(context, id);
+        // } else {
+        return context.getResources().getColor(R.color.colorPrimary);
+        // }
     }
 
     protected boolean isDeleteActionEnabled() {
