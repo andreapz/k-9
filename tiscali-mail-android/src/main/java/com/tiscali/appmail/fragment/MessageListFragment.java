@@ -1330,15 +1330,15 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         }
     }
 
-    public void onExpunge() {
-        if (mCurrentFolder != null) {
-            onExpunge(mAccount, mCurrentFolder.name);
-        }
-    }
-
-    private void onExpunge(final Account account, String folderName) {
-        mController.expunge(account, folderName);
-    }
+    // public void onExpunge() {
+    // if (mCurrentFolder != null) {
+    // onExpunge(mAccount, mCurrentFolder.name);
+    // }
+    // }
+    //
+    // private void onExpunge(final Account account, String folderName) {
+    // mController.expunge(account, folderName);
+    // }
 
     private void showDialog(int dialogId) {
         DialogFragment fragment;
@@ -1448,12 +1448,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 onSendPendingMessages();
                 return true;
             }
-            case R.id.expunge: {
-                if (mCurrentFolder != null) {
-                    onExpunge(mAccount, mCurrentFolder.name);
-                }
-                return true;
-            }
+            // case R.id.expunge: {
+            // if (mCurrentFolder != null) {
+            // onExpunge(mAccount, mCurrentFolder.name);
+            // }
+            // return true;
+            // }
             default: {
                 return super.onOptionsItemSelected(item);
             }
@@ -2917,10 +2917,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 mActiveMessage = null;
                 break;
             }
-            case R.id.dialog_confirm_mark_all_as_read: {
-                markAllAsRead();
-                break;
-            }
+            // case R.id.dialog_confirm_mark_all_as_read: {
+            // markAllAsRead();
+            // break;
+            // }
         }
     }
 
@@ -3643,19 +3643,19 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         return mInitialized;
     }
 
-    public boolean isMarkAllAsReadSupported() {
-        return (isSingleAccountMode() && isSingleFolderMode());
-    }
-
-    public void confirmMarkAllAsRead() {
-        showDialog(R.id.dialog_confirm_mark_all_as_read);
-    }
-
-    public void markAllAsRead() {
-        if (isMarkAllAsReadSupported()) {
-            mController.markAllMessagesRead(mAccount, mFolderName);
-        }
-    }
+    // public boolean isMarkAllAsReadSupported() {
+    // return (isSingleAccountMode() && isSingleFolderMode());
+    // }
+    //
+    // public void confirmMarkAllAsRead() {
+    // showDialog(R.id.dialog_confirm_mark_all_as_read);
+    // }
+    //
+    // public void markAllAsRead() {
+    // if (isMarkAllAsReadSupported()) {
+    // mController.markAllMessagesRead(mAccount, mFolderName);
+    // }
+    // }
 
     public boolean isCheckMailSupported() {
         return (mAllAccounts || !isSingleAccountMode() || !isSingleFolderMode()
