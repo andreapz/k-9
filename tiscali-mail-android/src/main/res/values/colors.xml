@@ -11,7 +11,8 @@
     <!--<color name="colorItemSelected">#E1F0F1</color>-->
     <color name="colorItemSelected">#CCEAED</color>
     <!-- if this changesm change Account.STAR_COLOR too -->
-    <color name="colorStar">#FFB734</color>
+    <!--<color name="colorStar">#FFB734</color>-->
+    <color name="colorStar">@color/colorPrimary</color>
 
 
     <!-- dots inactive colors -->
