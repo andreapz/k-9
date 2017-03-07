@@ -330,18 +330,111 @@ public class UI_NavigationDrawerActivity_Test {
     }
 
     @Test
-    public void mailOptionMenu() {
+    public void mailOptionMenuOrder() {
+
+        // test mailOptionMenuOrderAtFolder Inbox
+        mailOptionMenuOrderAtFolder(1);
+        // test mailOptionMenuOrderAtFolder Bozze
+        mailOptionMenuOrderAtFolder(2);
+        // test mailOptionMenuOrderAtFolder In Uscita
+        mailOptionMenuOrderAtFolder(3);
+        // test mailOptionMenuOrderAtFolder Inviata
+        mailOptionMenuOrderAtFolder(4);
+        // test mailOptionMenuOrderAtFolder Spam
+        mailOptionMenuOrderAtFolder(5);
+        // test mailOptionMenuOrderAtFolder Trash
+        mailOptionMenuOrderAtFolder(6);
+        // test mailOptionMenuOrderAtFolder Archive
+        mailOptionMenuOrderAtFolder(7);
+    }
+
+    public void mailOptionMenuOrderAtFolder(int position) {
+
         onView(withId(R.id.menu_mail)).perform(click());
 
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
 
-        // verify voice sort
+        onView(withId(R.id.left_drawer))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(position, click()));
+
+
+        // verify voice sort by Date
 
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
 
         SystemClock.sleep(1000);
         onView(withText(R.string.sort_by)).perform(click());
         onView(withText(R.string.sort_by_date)).perform(click());
         SystemClock.sleep(1000);
+
+        // verify voice sort by Arrive time
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_arrival)).perform(click());
+        SystemClock.sleep(1000);
+
+
+        // verify voice sort by Subject
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_subject)).perform(click());
+        SystemClock.sleep(1000);
+
+        // verify voice sort by Sender
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_sender)).perform(click());
+        SystemClock.sleep(1000);
+
+        // verify voice sort by Unread
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_unread)).perform(click());
+        SystemClock.sleep(1000);
+
+        // verify voice sort by flag
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_flag)).perform(click());
+        SystemClock.sleep(1000);
+
+        // verify voice sort by attach
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.sort_by)).perform(click());
+        onView(withText(R.string.sort_by_attach)).perform(click());
+        SystemClock.sleep(1000);
+
+
+
+    }
+
+    @Test
+    public void mailOptionMenuSelectAllAndDelete() {
+
+        onView(withId(R.id.menu_mail)).perform(click());
+
 
         // verify voice select all and delete
 
@@ -364,12 +457,86 @@ public class UI_NavigationDrawerActivity_Test {
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
 
         SystemClock.sleep(1000);
+        onView(withText(R.string.batch_select_all)).perform(click());
         onView(withText(R.string.mark_all_as_read)).perform(click());
 
         mDevice.pressBack();
 
 
     }
+
+    @Test
+    public void mailOptionMenuSelectAllAndMarkAsRead() {
+
+        onView(withId(R.id.menu_mail)).perform(click());
+
+
+        // verify voice select all and delete
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.batch_select_all)).perform(click());
+
+
+        SystemClock.sleep(1000);
+
+        onView(withId(R.id.mark_as_read)).perform(click());
+
+
+        mDevice.pressBack();
+
+
+    }
+
+    @Test
+    public void mailOptionMenuSelectAllAndArchive() {
+
+        onView(withId(R.id.menu_mail)).perform(click());
+
+
+        // verify voice select all and delete
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.batch_select_all)).perform(click());
+
+        SystemClock.sleep(1000);
+
+        onView(withId(R.id.search)).perform(click());
+
+        mDevice.pressBack();
+
+
+    }
+
+    // @Test
+    // public void mailOptionMenuSelectAllAndRemoveFlag() throws UiObjectNotFoundException {
+    //
+    // onView(withId(R.id.menu_mail)).perform(click());
+    //
+    //
+    // // verify voice select all and delete
+    //
+    // openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+    //
+    // SystemClock.sleep(1000);
+    // onView(withText(R.string.batch_select_all)).perform(click());
+    //
+    // SystemClock.sleep(1000);
+    //
+    //
+    // openContextualActionModeOverflowMenu();
+    //
+    // SystemClock.sleep(1000);
+    //
+    // onView(withText(R.string.unflag_action)).perform(click());
+    //
+    //
+    //
+    // }
+
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
             final int childPosition) {
