@@ -320,6 +320,7 @@ public abstract class MediaPresenter
 
     private void removeMediaFragment() {
         if (mMediaViewFragment != null) {
+            mMediaViewFragment.resetHandler();
             mMediaViewFragment.mWebView.setVisibility(View.INVISIBLE);
             hideFragment(mMediaViewFragment);
         }
@@ -327,6 +328,7 @@ public abstract class MediaPresenter
 
     private void removeDetailFragment() {
         if (mMediaDetailFragment != null) {
+            mMediaDetailFragment.resetHandler();
             mMediaDetailFragment.mWebView.loadUrl("about:blank");
             removeFragment(mMediaDetailFragment);
             mMediaDetailFragment = null;
