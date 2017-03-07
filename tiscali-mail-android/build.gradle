@@ -102,8 +102,8 @@ android {
     int K9_VERSION_CODE = 23113
     String K9_VERSION_NAME = '5.114'
 
-    int VERSION_CODE = 205
-    String VERSION_NAME = "2.0.5.0"
+    int VERSION_CODE = appVersionCode.toInteger()
+    String VERSION_NAME = appVersionName
 
     defaultConfig {
         applicationId "com.tiscali.appmail"
@@ -189,7 +189,6 @@ android {
             java.srcDirs = ['src/androidTest/java/']
         }
     }
-
 }
 
 if (project.hasProperty('keyAlias')) {
