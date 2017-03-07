@@ -133,7 +133,7 @@
 
         <CheckBox
             android:id="@+id/flagged_center_right"
-            style="?android:attr/starStyle"
+            android:button="@drawable/star_selector"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
@@ -160,7 +160,7 @@
 
         <CheckBox
             android:id="@+id/flagged_bottom_right"
-            style="?android:attr/starStyle"
+            android:button="@drawable/star_selector"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_below="@+id/date"

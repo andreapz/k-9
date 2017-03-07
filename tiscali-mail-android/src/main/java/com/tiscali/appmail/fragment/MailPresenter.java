@@ -2278,8 +2278,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                             .setText(String.format("+%d", MAX_MESSAGES_COUNT));
                 }
 
-                mailViewHolder.mFlaggedMessageCountIconIv.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false, true).drawable());
+                // mailViewHolder.mFlaggedMessageCountIconIv.setBackgroundDrawable(
+                // mAccount.generateColorChip(false, false, false, false, true).drawable());
+                mailViewHolder.mFlaggedMessageCountIconIv
+                        .setImageResource(R.drawable.ic_action_flag_yellow);
                 mailViewHolder.mFlaggedMessageCountWrapperV
                         .setOnClickListener(new View.OnClickListener() {
                             @Override

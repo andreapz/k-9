@@ -126,10 +126,6 @@ public class Account implements BaseAccount, StoreConfig {
             Color.parseColor("#9933CC") // purple
     };
 
-    // if this color changes, change R.color.colorStar too
-    // private static final int STAR_COLOR = Color.parseColor("#FFB734");
-    private static final int STAR_COLOR = Color.parseColor("#0098A7");
-
     public enum SortType {
         SORT_DATE(R.string.sort_earliest_first, R.string.sort_latest_first, false), SORT_ARRIVAL(
                 R.string.sort_earliest_first, R.string.sort_latest_first,
@@ -865,8 +861,8 @@ public class Account implements BaseAccount, StoreConfig {
     public synchronized void cacheChips() {
         mReadColorChip = new ColorChip(mChipColor, true, ColorChip.CIRCULAR);
         mUnreadColorChip = new ColorChip(mChipColor, false, ColorChip.CIRCULAR);
-        mFlaggedReadColorChip = new ColorChip(STAR_COLOR, true, ColorChip.STAR);
-        mFlaggedUnreadColorChip = new ColorChip(STAR_COLOR, false, ColorChip.STAR);
+        mFlaggedReadColorChip = new ColorChip(mChipColor, true, ColorChip.STAR);
+        mFlaggedUnreadColorChip = new ColorChip(mChipColor, false, ColorChip.STAR);
     }
 
     public synchronized int getChipColor() {
