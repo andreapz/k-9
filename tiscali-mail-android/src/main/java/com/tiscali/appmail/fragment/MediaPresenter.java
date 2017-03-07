@@ -907,9 +907,6 @@ public abstract class MediaPresenter
                 // Icon
                 if (item.getIco() != null) {
                     itemViewHolder.mItemIconIv.setVisibility(View.VISIBLE);
-                    // FIXME remove the next line after new icons release
-                    itemViewHolder.mItemIconIv
-                            .setColorFilter(ContextCompat.getColor(mContext, R.color.colorPrimary));
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         if (itemViewHolder.itemView.isSelected()) {
                             itemViewHolder.mItemIconIv.setImageAlpha(255);
