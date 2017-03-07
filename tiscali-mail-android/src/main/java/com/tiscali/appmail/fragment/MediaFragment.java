@@ -344,6 +344,13 @@ public class MediaFragment extends Fragment {
 
     }
 
+    public void resetHandler() {
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        }
+
+    }
+
     public void getSharable() {
         if (mWebView != null) {
             mWebView.loadUrl(JAVASCRIPT_TISCALI_APP_IS_SHAREABLE);
