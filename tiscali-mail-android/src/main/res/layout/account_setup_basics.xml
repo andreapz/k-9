@@ -30,10 +30,11 @@
                     android:id="@+id/account_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:inputType="text"
                     android:gravity="bottom"
                     android:hint="@string/account_setup_basics_email_hint"
                     android:layout_toLeftOf="@+id/account_domain"
-                    android:maxLines="1"
+                    android:lines="1"
                     style="@style/Body1Style" />
 
                 <TextView
@@ -50,7 +51,7 @@
                 android:id="@+id/account_password"
                 android:inputType="textPassword"
                 android:hint="@string/account_setup_basics_password_hint"
-                android:maxLines="1"
+                android:lines="1"
                 android:layout_height="wrap_content"
                 android:layout_width="fill_parent"
                 android:nextFocusDown="@+id/next"
