@@ -532,8 +532,12 @@ public abstract class MediaPresenter
             setActionBarToggle();
             mLogManager.track(getCurrentPageId());
         } else {
-            setActionBarUp();
-            mLogManager.track(mMediaDetailFragment.getUrl());
+
+            if (mMediaDetailFragment != null) {
+                setActionBarUp();
+                mLogManager.track(mMediaDetailFragment.getUrl());
+            }
+
         }
     }
 
