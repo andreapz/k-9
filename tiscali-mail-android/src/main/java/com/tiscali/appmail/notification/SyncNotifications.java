@@ -76,7 +76,8 @@ class SyncNotifications {
 
         NotificationCompat.Builder builder = controller.createNotificationBuilder()
                 .setSmallIcon(R.drawable.ic_notify_check_mail).setWhen(System.currentTimeMillis())
-                .setOngoing(true).setTicker(tickerText).setContentTitle(title).setContentText(text)
+                .setColor(context.getResources().getColor(R.color.colorPrimary)).setOngoing(true)
+                .setTicker(tickerText).setContentTitle(title).setContentText(text)
                 .setContentIntent(showMessageListPendingIntent)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
