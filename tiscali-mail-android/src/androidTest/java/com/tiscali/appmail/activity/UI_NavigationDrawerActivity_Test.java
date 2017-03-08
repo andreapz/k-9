@@ -14,11 +14,15 @@ import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isNotChecked;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.support.test.espresso.web.sugar.Web.onWebView;
 import static junit.framework.Assert.assertNotNull;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
@@ -511,31 +515,32 @@ public class UI_NavigationDrawerActivity_Test {
 
     }
 
-    // @Test
-    // public void mailOptionMenuSelectAllAndRemoveFlag() throws UiObjectNotFoundException {
-    //
-    // onView(withId(R.id.menu_mail)).perform(click());
-    //
-    //
-    // // verify voice select all and delete
-    //
-    // openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
-    //
-    // SystemClock.sleep(1000);
-    // onView(withText(R.string.batch_select_all)).perform(click());
-    //
-    // SystemClock.sleep(1000);
-    //
-    //
-    // openContextualActionModeOverflowMenu();
-    //
-    // SystemClock.sleep(1000);
-    //
-    // onView(withText(R.string.unflag_action)).perform(click());
-    //
-    //
-    //
-    // }
+    @Test
+    public void mailOptionMenuSelectAllAndRemoveFlag() {
+
+        onView(withId(R.id.menu_mail)).perform(click());
+
+
+        // verify voice select all and delete
+
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        SystemClock.sleep(1000);
+        onView(withText(R.string.batch_select_all)).perform(click());
+
+        SystemClock.sleep(1000);
+
+        onView(withIndex(anyOf(allOf(isDisplayed(), withClassName(endsWith("OverflowMenuButton")))),
+                1)).perform(click());
+
+
+        SystemClock.sleep(1000);
+
+        onView(withText(R.string.flag_action)).perform(click());
+
+
+
+    }
 
 
     public static Matcher<View> nthChildOf(final Matcher<View> parentMatcher,
