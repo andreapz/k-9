@@ -2214,52 +2214,59 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                             ContextCompat.getColor(mActivity, android.R.color.transparent));
                 }
 
-                int resId;
+                int checkedResId;
+                int uncheckedResId;
                 // header at position 0
                 switch (position) {
                     // inbox
                     case 1:
-                        resId = R.drawable.inbox;
+                        checkedResId = R.drawable.inbox;
+                        uncheckedResId = R.drawable.inbox_grey;
                         break;
                     // drafts
                     case 2:
-                        resId = R.drawable.drafts;
+                        checkedResId = R.drawable.drafts;
+                        uncheckedResId = R.drawable.drafts_grey;
                         break;
                     // outbox
                     case 3:
-                        resId = R.drawable.outbox;
+                        checkedResId = R.drawable.outbox;
+                        uncheckedResId = R.drawable.outbox_grey;
                         break;
                     // sent
                     case 4:
-                        resId = R.drawable.sent;
+                        checkedResId = R.drawable.sent;
+                        uncheckedResId = R.drawable.sent_grey;
                         break;
                     // spam
                     case 5:
-                        resId = R.drawable.spam;
+                        checkedResId = R.drawable.spam;
+                        uncheckedResId = R.drawable.spam_grey;
                         break;
                     // trash
                     case 6:
-                        resId = R.drawable.trash;
+                        checkedResId = R.drawable.trash;
+                        uncheckedResId = R.drawable.trash_grey;
                         break;
                     case 7:
                         // archive
-                        resId = R.drawable.archive;
+                        checkedResId = R.drawable.archive;
+                        uncheckedResId = R.drawable.archive_grey;
                         break;
                     // custom folder
                     default:
-                        resId = R.drawable.custom_folder;
+                        checkedResId = R.drawable.custom_folder;
+                        uncheckedResId = R.drawable.custom_folder_grey;
                         break;
 
                 }
-                mailViewHolder.mFolderIconIv.setImageResource(resId);
+
                 float opacity;
                 if (mailViewHolder.itemView.isSelected()) {
-                    mailViewHolder.mFolderIconIv.setColorFilter(
-                            ContextCompat.getColor(mActivity, android.R.color.transparent));
+                    mailViewHolder.mFolderIconIv.setImageResource(checkedResId);
                     opacity = 1.0f;
                 } else {
-                    mailViewHolder.mFolderIconIv.setColorFilter(
-                            ContextCompat.getColor(mActivity, android.R.color.black));
+                    mailViewHolder.mFolderIconIv.setImageResource(uncheckedResId);
                     opacity = 0.54f;
                 }
                 mailViewHolder.mFolderIconIv.setAlpha(opacity);
