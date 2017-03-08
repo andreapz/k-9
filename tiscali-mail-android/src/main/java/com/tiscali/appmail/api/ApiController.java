@@ -146,11 +146,11 @@ public class ApiController {
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .client(mHttpAuthorizeClient).callbackExecutor(new Executor() {
-                @Override
-                public void execute(Runnable runnable) {
-                    runnable.run();
-                }
-            }).build();
+                        @Override
+                        public void execute(Runnable runnable) {
+                            runnable.run();
+                        }
+                    }).build();
 
     private OkHttpClient mHttpApiClient = new OkHttpClient.Builder()
             .addInterceptor(mLoggingInterceptor).addInterceptor(mInterceptor).build();
@@ -228,16 +228,21 @@ public class ApiController {
         if (mMainConfig == null) {
             return null;
         }
-        return apiClient().postPushActivate(
-                mMainConfig.getEndpoints().getPushnotificationActivate().getUrl(), otp).retry(RETRY_COUNT);
+        return apiClient()
+                .postPushActivate(mMainConfig.getEndpoints().getPushnotificationActivate().getUrl(),
+                        otp)
+                .retry(RETRY_COUNT);
     }
 
-    public Observable<DeviceRegister> postPushRegister(String token, String platform, String environment) {
+    public Observable<DeviceRegister> postPushRegister(String token, String platform,
+            String environment) {
         if (mMainConfig == null) {
             return null;
         }
-        return apiClient().postPushRegister(mMainConfig.getEndpoints().getAccountRegister().getUrl(),
-                token, platform, environment).retry(RETRY_COUNT);
+        return apiClient()
+                .postPushRegister(mMainConfig.getEndpoints().getAccountRegister().getUrl(), token,
+                        platform, environment)
+                .retry(RETRY_COUNT);
     }
 
     private Observable<UserLogin> getMe() {
@@ -279,8 +284,7 @@ public class ApiController {
                 authorizeApi(true);
             }
 
-            String userLogin = mStorage
-                    .getString(mMainConfig.getEndpoints().getAccountUserLogin().getUrl(), "");
+            String userLogin = mStorage.getString(RESPONSE_ME, "");
             if (userLogin.length() > 0) {
                 Gson gson = new Gson();
                 mUserLogin = gson.fromJson(userLogin, UserLogin.class);
@@ -289,8 +293,7 @@ public class ApiController {
 
         getConfig().subscribe(new Subscriber<MainConfig>() {
             @Override
-            public void onCompleted() {
-            }
+            public void onCompleted() {}
 
             @Override
             public void onError(Throwable e) {
@@ -355,8 +358,10 @@ public class ApiController {
     }
 
 
-    public void pushRegister(String token, String platform, String environment, Action1<DeviceRegister> success) {
-        Observable<DeviceRegister> postPushRegister = postPushRegister(token, platform, environment);
+    public void pushRegister(String token, String platform, String environment,
+            Action1<DeviceRegister> success) {
+        Observable<DeviceRegister> postPushRegister =
+                postPushRegister(token, platform, environment);
 
         if (postPushRegister != null) {
             postPushRegister.subscribe(new SubscriberDeviceRegister(success));
@@ -381,7 +386,7 @@ public class ApiController {
 
 
     public void sectionFave(String sectionId, boolean isSelected, Action1<UserLogin> success,
-                            Action1<UserLogin> error) {
+            Action1<UserLogin> error) {
         Observable<UserLogin> postSectionFave = postSectionFave(sectionId, isSelected);
 
         if (postSectionFave != null) {
@@ -507,8 +512,7 @@ public class ApiController {
 
         private ResponseHeaderListener mListener;
 
-        public ResponseHeaderInterceptor() {
-        }
+        public ResponseHeaderInterceptor() {}
 
         public ResponseHeaderInterceptor(ResponseHeaderListener listener) {
             mListener = listener;
