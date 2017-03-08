@@ -13,6 +13,7 @@ import com.tiscali.appmail.helper.NetworkHelper;
 import com.tiscali.appmail.view.ObservableWebView;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
@@ -28,6 +29,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -451,6 +454,21 @@ public class MediaFragment extends Fragment {
     }
 
     private class TiscaliWebClient extends WebViewClient {
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description,
+                String failingUrl) {
+            view.loadUrl("about:blank");
+        }
+
+        @TargetApi(android.os.Build.VERSION_CODES.M)
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
+            // Redirect to deprecated method, so you can use it in all SDK versions
+            onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(),
+                    req.getUrl().toString());
+        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
