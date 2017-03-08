@@ -16,7 +16,7 @@
 
     <!--Welcome message-->
     <string name="welcome_message_title">Benvenuto in Tiscali.it</string>
-  <string name="accounts_welcome"><![CDATA[
+    <string name="accounts_welcome"><![CDATA[
 <p>
 Tiscali.it è un potente client di posta libero e gratuito per Android.
 </p><p>
@@ -158,7 +158,7 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="status_invalid_id_error">Messaggio non trovato</string>
     <string name="status_loading_error">Errore di caricamento dei messaggi</string>
     <string name="status_loading_more_failed">Riprova a caricare altri messaggi</string>
-  <string name="load_more_messages_fmt">Scarica altri 
+    <string name="load_more_messages_fmt">Scarica altri
 <xliff:g id="messages_to_load">%d</xliff:g> messaggi</string>
     <string name="abbrev_gigabytes">GB</string>
     <string name="abbrev_megabytes">MB</string>
@@ -1040,4 +1040,11 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="contacts_change_permission_message_dialog">Non puoi selezionare il destinatario della email. Per favore consenti l\'accesso ai contatti</string>
     <string name="write_external_permission_message_dialog">Consenti di accedere alla memoria per poter salvare il file</string>
     <string name="write_external_change_permission_message_dialog">Non puoi salvare il file. Per favore consenti l\'accesso alla memoria</string>
+    <string name="media_http_404"><![CDATA[
+<p style="font-size: 10em;font-family: sans-serif;text-align: center; color: #0098a7;">
+Tiscali.it
+</p><p style="font-size: 6em;font-family: sans-serif;text-align: center;">
+La pagina non &egrave; attualmente disponibile
+</p>
+    ]]></string>
 </resources>
