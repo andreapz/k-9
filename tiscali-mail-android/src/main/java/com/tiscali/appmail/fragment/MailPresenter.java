@@ -2214,14 +2214,55 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                             ContextCompat.getColor(mActivity, android.R.color.transparent));
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    // icon
-                    if (mailViewHolder.itemView.isSelected()) {
-                        mailViewHolder.mFolderIconIv.setImageAlpha(255);
-                    } else {
-                        mailViewHolder.mFolderIconIv.setImageAlpha(138);
-                    }
+                int resId;
+                // header at position 0
+                switch (position) {
+                    // inbox
+                    case 1:
+                        resId = R.drawable.inbox;
+                        break;
+                    // drafts
+                    case 2:
+                        resId = R.drawable.drafts;
+                        break;
+                    // outbox
+                    case 3:
+                        resId = R.drawable.outbox;
+                        break;
+                    // sent
+                    case 4:
+                        resId = R.drawable.sent;
+                        break;
+                    // spam
+                    case 5:
+                        resId = R.drawable.spam;
+                        break;
+                    // trash
+                    case 6:
+                        resId = R.drawable.trash;
+                        break;
+                    case 7:
+                        // archive
+                        resId = R.drawable.archive;
+                        break;
+                    // custom folder
+                    default:
+                        resId = R.drawable.custom_folder;
+                        break;
+
                 }
+                mailViewHolder.mFolderIconIv.setImageResource(resId);
+                float opacity;
+                if (mailViewHolder.itemView.isSelected()) {
+                    mailViewHolder.mFolderIconIv.setColorFilter(
+                            ContextCompat.getColor(mActivity, android.R.color.transparent));
+                    opacity = 1.0f;
+                } else {
+                    mailViewHolder.mFolderIconIv.setColorFilter(
+                            ContextCompat.getColor(mActivity, android.R.color.black));
+                    opacity = 0.54f;
+                }
+                mailViewHolder.mFolderIconIv.setAlpha(opacity);
 
                 // Title
                 if (folder.displayName != null) {
