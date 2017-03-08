@@ -459,8 +459,10 @@ public class MediaFragment extends Fragment {
         @Override
         public void onReceivedError(WebView view, int errorCode, String description,
                 String failingUrl) {
-            view.loadData(getActivity().getResources().getString(R.string.media_http_404),
-                    "text/html", "UTF-8");
+
+            String html = getActivity().getResources().getString(R.string.media_http_404);
+            view.loadData(html, "text/html", "UTF-8");
+
         }
 
         @TargetApi(android.os.Build.VERSION_CODES.M)

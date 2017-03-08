@@ -516,6 +516,15 @@ public class NavigationDrawerActivity extends K9Activity
                                             CaptivePortalHelper.getInstance(getApplicationContext())
                                                     .showLoginWebView();
                                         }
+                                        if (mNewsPresenter != null) {
+                                            mNewsPresenter.networkConnectivityChange();
+                                        }
+                                        if (mVideoPresenter != null) {
+                                            mVideoPresenter.networkConnectivityChange();
+                                        }
+                                        if (mOffersPresenter != null) {
+                                            mOffersPresenter.networkConnectivityChange();
+                                        }
                                     }
 
                                     @Override
