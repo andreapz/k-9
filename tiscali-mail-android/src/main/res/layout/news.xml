@@ -3,6 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <FrameLayout
+        android:id="@+id/webview_empty"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            style="@style/RobotoRegular16"
+            android:layout_marginTop="@dimen/action_bar_offset"
+            android:text="@string/media_http_404" />
+    </FrameLayout>
+
     <com.tiscali.appmail.view.ObservableWebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
