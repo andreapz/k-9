@@ -632,7 +632,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         DialogFragment fragment = (DialogFragment) fm.findFragmentByTag(getDialogTag(dialogId));
 
         if (fragment != null) {
-            fragment.dismiss();
+            fragment.dismissAllowingStateLoss();
         }
     }
 
@@ -763,6 +763,14 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
             }
         });
     }
+
+    // // post-Honeycomb: onSaveInstanceState(Bundle) is guaranteed to be called before onStop()
+    //
+    // @Override
+    // public void onStop() {
+    // super.onStop();
+    //
+    // }
 
     public void refreshAttachmentThumbnail(AttachmentViewInfo attachment) {
         // mMessageView.refreshAttachmentThumbnail(attachment);
