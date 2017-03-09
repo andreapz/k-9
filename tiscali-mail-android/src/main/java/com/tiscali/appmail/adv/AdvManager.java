@@ -57,10 +57,7 @@ public class AdvManager {
      * </p>
      */
     public void removeAdView() {
-        // if (mAdViewToAdd != null) {
-        // mAdViewToAdd.removeAdListener();
-        // }
-        if (mLinearLayout != null) {
+        if (mLinearLayout != null && mLinearLayout.getChildCount() > 0) {
             mLinearLayout.removeAllViews();
         }
         Log.i("APZ", "adv removeAllViews");
