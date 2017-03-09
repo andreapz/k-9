@@ -387,7 +387,7 @@ public class MessageCompose extends K9Activity implements OnClickListener, Cance
              * There are no accounts set up. This should not have happened. Prompt the user to set
              * up an account as an acceptable bailout.
              */
-            startActivity(new Intent(this, Accounts.class));
+            startActivity(new Intent(this, WelcomeActivity.class));
             draftNeedsSaving = false;
             finish();
             return;
@@ -591,7 +591,9 @@ public class MessageCompose extends K9Activity implements OnClickListener, Cance
     public void onDestroy() {
         super.onDestroy();
 
-        recipientPresenter.onActivityDestroy();
+        if (recipientPresenter != null) {
+            recipientPresenter.onActivityDestroy();
+        }
     }
 
     /**
@@ -676,8 +678,9 @@ public class MessageCompose extends K9Activity implements OnClickListener, Cance
                 mSubjectView.setText(subject);
             }
 
-            recipientPresenter.initFromSendOrViewIntent(intent);
-
+            if (recipientPresenter != null) {
+                recipientPresenter.initFromSendOrViewIntent(intent);
+            }
         }
 
         return startedByExternalIntent;
