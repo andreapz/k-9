@@ -6,8 +6,8 @@ import com.tiscali.appmail.BaseAccount;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
-import com.tiscali.appmail.activity.FolderList;
 import com.tiscali.appmail.activity.MessageList;
+import com.tiscali.appmail.activity.NavigationDrawerActivity;
 import com.tiscali.appmail.activity.UnreadWidgetConfiguration;
 import com.tiscali.appmail.controller.MessagingController;
 import com.tiscali.appmail.search.LocalSearch;
@@ -77,16 +77,11 @@ public class UnreadWidgetProvider extends AppWidgetProvider {
                     account = realAccount;
                     stats = realAccount.getStats(context);
 
-                    if (K9.FOLDER_NONE.equals(realAccount.getAutoExpandFolderName())) {
-                        clickIntent =
-                                FolderList.actionHandleAccountIntent(context, realAccount, false);
-                    } else {
-                        LocalSearch search = new LocalSearch(realAccount.getAutoExpandFolderName());
-                        search.addAllowedFolder(realAccount.getAutoExpandFolderName());
-                        search.addAccountUuid(account.getUuid());
-                        clickIntent =
-                                MessageList.intentDisplaySearch(context, search, false, true, true);
-                    }
+                    LocalSearch search = new LocalSearch(realAccount.getAutoExpandFolderName());
+                    search.addAllowedFolder(realAccount.getAutoExpandFolderName());
+                    search.addAccountUuid(account.getUuid());
+                    clickIntent = NavigationDrawerActivity.intentDisplaySearch(context, search,
+                            false, true, true);
                     clickIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 }
             }
