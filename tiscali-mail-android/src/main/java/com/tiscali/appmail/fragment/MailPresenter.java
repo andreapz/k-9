@@ -1442,6 +1442,10 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         if (!mStarted) {
             return false;
         }
+        if (mMenu == null) {
+            mActivity.getMenuInflater().inflate(R.menu.message_list_option, menu);
+            mMenu = menu;
+        }
 
         return configureMenu(menu);
     }
