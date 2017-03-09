@@ -1188,9 +1188,6 @@ public class NavigationDrawerActivity extends K9Activity
             mOffersPresenter.onResume();
         }
         mApiController.addListener(this);
-
-        mAdvManager.loadAdv(null, null, (LinearLayout) findViewById(R.id.banner_adv_ll),
-                mBannerMargin);
     }
 
     @Override
@@ -1536,20 +1533,12 @@ public class NavigationDrawerActivity extends K9Activity
             defaultTabIndex = OFFERS_TAB_SELECTED;
         }
 
-
-        // if (mSelectedTab == MAIL_TAB_SELECTED) {
-        // updateBannerAd(false);
-        // if (me.getAdv().getDisable().getMail().getInterstitial()) {
-        // loadInterstitialAd(me.getAdv().getDisable().getMail().getInterstitial());
-        // }
-        // } else {
-        // updateBannerAd(true);
-        // loadInterstitialAd(me.getAdv().getDisable().getAdvNews().getAll());
-        // }
-
         StorageEditor editor = Preferences.getPreferences(this).getStorage().edit();
         editor.putInt(DEFAULT_TAB_KEY, defaultTabIndex);
         editor.commit();
+
+        mAdvManager.loadAdv(null, mMe, (LinearLayout) findViewById(R.id.banner_adv_ll),
+                mBannerMargin);
     }
 
 

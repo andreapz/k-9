@@ -60,7 +60,9 @@ public class AdvManager {
         // if (mAdViewToAdd != null) {
         // mAdViewToAdd.removeAdListener();
         // }
-        mLinearLayout.removeAllViews();
+        if (mLinearLayout == null) {
+            mLinearLayout.removeAllViews();
+        }
         Log.i("APZ", "adv removeAllViews");
     }
 
@@ -90,19 +92,20 @@ public class AdvManager {
         boolean isTabletDevice = TiscaliUtility.isTablet(mActivity);
         boolean isPortraitOrientation = mActivity.getResources()
                 .getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true
-                : false;
+                        : false;
 
         String mpo = !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpo_smartphone)
                 : mActivity.getString(R.string.dotandad_adv_mpo_tablet);
         String mpt =
                 !isTabletDevice ? mActivity.getString(R.string.dotandad_adv_mpt_smartphone_head)
                         : (isPortraitOrientation
-                        ? mActivity.getString(R.string.dotandad_adv_mpt_tablet_portrait)
-                        : mActivity.getString(R.string.dotandad_adv_mpt_tablet_landscape));
+                                ? mActivity.getString(R.string.dotandad_adv_mpt_tablet_portrait)
+                                : mActivity.getString(R.string.dotandad_adv_mpt_tablet_landscape));
 
         // CID: Customer ID - MPO: Multipoint - MPT: Mediapoint
-        AdView adViewToAdd = new AdView(mActivity, //mActivity.getString(R.string.dotandad_adv_cid), mpo,
-                mpt, null); //Color.TRANSPARENT
+        AdView adViewToAdd = new AdView(mActivity, // mActivity.getString(R.string.dotandad_adv_cid),
+                                                   // mpo,
+                mpt, null); // Color.TRANSPARENT
 
         Log.i("APZ", "adv params mpo:" + mpo + " " + " mpt:" + mpt);
 
@@ -116,10 +119,10 @@ public class AdvManager {
          */
         final float originalBannerWidth = !isTabletDevice ? BANNER_WIDTH_SMARTPHONE_HEAD
                 : (isPortraitOrientation ? BANNER_WIDTH_TABLET_PORTRAIT
-                : BANNER_WIDTH_TABLET_LANDSCAPE);
+                        : BANNER_WIDTH_TABLET_LANDSCAPE);
         final float originalBannerHeight = !isTabletDevice ? BANNER_HEIGHT_SMARTPHONE_HEAD
                 : (isPortraitOrientation ? BANNER_HEIGHT_TABLET_PORTRAIT
-                : BANNER_HEIGHT_TABLET_LANDSCAPE);
+                        : BANNER_HEIGHT_TABLET_LANDSCAPE);
 
         final float formFactor = originalBannerWidth / originalBannerHeight;
         float newBannerWidth = mActivity.getResources().getDisplayMetrics().widthPixels;
@@ -180,7 +183,7 @@ public class AdvManager {
 
     @NonNull
     private AdListener getAdListener(final AdView adViewToAdd,
-                                     final LinearLayout linearLayoutAdvContainer) {
+            final LinearLayout linearLayoutAdvContainer) {
         return new AdListener() {
             @Override
             public void handleRequest(String arg0) {
@@ -293,7 +296,10 @@ public class AdvManager {
         // mSubscriber.unsubscribe();
         // }
 
-        addAdView(account);
+        if (mLinearLayout.getChildCount() == 0
+                && me.getAdv().getTiming().getMail().getShowtime() > 0) {
+            addAdView(account);
+        }
 
         // mSubscriber = Observable
         // .interval(me.getAdv().getTiming().getMail().getInterval(),
