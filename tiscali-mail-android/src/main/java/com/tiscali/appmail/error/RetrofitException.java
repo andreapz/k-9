@@ -16,8 +16,11 @@ public class RetrofitException extends RuntimeException {
     public static RetrofitException httpError(String url, Response response, Retrofit retrofit,
             int errorCode) {
         String message = String.valueOf(response.code());
-        Kind kind = Kind.HTTP_401;
+        Kind kind = Kind.NETWORK;
         switch (errorCode) {
+            case 401:
+                kind = Kind.HTTP_401;
+                break;
             case 403:
                 kind = Kind.HTTP_403;
                 break;

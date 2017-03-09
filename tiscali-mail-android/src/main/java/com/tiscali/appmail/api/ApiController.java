@@ -10,6 +10,7 @@ import java.util.concurrent.Executor;
 import com.google.gson.Gson;
 import com.tiscali.appmail.Account;
 import com.tiscali.appmail.Preferences;
+import com.tiscali.appmail.R;
 import com.tiscali.appmail.activity.setup.TiscaliAccountSetupUserPassword;
 import com.tiscali.appmail.api.model.Authorize;
 import com.tiscali.appmail.api.model.DeviceRegister;
@@ -24,6 +25,7 @@ import com.tiscali.appmail.preferences.StorageEditor;
 
 import android.app.Activity;
 import android.util.Log;
+import android.widget.Toast;
 
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -55,10 +57,6 @@ public class ApiController {
     private static final String HEADER_AUTHORIZED = "Authorized";
     private static final int RETRY_COUNT = 1;
     private static final String TAG = ApiController.class.getName();
-
-    private static final int HTTP_ERROR_401 = 401;
-    private static final int HTTP_ERROR_403 = 403;
-    private static final int HTTP_ERROR_404 = 404;
 
     private static final String HEADER_APP_ID = "app_id";
 
@@ -454,7 +452,7 @@ public class ApiController {
                 RetrofitException re = (RetrofitException) e;
                 Log.i("APITEST", "ERROR: " + re.getMessage());
 
-                if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_401) {
+                if (re.getKind() == RetrofitException.Kind.HTTP_401) {
 
                     Observable<Authorize> authorize = getAuthorize();
                     if (authorize != null) {
@@ -465,13 +463,13 @@ public class ApiController {
                             }
                         }).subscribe(new SubscriberUserLogin());
                     }
-                } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_403) {
+                } else if (re.getKind() == RetrofitException.Kind.HTTP_403) {
                     mAccount.setPassword("");
                     mAccount.save(mPrefs);
                     TiscaliAccountSetupUserPassword.actionEditUserPasswordSettings(mActivity,
                             mAccount);
                     mActivity.finish();
-                } else if (Integer.valueOf(re.getMessage()) == HTTP_ERROR_404) {
+                } else if (re.getKind() == RetrofitException.Kind.HTTP_404) {
 
                     Observable<MainConfig> config = getConfig();
                     if (config != null) {
@@ -489,9 +487,11 @@ public class ApiController {
                             }
                         }).subscribe(new SubscriberUserLogin());
                     }
-
+                } else if (re.getKind() == RetrofitException.Kind.NETWORK) {
+                    String msg = mActivity.getResources()
+                            .getString(R.string.account_setup_failed_dlg_server_message_fmt);
+                    Toast.makeText(mActivity, msg, Toast.LENGTH_LONG);
                 }
-
             }
             Log.i("APITEST", "ERROR: " + e.toString());
         }
