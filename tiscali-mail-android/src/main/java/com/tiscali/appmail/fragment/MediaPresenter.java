@@ -114,48 +114,48 @@ public abstract class MediaPresenter
     private boolean mIsExternalBrowsing = false;
 
     public void networkConnectivityChange() {
-        if (mMediaDetailFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_DETAIL)) {
-            Observable.empty().observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<Object>() {
-                        @Override
-                        public void onCompleted() {
-                            if (mMediaDetailFragment != null) {
-                                mMediaDetailFragment.updateUrl(mMediaDetailFragment.getUrl());
-                            }
-
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                        }
-
-                        @Override
-                        public void onNext(Object o) {
-                        }
-                    });
-
-        }
-        if (mMediaViewFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
-            Observable.empty().observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<Object>() {
-                        @Override
-                        public void onCompleted() {
-                            if (mMediaViewFragment != null) {
-                                mMediaViewFragment.updateUrl(mMediaViewFragment.getUrl());
-                            }
-
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                        }
-
-                        @Override
-                        public void onNext(Object o) {
-                        }
-                    });
-
-        }
+        // if (mMediaDetailFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_DETAIL)) {
+        // Observable.empty().observeOn(AndroidSchedulers.mainThread())
+        // .subscribe(new Subscriber<Object>() {
+        // @Override
+        // public void onCompleted() {
+        // if (mMediaDetailFragment != null) {
+        // mMediaDetailFragment.updateUrl(mMediaDetailFragment.getUrl());
+        // }
+        //
+        // }
+        //
+        // @Override
+        // public void onError(Throwable e) {
+        // }
+        //
+        // @Override
+        // public void onNext(Object o) {
+        // }
+        // });
+        //
+        // }
+        // if (mMediaViewFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
+        // Observable.empty().observeOn(AndroidSchedulers.mainThread())
+        // .subscribe(new Subscriber<Object>() {
+        // @Override
+        // public void onCompleted() {
+        // if (mMediaViewFragment != null) {
+        // mMediaViewFragment.updateUrl(mMediaViewFragment.getUrl());
+        // }
+        //
+        // }
+        //
+        // @Override
+        // public void onError(Throwable e) {
+        // }
+        //
+        // @Override
+        // public void onNext(Object o) {
+        // }
+        // });
+        //
+        // }
     }
 
     public enum DisplayMode {
@@ -406,12 +406,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
     }
 
@@ -421,7 +419,7 @@ public abstract class MediaPresenter
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     public void openSection(String url, boolean isHome) {
@@ -449,12 +447,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
 
     }
@@ -808,8 +804,7 @@ public abstract class MediaPresenter
             }
         };
 
-        public MediaAdapter() {
-        }
+        public MediaAdapter() {}
 
         public void setSelectedPos(String sectionId) {
 
@@ -1149,8 +1144,7 @@ public abstract class MediaPresenter
     }
 
     @Override
-    public void setStartInstanceState(Bundle savedInstanceState) {
-    }
+    public void setStartInstanceState(Bundle savedInstanceState) {}
 
 
     public void showDialogInformations() {
