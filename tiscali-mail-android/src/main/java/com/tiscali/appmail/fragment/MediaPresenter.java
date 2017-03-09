@@ -120,7 +120,7 @@ public abstract class MediaPresenter
                         @Override
                         public void onCompleted() {
                             if (mMediaDetailFragment != null) {
-                                mMediaDetailFragment.mWebView.loadUrl(mMediaDetailFragment.getUrl());
+                                mMediaDetailFragment.updateUrl(mMediaDetailFragment.getUrl());
                             }
 
                         }
@@ -141,7 +141,7 @@ public abstract class MediaPresenter
                         @Override
                         public void onCompleted() {
                             if (mMediaViewFragment != null) {
-                                mMediaViewFragment.mWebView.loadUrl(mMediaViewFragment.getUrl());
+                                mMediaViewFragment.updateUrl(mMediaViewFragment.getUrl());
                             }
 
                         }
