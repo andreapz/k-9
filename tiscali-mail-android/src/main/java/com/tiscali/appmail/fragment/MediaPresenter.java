@@ -114,48 +114,41 @@ public abstract class MediaPresenter
     private boolean mIsExternalBrowsing = false;
 
     public void networkConnectivityChange() {
-        // if (mMediaDetailFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_DETAIL)) {
-        // Observable.empty().observeOn(AndroidSchedulers.mainThread())
-        // .subscribe(new Subscriber<Object>() {
-        // @Override
-        // public void onCompleted() {
-        // if (mMediaDetailFragment != null) {
-        // mMediaDetailFragment.updateUrl(mMediaDetailFragment.getUrl());
-        // }
-        //
-        // }
-        //
-        // @Override
-        // public void onError(Throwable e) {
-        // }
-        //
-        // @Override
-        // public void onNext(Object o) {
-        // }
-        // });
-        //
-        // }
-        // if (mMediaViewFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
-        // Observable.empty().observeOn(AndroidSchedulers.mainThread())
-        // .subscribe(new Subscriber<Object>() {
-        // @Override
-        // public void onCompleted() {
-        // if (mMediaViewFragment != null) {
-        // mMediaViewFragment.updateUrl(mMediaViewFragment.getUrl());
-        // }
-        //
-        // }
-        //
-        // @Override
-        // public void onError(Throwable e) {
-        // }
-        //
-        // @Override
-        // public void onNext(Object o) {
-        // }
-        // });
-        //
-        // }
+        if (mMediaDetailFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_DETAIL)) {
+            Observable.empty().observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<Object>() {
+                        @Override
+                        public void onCompleted() {
+                            if (mMediaDetailFragment != null) {
+                                mMediaDetailFragment.updateUrl(mMediaDetailFragment.getUrl());
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {}
+
+                        @Override
+                        public void onNext(Object o) {}
+                    });
+
+        }
+        if (mMediaViewFragment != null && mDisplayMode.equals(DisplayMode.MEDIA_VIEW)) {
+            Observable.empty().observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<Object>() {
+                        @Override
+                        public void onCompleted() {
+                            if (mMediaViewFragment != null) {
+                                mMediaViewFragment.updateUrl(mMediaViewFragment.getUrl());
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {}
+
+                        @Override
+                        public void onNext(Object o) {}
+                    });
+        }
     }
 
     public enum DisplayMode {
