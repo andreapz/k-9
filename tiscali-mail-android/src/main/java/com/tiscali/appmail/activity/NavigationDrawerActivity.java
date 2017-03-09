@@ -1563,8 +1563,6 @@ public class NavigationDrawerActivity extends K9Activity
             } else if (mMailPresenter != null
                     && getIntent().getStringExtra(SearchManager.QUERY) != null) {
                 mMailPresenter.goBack();
-            } else {
-                super.onBackPressed();
             }
         } else if (action == KeyEvent.ACTION_DOWN) {
             if (mMailPresenter != null) {
