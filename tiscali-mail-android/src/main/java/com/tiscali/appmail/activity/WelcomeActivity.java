@@ -162,7 +162,7 @@ public class WelcomeActivity extends AppCompatActivity
             }
         };
 
-        mLogManager.track(getResources().getString(R.string.com_tiscali_appmail_Onboarding));
+        mLogManager.trackView(getResources().getString(R.string.com_tiscali_appmail_Onboarding));
     }
 
     @Override

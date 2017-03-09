@@ -559,7 +559,7 @@ public class MessageCompose extends K9Activity implements OnClickListener, Cance
         }
 
         ((K9) getApplication()).getComponent().inject(this);
-        mLogManager.track(
+        mLogManager.trackView(
                 getResources().getString(R.string.com_tiscali_appmail_activity_MessageCompose));
     }
 

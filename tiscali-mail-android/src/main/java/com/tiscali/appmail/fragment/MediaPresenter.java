@@ -213,7 +213,7 @@ public abstract class MediaPresenter
             startFromNotification(extrasUrl);
         }
 
-        mLogManager.track(getCurrentHomeId());
+        mLogManager.trackUrl(getCurrentHomeId());
     }
 
     @Override
@@ -419,7 +419,7 @@ public abstract class MediaPresenter
         showMedia();
         if (mMediaViewFragment != null) {
             mMediaViewFragment.updateUrl(url);
-            mLogManager.track(getCurrentPageId());
+            mLogManager.trackUrl(getCurrentPageId());
         }
         mIsHomePage = isHome;
     }
@@ -570,12 +570,12 @@ public abstract class MediaPresenter
         if (displayedChild == 0) {
             removeDetailFragment();
             setActionBarToggle();
-            mLogManager.track(getCurrentPageId());
+            mLogManager.trackUrl(getCurrentPageId());
         } else {
 
             if (mMediaDetailFragment != null) {
                 setActionBarUp();
-                mLogManager.track(mMediaDetailFragment.getUrl());
+                mLogManager.trackUrl(mMediaDetailFragment.getUrl());
             }
 
         }
@@ -1149,8 +1149,8 @@ public abstract class MediaPresenter
                     case 0:
                         if (mContext instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mContext).showInformations();
-                            mLogManager
-                                    .track(mContext.getString(R.string.com_tiscali_appmail_Info));
+                            mLogManager.trackUrl(
+                                    mContext.getString(R.string.com_tiscali_appmail_Info));
                         }
                         break;
                 }
@@ -1177,7 +1177,7 @@ public abstract class MediaPresenter
             }
         });
 
-        mLogManager.track(mContext.getResources()
+        mLogManager.trackUrl(mContext.getResources()
                 .getString(R.string.com_tiscali_appmail_News_Customization_Visibility));
 
         ListView listInterests = (ListView) customizeDialog.findViewById(R.id.list_category);

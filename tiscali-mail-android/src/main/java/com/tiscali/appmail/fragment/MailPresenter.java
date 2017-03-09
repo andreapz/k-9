@@ -487,7 +487,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         mAccountsAdapter = new AccountsAdapter();
 
         ((NavigationDrawerActivity) mActivity).getComponent().injectMailPresenter(this);
-        mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageListFragment);
+        mLogManager.trackView(R.string.com_tiscali_appmail_fragment_MessageListFragment);
     }
 
     public void showFolder(LocalSearch search) {
@@ -1630,14 +1630,14 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
             removeMessageViewFragment();
             if (Intent.ACTION_SEARCH.equals(mIntent.getAction())) {
                 setActionBarUp();
-                mLogManager.track(R.string.com_tiscali_appmail_activity_Search);
+                mLogManager.trackView(R.string.com_tiscali_appmail_activity_Search);
             } else {
                 setActionBarToggle();
-                mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageListFragment);
+                mLogManager.trackView(R.string.com_tiscali_appmail_fragment_MessageListFragment);
             }
         } else {
             setActionBarUp();
-            mLogManager.track(R.string.com_tiscali_appmail_fragment_MessageViewFragment);
+            mLogManager.trackView(R.string.com_tiscali_appmail_fragment_MessageViewFragment);
         }
     }
 
@@ -2018,36 +2018,36 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
                     case 0:
                         AccountSettings.actionSettings(mListener.getActivity(), account);
                         // removeMessageListFragment();
-                        mLogManager.track(mActivity
+                        mLogManager.trackView(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Settings_Account));
                         break;
                     // global settings
                     case 1:
                         Prefs.actionPrefs(mListener.getActivity());
                         // removeMessageListFragment();
-                        mLogManager.track(mActivity
+                        mLogManager.trackView(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Settings_Global));
                         break;
                     // update account
                     case 2:
                         if (mActivity instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mActivity).updateAccount(mAccount);
-                            mLogManager.track(mActivity
+                            mLogManager.trackView(mActivity
                                     .getString(R.string.com_tiscali_appmail_Mail_Update_Account));
                         }
                         break;
                     // delete account
                     case 3:
                         showDeleteAccountDialog();
-                        mLogManager.track(mActivity
+                        mLogManager.trackView(mActivity
                                 .getString(R.string.com_tiscali_appmail_Mail_Remove_Account));
                         break;
                     // informations
                     case 4:
                         if (mActivity instanceof INavigationDrawerActivityListener) {
                             ((INavigationDrawerActivityListener) mActivity).showInformations();
-                            mLogManager
-                                    .track(mActivity.getString(R.string.com_tiscali_appmail_Info));
+                            mLogManager.trackView(
+                                    mActivity.getString(R.string.com_tiscali_appmail_Info));
                         }
                         break;
                 }

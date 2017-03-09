@@ -395,7 +395,7 @@ public class NavigationDrawerActivity extends K9Activity
             buildDaggerComponent(mailIntent);
         }
 
-        mLogManager.track(getResources()
+        mLogManager.trackView(getResources()
                 .getString(R.string.com_tiscali_appmail_activity_NavigationDrawerActivity));
 
         setContentView(R.layout.activity_navigation_drawer);
@@ -1428,7 +1428,7 @@ public class NavigationDrawerActivity extends K9Activity
                 break;
         }
 
-        mLogManager.track(tag);
+        mLogManager.trackView(tag);
     }
 
     private void forceBuildDaggerComponent() {

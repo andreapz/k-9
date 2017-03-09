@@ -2,6 +2,8 @@ package com.tiscali.appmail.analytics;
 
 import javax.inject.Singleton;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.tiscali.appmail.BuildConfig;
 import com.tiscali.appmail.R;
 import com.webtrekk.webtrekksdk.TrackingParameter;
@@ -17,10 +19,18 @@ import android.content.pm.PackageManager;
 @Singleton
 public class LogManager {
 
+    private static final String TRACK_VIEW = "VIEW";
+    private static final String TRACK_VIEW_ID = "VIEW_ID";
+    private static final String TRACK_URL = "URL";
+    private static final String TRACK_URL_ID = "URL_ID";
+    private static final String TRACK_VERSION = "VERSION";
+
+
     private final Application mApplication;
     private Webtrekk mWebtrekk;
     private TrackingParameter mTp;
     private boolean mStart = false;
+    private String mVersion;
 
     public LogManager(Application application) {
         mApplication = application;
@@ -35,11 +45,11 @@ public class LogManager {
             Webtrekk.setLoggingEnabled(true);
         }
 
-        String version = "";
+        mVersion = "";
         PackageManager manager = mApplication.getPackageManager();
         try {
             PackageInfo info = manager.getPackageInfo(mApplication.getPackageName(), 0);
-            version = info.versionName;
+            mVersion = info.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -55,21 +65,43 @@ public class LogManager {
             mTp.add(TrackingParameter.Parameter.PAGE, entries[i], values[i]);
         }
 
-        mTp.add(TrackingParameter.Parameter.PAGE, entries[entries.length - 1], version);
+        mTp.add(TrackingParameter.Parameter.PAGE, entries[entries.length - 1], mVersion);
 
         mStart = true;
     }
 
-    public void track(int value) {
+    public void trackView(int value) {
         String page = mApplication.getResources().getString(value);
-        track(page);
+        trackView(page);
     }
 
-    public void track(String value) {
+    public void trackView(String value) {
         if (!mStart) {
             init();
         }
+
+        trackWebTrack(value);
+
+        Answers.getInstance()
+                .logContentView(new ContentViewEvent().putContentName(value)
+                        .putContentType(TRACK_VIEW).putContentId(TRACK_VIEW_ID)
+                        .putCustomAttribute(TRACK_VERSION, mVersion));
+    }
+
+    private void trackWebTrack(String value) {
         mWebtrekk.setCustomPageName(value);
         mWebtrekk.track(mTp);
+    }
+
+    public void trackUrl(String url) {
+        if (!mStart) {
+            init();
+        }
+
+        trackWebTrack(url);
+
+        Answers.getInstance()
+                .logContentView(new ContentViewEvent().putContentName(url).putContentType(TRACK_URL)
+                        .putContentId(TRACK_URL_ID).putCustomAttribute(TRACK_VERSION, mVersion));
     }
 }

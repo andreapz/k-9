@@ -160,7 +160,7 @@ public class AccountSetupCheckSettings extends K9Activity
         mDirection = (CheckDirection) getIntent().getSerializableExtra(EXTRA_CHECK_DIRECTION);
 
         ((K9) getApplication()).getComponent().inject(this);
-        mLogManager.track(getResources().getString(
+        mLogManager.trackView(getResources().getString(
                 R.string.com_tiscali_appmail_Account_Settings_Check, mAccount.getEmail()));
 
         mCheckAccountTask = new CheckAccountTask(mAccount);
@@ -534,7 +534,7 @@ public class AccountSetupCheckSettings extends K9Activity
                     return null;
                 }
 
-                mLogManager.track(getResources().getString(
+                mLogManager.trackView(getResources().getString(
                         R.string.com_tiscali_appmail_Account_Settings_Check_Ok,
                         mAccount.getEmail()));
                 setResult(RESULT_OK);
@@ -553,16 +553,16 @@ public class AccountSetupCheckSettings extends K9Activity
                     errorMsgId = R.string.account_setup_failed_dlg_auth_message_fmt;
                 }
                 showErrorDialog(errorMsgId, null);
-                mLogManager.track(getResources().getString(
+                mLogManager.trackView(getResources().getString(
                         R.string.com_tiscali_appmail_Account_Settings_Check_Error,
                         mAccount.getEmail()));
             } catch (CertificateValidationException cve) {
-                mLogManager.track(getResources().getString(
+                mLogManager.trackView(getResources().getString(
                         R.string.com_tiscali_appmail_Account_Settings_Check_Error,
                         mAccount.getEmail()));
                 handleCertificateValidationException(cve);
             } catch (Exception e) {
-                mLogManager.track(getResources().getString(
+                mLogManager.trackView(getResources().getString(
                         R.string.com_tiscali_appmail_Account_Settings_Check_Error,
                         mAccount.getEmail()));
                 Log.e(K9.LOG_TAG, "Error while testing settings", e);

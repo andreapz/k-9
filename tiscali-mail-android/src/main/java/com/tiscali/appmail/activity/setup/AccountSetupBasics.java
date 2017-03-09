@@ -112,7 +112,7 @@ public class AccountSetupBasics extends K9Activity implements OnClickListener, T
         emailDomainTv.setText(mEmailDomain);
 
         ((K9) getApplication()).getComponent().inject(this);
-        mLogManager.track(R.string.com_tiscali_appmail_Login);
+        mLogManager.trackView(R.string.com_tiscali_appmail_Login);
     }
 
     private void initializeViewListeners() {

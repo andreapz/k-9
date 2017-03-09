@@ -149,7 +149,7 @@ public class TiscaliAccountSetupUserPassword extends K9Activity implements OnCli
         }
 
         ((K9) getApplication()).getComponent().inject(this);
-        mLogManager.track(R.string.com_tiscali_appmail_Account_Editor);
+        mLogManager.trackView(R.string.com_tiscali_appmail_Account_Editor);
     }
 
     @Override

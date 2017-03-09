@@ -58,11 +58,9 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
                 validateFields();
             }
 
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
         };
         mName.addTextChangedListener(validationTextWatcher);
 
@@ -84,7 +82,7 @@ public class AccountSetupNames extends K9Activity implements OnClickListener {
         }
 
         ((K9) getApplication()).getComponent().inject(this);
-        mLogManager.track(R.string.com_tiscali_appmail_Account_Setup);
+        mLogManager.trackView(R.string.com_tiscali_appmail_Account_Setup);
     }
 
     private void validateFields() {
