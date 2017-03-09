@@ -93,10 +93,11 @@ public class MediaFragment extends Fragment {
     private Timer mTimerRefresh;
     private Handler mHandler;
     private boolean mIsBarVisible;
+    private View mWebViewEmpty;
 
 
     public static MediaFragment newInstance(String home, MediaPresenter.Type type,
-            boolean isBarVisible) {
+                                            boolean isBarVisible) {
 
         MediaFragment fragment = new MediaFragment();
         Bundle args = new Bundle();
@@ -130,10 +131,12 @@ public class MediaFragment extends Fragment {
     @SuppressLint("JavascriptInterface")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.news, container, false);
         mWebView = (ObservableWebView) v.findViewById(R.id.webview);
+        mWebViewEmpty = (View) v.findViewById(R.id.webview_empty);
+
         mHandler = new Handler();
         // if (savedInstanceState == null) {
         mType = getType(getArguments().getString(ARG_TYPE));
@@ -273,8 +276,9 @@ public class MediaFragment extends Fragment {
 
 
     private void loadUrl(String url) {
+
         Log.d("TiscaliWebView", "[URL]:" + url + " @" + this);
-        if (mWebView != null && mFragmentListener != null) {
+        if (mWebView != null && mFragmentListener != null && NetworkHelper.getInstance(getActivity().getApplicationContext()).isConnected()) {
             mWebView.loadUrl(url, mExtraHeaders);
             mFragmentListener.enableActionBarProgress(true);
             mFragmentListener.setCurrentUrl(url);
@@ -292,6 +296,9 @@ public class MediaFragment extends Fragment {
                     }
                 }, mFragmentListener.getRefreshTimeout());
             }
+        } else if (!NetworkHelper.getInstance(getActivity().getApplicationContext()).isConnected()) {
+            mWebViewEmpty.setVisibility(View.VISIBLE);
+            mWebView.setVisibility(View.GONE);
         }
     }
 
@@ -314,6 +321,7 @@ public class MediaFragment extends Fragment {
 
     @SuppressLint("JavascriptInterface")
     public void updateUrl(String newUrl) {
+
         mUrl = newUrl;
         loadUrl(newUrl);
     }
@@ -458,10 +466,7 @@ public class MediaFragment extends Fragment {
         @SuppressWarnings("deprecation")
         @Override
         public void onReceivedError(WebView view, int errorCode, String description,
-                String failingUrl) {
-
-            String html = getActivity().getResources().getString(R.string.media_http_404);
-            view.loadData(html, "text/html", "UTF-8");
+                                    String failingUrl) {
 
         }
 
@@ -508,6 +513,8 @@ public class MediaFragment extends Fragment {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            mWebViewEmpty.setVisibility(View.GONE);
+            mWebView.setVisibility(View.VISIBLE);
             if (mFragmentListener != null) {
                 mFragmentListener.enableActionBarProgress(false);
             }
@@ -521,6 +528,11 @@ public class MediaFragment extends Fragment {
                     if (!titleEncode.equals("about:blank")) {
                         if (mFragmentListener != null) {
                             mFragmentListener.setPageTitle(titleEncode);
+                        }
+                    }
+                    if (titleEncode.startsWith("data")) {
+                        if (mFragmentListener != null) {
+                            mFragmentListener.setPageTitle("Tiscali");
                         }
                     }
                 }

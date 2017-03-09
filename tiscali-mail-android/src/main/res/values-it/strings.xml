@@ -1040,11 +1040,5 @@ Invia segnalazioni di bug, contribuisci con nuove funzionalità e poni domande s
     <string name="contacts_change_permission_message_dialog">Non puoi selezionare il destinatario della email. Per favore consenti l\'accesso ai contatti</string>
     <string name="write_external_permission_message_dialog">Consenti di accedere alla memoria per poter salvare il file</string>
     <string name="write_external_change_permission_message_dialog">Non puoi salvare il file. Per favore consenti l\'accesso alla memoria</string>
-    <string name="media_http_404"><![CDATA[
-<p style="font-size: 10em;font-family: sans-serif;text-align: center; color: #0098a7;">
-Tiscali.it
-</p><p style="font-size: 6em;font-family: sans-serif;text-align: center;">
-La pagina non &egrave; attualmente disponibile
-</p>
-    ]]></string>
+    <string name="media_http_404">La pagina non è al momento disponibile </string>
 </resources>

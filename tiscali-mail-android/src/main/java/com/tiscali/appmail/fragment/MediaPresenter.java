@@ -120,18 +120,15 @@ public abstract class MediaPresenter
                         @Override
                         public void onCompleted() {
                             if (mMediaDetailFragment != null) {
-                                mMediaDetailFragment.mWebView.loadUrl(mMediaDetailFragment.getUrl());
+                                mMediaDetailFragment.updateUrl(mMediaDetailFragment.getUrl());
                             }
-
                         }
 
                         @Override
-                        public void onError(Throwable e) {
-                        }
+                        public void onError(Throwable e) {}
 
                         @Override
-                        public void onNext(Object o) {
-                        }
+                        public void onNext(Object o) {}
                     });
 
         }
@@ -141,20 +138,16 @@ public abstract class MediaPresenter
                         @Override
                         public void onCompleted() {
                             if (mMediaViewFragment != null) {
-                                mMediaViewFragment.mWebView.loadUrl(mMediaViewFragment.getUrl());
+                                mMediaViewFragment.updateUrl(mMediaViewFragment.getUrl());
                             }
-
                         }
 
                         @Override
-                        public void onError(Throwable e) {
-                        }
+                        public void onError(Throwable e) {}
 
                         @Override
-                        public void onNext(Object o) {
-                        }
+                        public void onNext(Object o) {}
                     });
-
         }
     }
 
@@ -406,12 +399,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
     }
 
@@ -421,7 +412,7 @@ public abstract class MediaPresenter
 
         return (splitViewMode == K9.SplitViewMode.ALWAYS
                 || (splitViewMode == K9.SplitViewMode.WHEN_IN_LANDSCAPE
-                && orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        && orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     public void openSection(String url, boolean isHome) {
@@ -449,12 +440,10 @@ public abstract class MediaPresenter
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) {}
 
                     @Override
-                    public void onNext(Object o) {
-                    }
+                    public void onNext(Object o) {}
                 });
 
     }
@@ -808,8 +797,7 @@ public abstract class MediaPresenter
             }
         };
 
-        public MediaAdapter() {
-        }
+        public MediaAdapter() {}
 
         public void setSelectedPos(String sectionId) {
 
@@ -1149,8 +1137,7 @@ public abstract class MediaPresenter
     }
 
     @Override
-    public void setStartInstanceState(Bundle savedInstanceState) {
-    }
+    public void setStartInstanceState(Bundle savedInstanceState) {}
 
 
     public void showDialogInformations() {

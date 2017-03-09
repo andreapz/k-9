@@ -180,6 +180,21 @@ public class UI_NavigationDrawerActivity_Test {
         onView(withId(R.id.account_name)).perform(click());
         onView(withId(R.id.account_name)).perform(typeText("Furrillu Account"));
         onView(withId(R.id.done)).perform(click());
+
+        // delete account
+
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed(Gravity.LEFT))) // Left Drawer
+                // should be
+                // closed.
+                .perform(open()); // Open Drawer
+        onView(withId(R.id.settings)).perform(click());
+
+        SystemClock.sleep(1000);
+
+        onView(withText(R.string.remove_account_action)).perform(click());
+
+
+
     }
 
     @Test
