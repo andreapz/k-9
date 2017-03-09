@@ -12,7 +12,6 @@ import com.tiscali.appmail.Account;
 import com.tiscali.appmail.K9;
 import com.tiscali.appmail.Preferences;
 import com.tiscali.appmail.R;
-import com.tiscali.appmail.activity.Accounts;
 import com.tiscali.appmail.activity.ActivityListener;
 import com.tiscali.appmail.activity.FolderInfoHolder;
 import com.tiscali.appmail.activity.INavigationDrawerActivityListener;
@@ -1084,7 +1083,7 @@ public class MailPresenter implements MessageListFragmentListener, MessageViewFr
         Toast.makeText(mActivity, "Account Unavaible Finish Activity", Toast.LENGTH_LONG);
         mActivity.finish();
         // TODO inform user about account unavailability using Toast
-        Accounts.listAccounts(mActivity);
+        NavigationDrawerActivity.listMessage(mActivity, mAccount.getUuid());
     }
 
     @Override
