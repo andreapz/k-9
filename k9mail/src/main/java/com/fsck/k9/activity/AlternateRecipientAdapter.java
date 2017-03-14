@@ -17,11 +17,11 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 import com.fsck.k9.R;
 import com.fsck.k9.activity.compose.RecipientAdapter;
+import com.fsck.k9.ui.ContactBadge;
 import com.fsck.k9.view.RecipientSelectView.Recipient;
 import com.fsck.k9.view.ThemeUtils;
 
@@ -198,7 +198,7 @@ public class AlternateRecipientAdapter extends BaseAdapter {
         int cryptoStatusColor = ThemeUtils.getStyledColor(context, cryptoStatusColorAttr);
         drawable.setColorFilter(cryptoStatusColor, Mode.SRC_ATOP);
 
-        holder.itemCryptoStatus.setImageDrawable(drawable);
+        holder.itemCryptoStatusIcon.setImageDrawable(drawable);
         holder.itemCryptoStatus.setVisibility(View.VISIBLE);
     }
 
@@ -207,11 +207,12 @@ public class AlternateRecipientAdapter extends BaseAdapter {
         public final View layoutHeader, layoutItem;
         public final TextView headerName;
         public final TextView headerAddressLabel;
-        public final QuickContactBadge headerPhoto;
+        public final ContactBadge headerPhoto;
         public final View headerRemove;
         public final TextView itemAddress;
         public final TextView itemAddressLabel;
-        public final ImageView itemCryptoStatus;
+        public final View itemCryptoStatus;
+        public final ImageView itemCryptoStatusIcon;
 
 
         public RecipientTokenHolder(View view) {
@@ -220,12 +221,13 @@ public class AlternateRecipientAdapter extends BaseAdapter {
 
             headerName = (TextView) view.findViewById(R.id.alternate_header_name);
             headerAddressLabel = (TextView) view.findViewById(R.id.alternate_header_label);
-            headerPhoto = (QuickContactBadge) view.findViewById(R.id.alternate_contact_photo);
+            headerPhoto = (ContactBadge) view.findViewById(R.id.alternate_contact_photo);
             headerRemove = view.findViewById(R.id.alternate_remove);
 
             itemAddress = (TextView) view.findViewById(R.id.alternate_address);
             itemAddressLabel = (TextView) view.findViewById(R.id.alternate_address_label);
-            itemCryptoStatus = (ImageView) view.findViewById(R.id.alternate_crypto_status);
+            itemCryptoStatus = view.findViewById(R.id.alternate_crypto_status);
+            itemCryptoStatusIcon = (ImageView) view.findViewById(R.id.alternate_crypto_status_icon);
         }
 
         public void setShowAsHeader(boolean isHeader) {

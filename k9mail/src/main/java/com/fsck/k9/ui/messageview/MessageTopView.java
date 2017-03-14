@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.ShowPictures;
+import com.fsck.k9.K9;
 import com.fsck.k9.R;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.mail.Address;
@@ -114,12 +115,13 @@ public class MessageTopView extends LinearLayout {
                 containerView, false);
         containerView.addView(view);
 
+        boolean hideUnsignedTextDivider = !K9.getOpenPgpSupportSignOnly();
         view.displayMessageViewContainer(messageViewInfo, new OnRenderingFinishedListener() {
             @Override
             public void onLoadFinished() {
                 displayViewOnLoadFinished(true);
             }
-        }, automaticallyLoadPictures, attachmentCallback);
+        }, automaticallyLoadPictures, hideUnsignedTextDivider, attachmentCallback);
 
         if (view.hasHiddenExternalImages()) {
             showShowPicturesButton();
@@ -180,6 +182,21 @@ public class MessageTopView extends LinearLayout {
             @Override
             public void onClick(View view) {
                 messageCryptoPresenter.onClickRetryCryptoOperation();
+            }
+        });
+
+        containerView.addView(view);
+        displayViewOnLoadFinished(false);
+    }
+
+    public void showCryptoProviderNotConfigured(final MessageViewInfo messageViewInfo) {
+        resetAndPrepareMessageView(messageViewInfo);
+        View view = mInflater.inflate(R.layout.message_content_crypto_no_provider, containerView, false);
+
+        view.findViewById(R.id.crypto_settings).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                messageCryptoPresenter.onClickConfigureProvider();
             }
         });
 

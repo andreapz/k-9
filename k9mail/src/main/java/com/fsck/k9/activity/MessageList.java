@@ -19,7 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,6 +45,7 @@ import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
+import com.fsck.k9.helper.ParcelableUtil;
 import com.fsck.k9.mailstore.StorageManager;
 import com.fsck.k9.preferences.StorageEditor;
 import com.fsck.k9.search.LocalSearch;
@@ -108,7 +109,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, MessageList.class);
-        intent.putExtra(EXTRA_SEARCH, search);
+        intent.putExtra(EXTRA_SEARCH, ParcelableUtil.marshall(search));
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
 
         if (clearTop) {
@@ -135,7 +136,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             MessageReference messageReference) {
         Intent intent = new Intent(context, MessageList.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
+        intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference.toIdentityString());
         return intent;
     }
 
@@ -240,6 +241,10 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+
+        if (isFinishing()) {
+            return;
+        }
 
         setIntent(intent);
 
@@ -428,12 +433,14 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             }
         } else {
             // regular LocalSearch object was passed
-            mSearch = intent.getParcelableExtra(EXTRA_SEARCH);
+            mSearch = intent.hasExtra(EXTRA_SEARCH) ?
+                    ParcelableUtil.unmarshall(intent.getByteArrayExtra(EXTRA_SEARCH), LocalSearch.CREATOR) : null;
             mNoThreading = intent.getBooleanExtra(EXTRA_NO_THREADING, false);
         }
 
         if (mMessageReference == null) {
-            mMessageReference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
+            String messageReferenceString = intent.getStringExtra(EXTRA_MESSAGE_REFERENCE);
+            mMessageReference = MessageReference.parse(messageReferenceString);
         }
 
         if (mMessageReference != null) {
@@ -472,7 +479,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
         if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(this))) {
-            Log.i(K9.LOG_TAG, "not opening MessageList of unavailable account");
+            Timber.i("not opening MessageList of unavailable account");
             onAccountUnavailable();
             return false;
         }
@@ -750,8 +757,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
         // Swallow these events too to avoid the audible notification of a volume change
         if (K9.useVolumeKeysForListNavigationEnabled()) {
             if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP) || (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
-                if (K9.DEBUG)
-                    Log.v(K9.LOG_TAG, "Swallowed key up.");
+                Timber.v("Swallowed key up.");
                 return true;
             }
         }
@@ -960,6 +966,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         configureMenu(menu);
         return true;
     }
@@ -1435,6 +1442,8 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     public void displayMessageSubject(String subject) {
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             mActionBarSubject.setText(subject);
+        } else {
+            mActionBarSubject.showSubjectInMessageHeader();
         }
     }
 

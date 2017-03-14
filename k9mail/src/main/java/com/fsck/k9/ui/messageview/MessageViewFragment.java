@@ -18,7 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.text.TextUtils;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -46,6 +46,7 @@ import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
+import com.fsck.k9.activity.setup.OpenPgpAppSelectDialog;
 import com.fsck.k9.ui.messageview.CryptoInfoDialog.OnClickShowCryptoKeyListener;
 import com.fsck.k9.ui.messageview.MessageCryptoPresenter.MessageCryptoMvpView;
 import com.fsck.k9.view.MessageCryptoDisplayStatus;
@@ -68,7 +69,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         MessageViewFragment fragment = new MessageViewFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(ARG_REFERENCE, reference);
+        args.putString(ARG_REFERENCE, reference.toIdentityString());
         fragment.setArguments(args);
 
         return fragment;
@@ -135,6 +136,13 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        messageCryptoPresenter.onResume();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
@@ -192,16 +200,15 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         super.onActivityCreated(savedInstanceState);
 
         Bundle arguments = getArguments();
-        MessageReference messageReference = arguments.getParcelable(ARG_REFERENCE);
+        String messageReferenceString = arguments.getString(ARG_REFERENCE);
+        MessageReference messageReference = MessageReference.parse(messageReferenceString);
 
         displayMessage(messageReference);
     }
 
     private void displayMessage(MessageReference messageReference) {
         mMessageReference = messageReference;
-        if (K9.DEBUG) {
-            Log.d(K9.LOG_TAG, "MessageView displaying message " + mMessageReference);
-        }
+        Timber.d("MessageView displaying message %s", mMessageReference);
 
         mAccount = Preferences.getPreferences(getApplicationContext()).getAccount(mMessageReference.getAccountUuid());
         messageLoaderHelper.asyncStartOrResumeLoadingMessage(messageReference, null);
@@ -233,7 +240,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
                 mMessageView, mAccount, messageViewInfo);
         if (!handledByCryptoPresenter) {
             mMessageView.showMessage(mAccount, messageViewInfo);
-            if (mAccount.isOpenPgpProviderConfigured()) {
+            if (K9.isOpenPgpProviderConfigured()) {
                 mMessageView.getMessageHeaderView().setCryptoStatusDisabled();
             } else {
                 mMessageView.getMessageHeaderView().hideCryptoStatus();
@@ -243,7 +250,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
 
     private void displayHeaderForLoadingMessage(LocalMessage message) {
         mMessageView.setHeaders(message, mAccount);
-        if (mAccount.isOpenPgpProviderConfigured()) {
+        if (K9.isOpenPgpProviderConfigured()) {
             mMessageView.getMessageHeaderView().setCryptoStatusLoading();
         }
         displayMessageSubject(getSubjectForMessage(message));
@@ -383,8 +390,13 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
         intent.putExtra(ChooseFolder.EXTRA_ACCOUNT, mAccount.getUuid());
         intent.putExtra(ChooseFolder.EXTRA_CUR_FOLDER, mMessageReference.getFolderName());
         intent.putExtra(ChooseFolder.EXTRA_SEL_FOLDER, mAccount.getLastSelectedFolderName());
-        intent.putExtra(ChooseFolder.EXTRA_MESSAGE, mMessageReference);
+        intent.putExtra(ChooseFolder.EXTRA_MESSAGE, mMessageReference.toIdentityString());
         startActivityForResult(intent, activity);
+    }
+
+    private void startOpenPgpChooserActivity() {
+        Intent i = new Intent(getActivity(), OpenPgpAppSelectDialog.class);
+        startActivity(i);
     }
 
     public void onPendingIntentResult(int requestCode, int resultCode, Intent data) {
@@ -430,7 +442,8 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
                 }
 
                 String destFolderName = data.getStringExtra(ChooseFolder.EXTRA_NEW_FOLDER);
-                MessageReference ref = data.getParcelableExtra(ChooseFolder.EXTRA_MESSAGE);
+                String messageReferenceString = data.getStringExtra(ChooseFolder.EXTRA_MESSAGE);
+                MessageReference ref = MessageReference.parse(messageReferenceString);
                 if (mMessageReference.equals(ref)) {
                     mAccount.setLastSelectedFolderName(destFolderName);
                     switch (requestCode) {
@@ -686,6 +699,11 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
             mMessageView.setToLoadingState();
             messageLoaderHelper.asyncRestartMessageCryptoProcessing();
         }
+
+        @Override
+        public void showCryptoConfigDialog() {
+            startOpenPgpChooserActivity();
+        }
     };
 
     @Override
@@ -769,7 +787,7 @@ public class MessageViewFragment extends Fragment implements ConfirmationDialogF
                 getActivity().startIntentSenderForResult(
                         si, requestCode, fillIntent, flagsMask, flagValues, extraFlags);
             } catch (SendIntentException e) {
-                Log.e(K9.LOG_TAG, "Irrecoverable error calling PendingIntent!", e);
+                Timber.e(e, "Irrecoverable error calling PendingIntent!");
             }
         }
     };

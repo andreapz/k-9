@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
+import com.fsck.k9.K9RobolectricTestRunner;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MimeBodyPart;
 import com.fsck.k9.mail.internet.MimeHeader;
@@ -16,20 +17,18 @@ import com.fsck.k9.provider.AttachmentProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = 21)
+@RunWith(K9RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class AttachmentInfoExtractorTest {
     public static final Uri TEST_URI = Uri.parse("uri://test");
     public static final String TEST_MIME_TYPE = "text/plain";
@@ -63,7 +62,7 @@ public class AttachmentInfoExtractorTest {
 
         AttachmentViewInfo attachmentViewInfo = attachmentInfoExtractor.extractAttachmentInfo(part);
 
-        assertEquals(AttachmentProvider.getAttachmentUri(TEST_ACCOUNT_UUID, TEST_ID), attachmentViewInfo.uri);
+        assertEquals(AttachmentProvider.getAttachmentUri(TEST_ACCOUNT_UUID, TEST_ID), attachmentViewInfo.internalUri);
         assertEquals(TEST_SIZE, attachmentViewInfo.size);
         assertEquals(TEST_MIME_TYPE, attachmentViewInfo.mimeType);
     }
@@ -74,7 +73,7 @@ public class AttachmentInfoExtractorTest {
 
         AttachmentViewInfo attachmentViewInfo = attachmentInfoExtractor.extractAttachmentInfoForDatabase(part);
 
-        assertEquals(Uri.EMPTY, attachmentViewInfo.uri);
+        assertEquals(Uri.EMPTY, attachmentViewInfo.internalUri);
         assertEquals(AttachmentViewInfo.UNKNOWN_SIZE, attachmentViewInfo.size);
         assertEquals("noname.txt", attachmentViewInfo.displayName);
         assertEquals("text/plain", attachmentViewInfo.mimeType);
@@ -100,7 +99,7 @@ public class AttachmentInfoExtractorTest {
 
         AttachmentViewInfo attachmentViewInfo = attachmentInfoExtractor.extractAttachmentInfoForDatabase(part);
 
-        assertEquals(Uri.EMPTY, attachmentViewInfo.uri);
+        assertEquals(Uri.EMPTY, attachmentViewInfo.internalUri);
         assertEquals(TEST_MIME_TYPE, attachmentViewInfo.mimeType);
         assertEquals("filename.ext", attachmentViewInfo.displayName);
         assertFalse(attachmentViewInfo.inlineAttachment);
@@ -125,7 +124,7 @@ public class AttachmentInfoExtractorTest {
 
         AttachmentViewInfo attachmentViewInfo = attachmentInfoExtractor.extractAttachmentInfoForDatabase(part);
 
-        assertEquals(Uri.EMPTY, attachmentViewInfo.uri);
+        assertEquals(Uri.EMPTY, attachmentViewInfo.internalUri);
         assertEquals("filename.ext", attachmentViewInfo.displayName);
         assertFalse(attachmentViewInfo.inlineAttachment);
     }
@@ -203,7 +202,7 @@ public class AttachmentInfoExtractorTest {
         AttachmentViewInfo attachmentViewInfo = attachmentInfoExtractor.extractAttachmentInfo(part);
 
 
-        assertEquals(TEST_URI, attachmentViewInfo.uri);
+        assertEquals(TEST_URI, attachmentViewInfo.internalUri);
         assertEquals(TEST_SIZE, attachmentViewInfo.size);
         assertEquals(TEST_MIME_TYPE, attachmentViewInfo.mimeType);
         assertFalse(attachmentViewInfo.inlineAttachment);

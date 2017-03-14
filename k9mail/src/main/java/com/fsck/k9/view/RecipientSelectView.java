@@ -22,7 +22,8 @@ import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
+import timber.log.Timber;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -229,14 +230,9 @@ public class RecipientSelectView extends TokenCompleteTextView<Recipient> implem
     @Override
     public void performCompletion() {
         if (getListSelection() == ListView.INVALID_POSITION && enoughToFilter()) {
-            Object bestGuess;
-            if (getAdapter().getCount() > 0) {
-                bestGuess = getAdapter().getItem(0);
-            } else {
-                bestGuess = defaultObject(currentCompletionText());
-            }
-            if (bestGuess != null) {
-                replaceText(convertSelectionToString(bestGuess));
+            Object recipientText = defaultObject(currentCompletionText());
+            if (recipientText != null) {
+                replaceText(convertSelectionToString(recipientText));
             }
         } else {
             super.performCompletion();
@@ -322,6 +318,12 @@ public class RecipientSelectView extends TokenCompleteTextView<Recipient> implem
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
+        alternatesPopup.dismiss();
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
     public Loader<List<Recipient>> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case LOADER_ID_FILTERING: {
@@ -401,8 +403,16 @@ public class RecipientSelectView extends TokenCompleteTextView<Recipient> implem
     }
 
     @Override
-    public void onRecipientChange(Recipient currentRecipient, Recipient alternateAddress) {
+    public void onRecipientChange(Recipient recipientToReplace, Recipient alternateAddress) {
         alternatesPopup.dismiss();
+
+        List<Recipient> currentRecipients = getObjects();
+        int indexOfRecipient = currentRecipients.indexOf(recipientToReplace);
+        if (indexOfRecipient == -1) {
+            Timber.e("Tried to refresh invalid view token!");
+            return;
+        }
+        Recipient currentRecipient = currentRecipients.get(indexOfRecipient);
 
         currentRecipient.address = alternateAddress.address;
         currentRecipient.addressLabel = alternateAddress.addressLabel;
@@ -410,7 +420,7 @@ public class RecipientSelectView extends TokenCompleteTextView<Recipient> implem
 
         View recipientTokenView = getTokenViewForRecipient(currentRecipient);
         if (recipientTokenView == null) {
-            Log.e(K9.LOG_TAG, "Tried to refresh invalid view token!");
+            Timber.e("Tried to refresh invalid view token!");
             return;
         }
 

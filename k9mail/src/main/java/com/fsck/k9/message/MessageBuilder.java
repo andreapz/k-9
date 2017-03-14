@@ -10,7 +10,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.fsck.k9.Account.QuoteStyle;
 import com.fsck.k9.Identity;
@@ -33,6 +33,7 @@ import com.fsck.k9.mail.internet.MimeMultipart;
 import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mail.internet.TextBody;
 import com.fsck.k9.mailstore.TempFileBody;
+import com.fsck.k9.message.quote.InsertableHtmlContent;
 import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.util.MimeUtil;
 
@@ -584,7 +585,7 @@ public abstract class MessageBuilder {
     final protected void deliverResult() {
         synchronized (callbackLock) {
             if (asyncCallback == null) {
-                Log.d(K9.LOG_TAG, "Keeping message builder result in queue for later delivery");
+                Timber.d("Keeping message builder result in queue for later delivery");
                 return;
             }
             if (queuedMimeMessage != null) {

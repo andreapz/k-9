@@ -11,7 +11,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.fsck.k9.Globals;
 import com.fsck.k9.K9;
@@ -39,15 +39,12 @@ import org.openintents.openpgp.util.OpenPgpApi.OpenPgpDataSource;
 
 
 public class PgpMessageBuilder extends MessageBuilder {
-
-    public static final int REQUEST_USER_INTERACTION = 1;
+    private static final int REQUEST_USER_INTERACTION = 1;
 
     private OpenPgpApi openPgpApi;
 
     private MimeMessage currentProcessedMimeMessage;
     private ComposeCryptoStatus cryptoStatus;
-    private boolean opportunisticSkipEncryption;
-    private boolean opportunisticSecondPass;
 
 
     public static PgpMessageBuilder newInstance() {
@@ -104,7 +101,7 @@ public class PgpMessageBuilder extends MessageBuilder {
     private void startOrContinueBuildMessage(@Nullable Intent pgpApiIntent) {
         try {
             boolean shouldSign = cryptoStatus.isSigningEnabled();
-            boolean shouldEncrypt = cryptoStatus.isEncryptionEnabled() && !opportunisticSkipEncryption;
+            boolean shouldEncrypt = cryptoStatus.isEncryptionEnabled();
             boolean isPgpInlineMode = cryptoStatus.isPgpInlineModeEnabled();
 
             if (!shouldSign && !shouldEncrypt) {
@@ -125,12 +122,6 @@ public class PgpMessageBuilder extends MessageBuilder {
                     pgpApiIntent, shouldEncrypt || isPgpInlineMode, shouldEncrypt || !isPgpInlineMode, isPgpInlineMode);
             if (returnedPendingIntent != null) {
                 queueMessageBuildPendingIntent(returnedPendingIntent, REQUEST_USER_INTERACTION);
-                return;
-            }
-
-            if (opportunisticSkipEncryption && !opportunisticSecondPass) {
-                opportunisticSecondPass = true;
-                startOrContinueBuildMessage(null);
                 return;
             }
 
@@ -223,7 +214,11 @@ public class PgpMessageBuilder extends MessageBuilder {
                 }
                 boolean isOpportunisticError = error.getErrorId() == OpenPgpError.OPPORTUNISTIC_MISSING_KEYS;
                 if (isOpportunisticError) {
-                    skipEncryptingMessage();
+                    if (!cryptoStatus.isEncryptionOpportunistic()) {
+                        throw new IllegalStateException(
+                                "Got opportunistic error, but encryption wasn't supposed to be opportunistic!");
+                    }
+                    Timber.d("Skipping encryption due to opportunistic mode");
                     return null;
                 }
                 throw new MessagingException(error.getMessage());
@@ -258,8 +253,7 @@ public class PgpMessageBuilder extends MessageBuilder {
             @NonNull Intent result, @NonNull MimeBodyPart bodyPart, @Nullable BinaryTempFileBody pgpResultTempBody)
             throws MessagingException {
         if (pgpResultTempBody == null) {
-            boolean shouldHaveResultPart = cryptoStatus.isPgpInlineModeEnabled() ||
-                    (cryptoStatus.isEncryptionEnabled() && !opportunisticSkipEncryption);
+            boolean shouldHaveResultPart = cryptoStatus.isPgpInlineModeEnabled() || cryptoStatus.isEncryptionEnabled();
             if (shouldHaveResultPart) {
                 throw new AssertionError("encryption or pgp/inline is enabled, but no output part!");
             }
@@ -290,7 +284,8 @@ public class PgpMessageBuilder extends MessageBuilder {
         multipartSigned.setSubType("signed");
         multipartSigned.addBodyPart(signedBodyPart);
         multipartSigned.addBodyPart(
-                new MimeBodyPart(new BinaryMemoryBody(signedData, MimeUtil.ENC_7BIT), "application/pgp-signature"));
+                new MimeBodyPart(new BinaryMemoryBody(signedData, MimeUtil.ENC_7BIT),
+                        "application/pgp-signature; name=\"signature.asc\""));
         MimeMessageHelper.setBody(currentProcessedMimeMessage, multipartSigned);
 
         String contentType = String.format(
@@ -300,7 +295,7 @@ public class PgpMessageBuilder extends MessageBuilder {
             String micAlgParameter = result.getStringExtra(OpenPgpApi.RESULT_SIGNATURE_MICALG);
             contentType += String.format("; micalg=\"%s\"", micAlgParameter);
         } else {
-            Log.e(K9.LOG_TAG, "missing micalg parameter for pgp multipart/signed!");
+            Timber.e("missing micalg parameter for pgp multipart/signed!");
         }
         currentProcessedMimeMessage.setHeader(MimeHeader.HEADER_CONTENT_TYPE, contentType);
     }
@@ -313,7 +308,9 @@ public class PgpMessageBuilder extends MessageBuilder {
         MimeMultipart multipartEncrypted = createMimeMultipart();
         multipartEncrypted.setSubType("encrypted");
         multipartEncrypted.addBodyPart(new MimeBodyPart(new TextBody("Version: 1"), "application/pgp-encrypted"));
-        multipartEncrypted.addBodyPart(new MimeBodyPart(encryptedBodyPart, "application/octet-stream"));
+        MimeBodyPart encryptedPart = new MimeBodyPart(encryptedBodyPart, "application/octet-stream; name=\"encrypted.asc\"");
+        encryptedPart.addHeader(MimeHeader.HEADER_CONTENT_DISPOSITION, "inline; filename=\"encrypted.asc\"");
+        multipartEncrypted.addBodyPart(encryptedPart);
         MimeMessageHelper.setBody(currentProcessedMimeMessage, multipartEncrypted);
 
         String contentType = String.format(
@@ -332,13 +329,6 @@ public class PgpMessageBuilder extends MessageBuilder {
             inlineBodyPart.setEncoding(MimeUtil.ENC_QUOTED_PRINTABLE);
         }
         MimeMessageHelper.setBody(currentProcessedMimeMessage, inlineBodyPart);
-    }
-
-    private void skipEncryptingMessage() throws MessagingException {
-        if (!cryptoStatus.isEncryptionOpportunistic()) {
-            throw new AssertionError("Got opportunistic error, but encryption wasn't supposed to be opportunistic!");
-        }
-        opportunisticSkipEncryption = true;
     }
 
     public void setCryptoStatus(ComposeCryptoStatus cryptoStatus) {

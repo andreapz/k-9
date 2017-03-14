@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
@@ -36,6 +36,7 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
 
     // transient state
     private CryptoResultAnnotation cryptoResultAnnotation;
+    private boolean reloadOnResumeWithoutRecreateFlag;
 
 
     public MessageCryptoPresenter(Bundle savedInstanceState, MessageCryptoMvpView messageCryptoMvpView) {
@@ -50,12 +51,24 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
         outState.putBoolean("overrideCryptoWarning", overrideCryptoWarning);
     }
 
+    public void onResume() {
+        if (reloadOnResumeWithoutRecreateFlag) {
+            reloadOnResumeWithoutRecreateFlag = false;
+            messageCryptoMvpView.restartMessageCryptoProcessing();
+        }
+    }
+
     public boolean maybeHandleShowMessage(MessageTopView messageView, Account account, MessageViewInfo messageViewInfo) {
         this.cryptoResultAnnotation = messageViewInfo.cryptoResultAnnotation;
 
         MessageCryptoDisplayStatus displayStatus =
                 MessageCryptoDisplayStatus.fromResultAnnotation(messageViewInfo.cryptoResultAnnotation);
         if (displayStatus == MessageCryptoDisplayStatus.DISABLED) {
+            return false;
+        }
+
+        boolean suppressSignOnlyMessages = !K9.getOpenPgpSupportSignOnly();
+        if (suppressSignOnlyMessages && displayStatus.isUnencryptedSigned()) {
             return false;
         }
 
@@ -86,23 +99,33 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
                         R.string.messageview_crypto_warning_error);
                 break;
             }
+            case ENCRYPTED_UNSIGNED: {
+                showMessageCryptoWarning(messageView, account, messageViewInfo,
+                        R.string.messageview_crypto_warning_unsigned);
+                break;
+            }
 
             case CANCELLED: {
-                Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext(), account);
+                Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext());
                 messageView.showMessageCryptoCancelledView(messageViewInfo, providerIcon);
                 break;
             }
 
             case INCOMPLETE_ENCRYPTED: {
-                Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext(), account);
+                Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext());
                 messageView.showMessageEncryptedButIncomplete(messageViewInfo, providerIcon);
                 break;
             }
 
             case ENCRYPTED_ERROR:
             case UNSUPPORTED_ENCRYPTED: {
-                Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext(), account);
+                Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext());
                 messageView.showMessageCryptoErrorView(messageViewInfo, providerIcon);
+                break;
+            }
+
+            case ENCRYPTED_NO_PROVIDER: {
+                messageView.showCryptoProviderNotConfigured(messageViewInfo);
                 break;
             }
 
@@ -127,7 +150,7 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
             messageView.showMessage(account, messageViewInfo);
             return;
         }
-        Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext(), account);
+        Drawable providerIcon = getOpenPgpApiProviderIcon(messageView.getContext());
         messageView.showMessageCryptoWarning(messageViewInfo, providerIcon, warningStringRes);
     }
 
@@ -177,19 +200,19 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
                         pendingIntent.getIntentSender(), REQUEST_CODE_UNKNOWN_KEY, null, 0, 0, 0);
             }
         } catch (IntentSender.SendIntentException e) {
-            Log.e(K9.LOG_TAG, "SendIntentException", e);
+            Timber.e(e, "SendIntentException");
         }
     }
 
     public void onClickShowCryptoKey() {
         try {
-            PendingIntent pendingIntent = cryptoResultAnnotation.getOpenPgpPendingIntent();
+            PendingIntent pendingIntent = cryptoResultAnnotation.getOpenPgpSigningKeyIntentIfAny();
             if (pendingIntent != null) {
                 messageCryptoMvpView.startPendingIntentForCryptoPresenter(
                         pendingIntent.getIntentSender(), null, null, 0, 0, 0);
             }
         } catch (IntentSender.SendIntentException e) {
-            Log.e(K9.LOG_TAG, "SendIntentException", e);
+            Timber.e(e, "SendIntentException");
         }
     }
 
@@ -210,16 +233,21 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
     }
 
     @Nullable
-    private static Drawable getOpenPgpApiProviderIcon(Context context, Account account) {
+    private static Drawable getOpenPgpApiProviderIcon(Context context) {
         try {
-            String openPgpProvider = account.getOpenPgpProvider();
-            if (Account.NO_OPENPGP_PROVIDER.equals(openPgpProvider)) {
+            String openPgpProvider = K9.getOpenPgpProvider();
+            if (K9.NO_OPENPGP_PROVIDER.equals(openPgpProvider)) {
                 return null;
             }
             return context.getPackageManager().getApplicationIcon(openPgpProvider);
         } catch (NameNotFoundException e) {
             return null;
         }
+    }
+
+    public void onClickConfigureProvider() {
+        reloadOnResumeWithoutRecreateFlag = true;
+        messageCryptoMvpView.showCryptoConfigDialog();
     }
 
     public interface MessageCryptoMvpView {
@@ -230,5 +258,6 @@ public class MessageCryptoPresenter implements OnCryptoClickListener {
                 int flagsMask, int flagValues, int extraFlags) throws IntentSender.SendIntentException;
 
         void showCryptoInfoDialog(MessageCryptoDisplayStatus displayStatus);
+        void showCryptoConfigDialog();
     }
 }

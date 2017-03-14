@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -37,13 +36,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
+import timber.log.Timber;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -62,7 +62,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -114,9 +113,7 @@ import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SearchSpecification.SearchCondition;
 import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.search.SqlQueryBuilder;
-import com.handmark.pulltorefresh.library.ILoadingLayout;
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.fsck.k9.ui.ContactBadge;
 
 
 public class MessageListFragment extends Fragment implements OnItemClickListener,
@@ -219,7 +216,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
     private ListView mListView;
-    private PullToRefreshListView mPullToRefreshView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private Parcelable mSavedListState;
 
     private int mPreviewLines = 0;
@@ -571,8 +568,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     private void progress(final boolean progress) {
         mFragmentListener.enableActionBarProgress(progress);
-        if (mPullToRefreshView != null && !progress) {
-            mPullToRefreshView.onRefreshComplete();
+        if (mSwipeRefreshLayout != null && !progress) {
+            mSwipeRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -675,7 +672,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
 
-        initializePullToRefresh(inflater, view);
+        initializePullToRefresh(view);
 
         initializeLayout();
         mListView.setVerticalFadingEdgeEnabled(false);
@@ -719,7 +716,9 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         saveListState(outState);
 
         outState.putBoolean(STATE_REMOTE_SEARCH_PERFORMED, mRemoteSearchPerformed);
-        outState.putParcelable(STATE_ACTIVE_MESSAGE, mActiveMessage);
+        if (mActiveMessage != null) {
+            outState.putString(STATE_ACTIVE_MESSAGE, mActiveMessage.toIdentityString());
+        }
     }
 
     /**
@@ -736,7 +735,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
         mRemoteSearchPerformed = savedInstanceState.getBoolean(STATE_REMOTE_SEARCH_PERFORMED);
         mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
-        mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+        String messageReferenceString = savedInstanceState.getString(STATE_ACTIVE_MESSAGE);
+        mActiveMessage = MessageReference.parse(messageReferenceString);
     }
 
     /**
@@ -945,56 +945,35 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         }
     }
 
-    private void initializePullToRefresh(LayoutInflater inflater, View layout) {
-        mPullToRefreshView = (PullToRefreshListView) layout.findViewById(R.id.message_list);
-
-        @SuppressLint("InflateParams")
-        View loadingView = inflater.inflate(R.layout.message_list_loading, null);
-        mPullToRefreshView.setEmptyView(loadingView);
+    private void initializePullToRefresh(View layout) {
+        mSwipeRefreshLayout = (SwipeRefreshLayout) layout.findViewById(R.id.swiperefresh);
+        mListView = (ListView) layout.findViewById(R.id.message_list);
 
         if (isRemoteSearchAllowed()) {
-            // "Pull to search server"
-            mPullToRefreshView.setOnRefreshListener(
-                    new PullToRefreshBase.OnRefreshListener<ListView>() {
+            mSwipeRefreshLayout.setOnRefreshListener(
+                    new SwipeRefreshLayout.OnRefreshListener() {
                         @Override
-                        public void onRefresh(PullToRefreshBase<ListView> refreshView) {
-                            mPullToRefreshView.onRefreshComplete();
+                        public void onRefresh() {
                             onRemoteSearchRequested();
                         }
-                    });
-            ILoadingLayout proxy = mPullToRefreshView.getLoadingLayoutProxy();
-            proxy.setPullLabel(getString(
-                    R.string.pull_to_refresh_remote_search_from_local_search_pull));
-            proxy.setReleaseLabel(getString(
-                    R.string.pull_to_refresh_remote_search_from_local_search_release));
+                    }
+            );
         } else if (isCheckMailSupported()) {
-            // "Pull to refresh"
-            mPullToRefreshView.setOnRefreshListener(
-                    new PullToRefreshBase.OnRefreshListener<ListView>() {
-                @Override
-                public void onRefresh(PullToRefreshBase<ListView> refreshView) {
-                    checkMail();
-                }
-            });
+            mSwipeRefreshLayout.setOnRefreshListener(
+                    new SwipeRefreshLayout.OnRefreshListener() {
+                        @Override
+                        public void onRefresh() {
+                            checkMail();
+                        }
+                    }
+            );
         }
 
         // Disable pull-to-refresh until the message list has been loaded
-        setPullToRefreshEnabled(false);
-    }
-
-    /**
-     * Enable or disable pull-to-refresh.
-     *
-     * @param enable
-     *         {@code true} to enable. {@code false} to disable.
-     */
-    private void setPullToRefreshEnabled(boolean enable) {
-        mPullToRefreshView.setMode((enable) ?
-                PullToRefreshBase.Mode.PULL_FROM_START : PullToRefreshBase.Mode.DISABLED);
+        mSwipeRefreshLayout.setEnabled(false);
     }
 
     private void initializeLayout() {
-        mListView = mPullToRefreshView.getRefreshableView();
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         mListView.setLongClickable(true);
         mListView.setFastScrollEnabled(true);
@@ -1053,7 +1032,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mRemoteSearchFuture = mController.searchRemoteMessages(searchAccount, searchFolder,
                 queryString, null, null, mListener);
 
-        setPullToRefreshEnabled(false);
+        mSwipeRefreshLayout.setEnabled(false);
 
         mFragmentListener.remoteSearchStarted();
     }
@@ -1185,7 +1164,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                         LocalFolder firstMsgFolder = getFolder(firstMsg.getFolderName(), account);
                         firstMsgFolder.setLastSelectedFolderName(destFolderName);
                     } catch (MessagingException e) {
-                        Log.e(K9.LOG_TAG, "Error getting folder for setLastSelectedFolderName()", e);
+                        Timber.e(e, "Error getting folder for setLastSelectedFolderName()");
                     }
                 }
 
@@ -1536,8 +1515,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
     private int listViewToAdapterPosition(int position) {
-        if (position > 0 && position <= mAdapter.getCount()) {
-            return position - 1;
+        if (position >= 0 && position < mAdapter.getCount()) {
+            return position;
         }
 
         return AdapterView.INVALID_POSITION;
@@ -1545,7 +1524,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     private int adapterToListViewPosition(int position) {
         if (position >= 0 && position < mAdapter.getCount()) {
-            return position + 1;
+            return position;
         }
 
         return AdapterView.INVALID_POSITION;
@@ -1712,8 +1691,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             }
 
-            QuickContactBadge contactBadge =
-                    (QuickContactBadge) view.findViewById(R.id.contact_badge);
+            ContactBadge contactBadge =
+                    (ContactBadge) view.findViewById(R.id.contact_badge);
             if (mContactsPictureLoader != null) {
                 holder.contactBadge = contactBadge;
             } else {
@@ -1823,7 +1802,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                     Utility.setContactForBadge(holder.contactBadge, counterpartyAddress);
                     /*
                      * At least in Android 2.2 a different background + padding is used when no
-                     * email address is available. ListView reuses the views but QuickContactBadge
+                     * email address is available. ListView reuses the views but ContactBadge
                      * doesn't reset the padding, so we do it ourselves.
                      */
                     holder.contactBadge.setPadding(0, 0, 0, 0);
@@ -1954,7 +1933,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             DatabasePreviewType previewType = DatabasePreviewType.fromDatabaseValue(previewTypeString);
 
             switch (previewType) {
-                case NONE: {
+                case NONE:
+                case ERROR: {
                     return "";
                 }
                 case ENCRYPTED: {
@@ -1980,7 +1960,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         public CheckBox flagged;
         public CheckBox selected;
         public int position = -1;
-        public QuickContactBadge contactBadge;
+        public ContactBadge contactBadge;
         @Override
         public void onClick(View view) {
             if (position != -1) {
@@ -2834,11 +2814,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         // If we represent a remote search, then kill that before going back.
         if (isRemoteSearch() && mRemoteSearchFuture != null) {
             try {
-                Log.i(K9.LOG_TAG, "Remote search in progress, attempting to abort...");
+                Timber.i("Remote search in progress, attempting to abort...");
                 // Canceling the future stops any message fetches in progress.
                 final boolean cancelSuccess = mRemoteSearchFuture.cancel(true);   // mayInterruptIfRunning = true
                 if (!cancelSuccess) {
-                    Log.e(K9.LOG_TAG, "Could not cancel remote search future.");
+                    Timber.e("Could not cancel remote search future.");
                 }
                 // Closing the folder will kill off the connection if we're mid-search.
                 final Account searchAccount = mAccount;
@@ -2848,7 +2828,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 mListener.remoteSearchFinished(mCurrentFolder.name, 0, searchAccount.getRemoteSearchNumResults(), null);
             } catch (Exception e) {
                 // Since the user is going back, log and squash any exceptions.
-                Log.e(K9.LOG_TAG, "Could not abort remote search before going back", e);
+                Timber.e(e, "Could not abort remote search before going back");
             }
         }
         super.onStop();
@@ -3260,10 +3240,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             return;
         }
 
-        // Remove the "Loading..." view
-        mPullToRefreshView.setEmptyView(null);
-
-        setPullToRefreshEnabled(isPullToRefreshAllowed());
+        mSwipeRefreshLayout.setRefreshing(false);
+        mSwipeRefreshLayout.setEnabled(isPullToRefreshAllowed());
 
         final int loaderId = loader.getId();
         mCursors[loaderId] = data;
@@ -3480,7 +3458,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     }
 
     public void confirmMarkAllAsRead() {
-        showDialog(R.id.dialog_confirm_mark_all_as_read);
+        if (K9.confirmMarkAllRead()) {
+            showDialog(R.id.dialog_confirm_mark_all_as_read);
+        } else {
+            markAllAsRead();
+        }
     }
 
     public void markAllAsRead() {

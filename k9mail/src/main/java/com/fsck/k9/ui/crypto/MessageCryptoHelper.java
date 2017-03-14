@@ -16,9 +16,8 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
-import android.util.Log;
+import timber.log.Timber;
 
-import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.mail.Address;
@@ -58,13 +57,14 @@ import org.openintents.openpgp.util.OpenPgpUtils;
 public class MessageCryptoHelper {
     private static final int INVALID_OPENPGP_RESULT_CODE = -1;
     private static final MimeBodyPart NO_REPLACEMENT_PART = null;
-    public static final int REQUEST_CODE_USER_INTERACTION = 124;
-    public static final int PROGRESS_SIZE_THRESHOLD = 4096;
+    private static final int REQUEST_CODE_USER_INTERACTION = 124;
+    private static final int PROGRESS_SIZE_THRESHOLD = 4096;
 
 
     private final Context context;
     private final String openPgpProviderPackage;
     private final Object callbackLock = new Object();
+    private final Deque<CryptoPart> partsToDecryptOrVerify = new ArrayDeque<>();
 
     @Nullable
     private MessageCryptoCallback callback;
@@ -76,7 +76,6 @@ public class MessageCryptoHelper {
 
 
     private MessageCryptoAnnotations messageAnnotations;
-    private Deque<CryptoPart> partsToDecryptOrVerify = new ArrayDeque<>();
     private CryptoPart currentCryptoPart;
     private Intent currentCryptoResult;
     private Intent userInteractionResultIntent;
@@ -88,13 +87,18 @@ public class MessageCryptoHelper {
     private OpenPgpServiceConnection openPgpServiceConnection;
 
 
-    public MessageCryptoHelper(Context context, String openPgpProviderPackage) {
+    public MessageCryptoHelper(Context context) {
         this.context = context.getApplicationContext();
-        this.openPgpProviderPackage = openPgpProviderPackage;
 
-        if (openPgpProviderPackage == null || Account.NO_OPENPGP_PROVIDER.equals(openPgpProviderPackage)) {
+        if (!K9.isOpenPgpProviderConfigured()) {
             throw new IllegalStateException("MessageCryptoHelper must only be called with a openpgp provider!");
         }
+
+        openPgpProviderPackage = K9.getOpenPgpProvider();
+    }
+
+    public boolean isConfiguredForOutdatedCryptoProvider() {
+        return !openPgpProviderPackage.equals(K9.getOpenPgpProvider());
     }
 
     public void asyncStartOrResumeProcessingMessage(LocalMessage message, MessageCryptoCallback callback,
@@ -222,7 +226,7 @@ public class MessageCryptoHelper {
                     @Override
                     public void onError(Exception e) {
                         // TODO actually handle (hand to ui, offer retry?)
-                        Log.e(K9.LOG_TAG, "Couldn't connect to OpenPgpService", e);
+                        Timber.e(e, "Couldn't connect to OpenPgpService");
                     }
                 });
         openPgpServiceConnection.bindToService();
@@ -272,9 +276,9 @@ public class MessageCryptoHelper {
 
             throw new IllegalStateException("Unknown crypto part type: " + cryptoPartType);
         } catch (IOException e) {
-            Log.e(K9.LOG_TAG, "IOException", e);
+            Timber.e(e, "IOException");
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "MessagingException", e);
+            Timber.e(e, "MessagingException");
         }
     }
 
@@ -286,7 +290,7 @@ public class MessageCryptoHelper {
                 new IOpenPgpSinkResultCallback<MimeBodyPart>() {
             @Override
             public void onProgress(int current, int max) {
-                Log.d(K9.LOG_TAG, "received progress status: " + current + " / " + max);
+                Timber.d("received progress status: %d / %d", current, max);
                 callbackProgress(current, max);
             }
 
@@ -317,7 +321,7 @@ public class MessageCryptoHelper {
                     TextBody body = new TextBody(new String(decryptedByteOutputStream.toByteArray()));
                     return new MimeBodyPart(body, "text/plain");
                 } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "MessagingException", e);
+                    Timber.e(e, "MessagingException");
                 }
 
                 return null;
@@ -340,14 +344,14 @@ public class MessageCryptoHelper {
 
             @Override
             public void onProgress(int current, int max) {
-                Log.d(K9.LOG_TAG, "received progress status: " + current + " / " + max);
+                Timber.d("received progress status: %d / %d", current, max);
                 callbackProgress(current, max);
             }
         });
     }
 
     private void callAsyncDetachedVerify(Intent intent) throws IOException, MessagingException {
-        OpenPgpDataSource dataSource = getDataSourceForSignedData();
+        OpenPgpDataSource dataSource = getDataSourceForSignedData(currentCryptoPart.part);
 
         byte[] signatureData = MessageDecryptVerifier.getSignatureData(currentCryptoPart.part);
         intent.putExtra(OpenPgpApi.EXTRA_DETACHED_SIGNATURE, signatureData);
@@ -362,23 +366,23 @@ public class MessageCryptoHelper {
 
             @Override
             public void onProgress(int current, int max) {
-                Log.d(K9.LOG_TAG, "received progress status: " + current + " / " + max);
+                Timber.d("received progress status: %d / %d", current, max);
                 callbackProgress(current, max);
             }
         });
     }
 
-    private OpenPgpDataSource getDataSourceForSignedData() throws IOException {
+    private OpenPgpDataSource getDataSourceForSignedData(final Part signedPart) throws IOException {
         return new OpenPgpDataSource() {
             @Override
             public void writeTo(OutputStream os) throws IOException {
                 try {
-                    Multipart multipartSignedMultipart = (Multipart) currentCryptoPart.part.getBody();
+                    Multipart multipartSignedMultipart = (Multipart) signedPart.getBody();
                     BodyPart signatureBodyPart = multipartSignedMultipart.getBodyPart(0);
-                    Log.d(K9.LOG_TAG, "signed data type: " + signatureBodyPart.getMimeType());
+                    Timber.d("signed data type: %s", signatureBodyPart.getMimeType());
                     signatureBodyPart.writeTo(os);
                 } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "Exception while writing message to crypto provider", e);
+                    Timber.e(e, "Exception while writing message to crypto provider");
                 }
             }
         };
@@ -427,7 +431,7 @@ public class MessageCryptoHelper {
                         throw new IllegalStateException("part to stream must be encrypted or inline!");
                     }
                 } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "MessagingException while writing message to crypto provider", e);
+                    Timber.e(e, "MessagingException while writing message to crypto provider");
                 }
             }
         };
@@ -443,7 +447,7 @@ public class MessageCryptoHelper {
                             DecryptedFileProvider.getFileFactory(context);
                     return MimePartStreamParser.parse(fileFactory, is);
                 } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "Something went wrong while parsing the decrypted MIME part", e);
+                    Timber.e(e, "Something went wrong while parsing the decrypted MIME part");
                     //TODO: pass error to main thread and display error message to user
                     return null;
                 }
@@ -453,7 +457,7 @@ public class MessageCryptoHelper {
 
     private void onCryptoOperationReturned(MimeBodyPart decryptedPart) {
         if (currentCryptoResult == null) {
-            Log.e(K9.LOG_TAG, "Internal error: we should have a result here!");
+            Timber.e("Internal error: we should have a result here!");
             return;
         }
 
@@ -466,13 +470,11 @@ public class MessageCryptoHelper {
 
     private void handleCryptoOperationResult(MimeBodyPart outputPart) {
         int resultCode = currentCryptoResult.getIntExtra(OpenPgpApi.RESULT_CODE, INVALID_OPENPGP_RESULT_CODE);
-        if (K9.DEBUG) {
-            Log.d(K9.LOG_TAG, "OpenPGP API decryptVerify result code: " + resultCode);
-        }
+        Timber.d("OpenPGP API decryptVerify result code: %d", resultCode);
 
         switch (resultCode) {
             case INVALID_OPENPGP_RESULT_CODE: {
-                Log.e(K9.LOG_TAG, "Internal error: no result code!");
+                Timber.e("Internal error: no result code!");
                 break;
             }
             case OpenPgpApi.RESULT_CODE_USER_INTERACTION_REQUIRED: {
@@ -501,9 +503,7 @@ public class MessageCryptoHelper {
 
     private void handleCryptoOperationError() {
         OpenPgpError error = currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_ERROR);
-        if (K9.DEBUG) {
-            Log.w(K9.LOG_TAG, "OpenPGP API error: " + error.getMessage());
-        }
+        Timber.w("OpenPGP API error: %s", error.getMessage());
 
         onCryptoOperationFailed(error);
     }
@@ -554,14 +554,24 @@ public class MessageCryptoHelper {
     }
 
     private void onCryptoOperationCanceled() {
-        CryptoResultAnnotation errorPart = CryptoResultAnnotation.createOpenPgpCanceledAnnotation();
-        addCryptoResultAnnotationToMessage(errorPart);
+        // there are weird states that get us here when we're not actually processing any part. just skip in that case
+        // see https://github.com/k9mail/k-9/issues/1878
+        if (currentCryptoPart != null) {
+            CryptoResultAnnotation errorPart = CryptoResultAnnotation.createOpenPgpCanceledAnnotation();
+            addCryptoResultAnnotationToMessage(errorPart);
+        }
         onCryptoFinished();
     }
 
     private void onCryptoOperationFailed(OpenPgpError error) {
-        CryptoResultAnnotation errorPart = CryptoResultAnnotation.createOpenPgpErrorAnnotation(error);
-        addCryptoResultAnnotationToMessage(errorPart);
+        CryptoResultAnnotation annotation;
+        if (currentCryptoPart.type == CryptoPartType.PGP_SIGNED) {
+            MimeBodyPart replacementPart = getMultipartSignedContentPartIfAvailable(currentCryptoPart.part);
+            annotation = CryptoResultAnnotation.createOpenPgpSignatureErrorAnnotation(error, replacementPart);
+        } else {
+            annotation = CryptoResultAnnotation.createOpenPgpEncryptionErrorAnnotation(error);
+        }
+        addCryptoResultAnnotationToMessage(annotation);
         onCryptoFinished();
     }
 
@@ -573,8 +583,17 @@ public class MessageCryptoHelper {
     }
 
     private void onCryptoFinished() {
-        currentCryptoPart = null;
-        partsToDecryptOrVerify.removeFirst();
+        boolean currentPartIsFirstInQueue = partsToDecryptOrVerify.peekFirst() == currentCryptoPart;
+        if (!currentPartIsFirstInQueue) {
+            throw new IllegalStateException(
+                    "Trying to remove part from queue that is not the currently processed one!");
+        }
+        if (currentCryptoPart != null) {
+            partsToDecryptOrVerify.removeFirst();
+            currentCryptoPart = null;
+        } else {
+            Timber.e(new Throwable(), "Got to onCryptoFinished() with no part in processing!");
+        }
         decryptOrVerifyNextPart();
     }
 
@@ -588,7 +607,7 @@ public class MessageCryptoHelper {
     }
 
     private void cleanupAfterProcessingFinished() {
-        partsToDecryptOrVerify = null;
+        partsToDecryptOrVerify.clear();
         openPgpApi = null;
         if (openPgpServiceConnection != null) {
             openPgpServiceConnection.unbindFromService();
@@ -607,11 +626,13 @@ public class MessageCryptoHelper {
             throw new AssertionError("Callback may only be reattached for the same message!");
         }
         synchronized (callbackLock) {
-            if (queuedResult != null) {
-                Log.d(K9.LOG_TAG, "Returning cached result to reattached callback");
-            }
             this.callback = callback;
-            deliverResult();
+
+            boolean hasCachedResult = queuedResult != null || queuedPendingIntent != null;
+            if (hasCachedResult) {
+                Timber.d("Returning cached result or pending intent to reattached callback");
+                deliverResult();
+            }
         }
     }
 
@@ -648,7 +669,7 @@ public class MessageCryptoHelper {
         }
 
         if (callback == null) {
-            Log.d(K9.LOG_TAG, "Keeping crypto helper result in queue for later delivery");
+            Timber.d("Keeping crypto helper result in queue for later delivery");
             return;
         }
         if (queuedResult != null) {
@@ -657,6 +678,8 @@ public class MessageCryptoHelper {
             callback.startPendingIntentForCryptoHelper(
                     queuedPendingIntent.getIntentSender(), REQUEST_CODE_USER_INTERACTION, null, 0, 0, 0);
             queuedPendingIntent = null;
+        } else {
+            throw new IllegalStateException("deliverResult() called with no result!");
         }
     }
 
@@ -694,12 +717,12 @@ public class MessageCryptoHelper {
             String clearsignedText = MessageExtractor.getTextFromPart(part);
             String replacementText = OpenPgpUtils.extractClearsignedMessage(clearsignedText);
             if (replacementText == null) {
-                Log.e(K9.LOG_TAG, "failed to extract clearsigned text for replacement part");
+                Timber.e("failed to extract clearsigned text for replacement part");
                 return NO_REPLACEMENT_PART;
             }
             return new MimeBodyPart(new TextBody(replacementText), "text/plain");
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "failed to create clearsigned text replacement part", e);
+            Timber.e(e, "failed to create clearsigned text replacement part");
             return NO_REPLACEMENT_PART;
         }
     }

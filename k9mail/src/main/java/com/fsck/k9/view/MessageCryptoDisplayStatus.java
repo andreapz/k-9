@@ -136,6 +136,12 @@ public enum MessageCryptoDisplayStatus {
             R.string.crypto_msg_signed_unencrypted, R.string.crypto_msg_sign_incomplete
     ),
 
+    ENCRYPTED_NO_PROVIDER (
+            R.attr.openpgp_red,
+            R.drawable.status_lock_error,
+            R.string.crypto_msg_unsupported_encrypted
+    ),
+
     UNSUPPORTED_ENCRYPTED (
             R.attr.openpgp_red,
             R.drawable.status_lock_error,
@@ -209,8 +215,14 @@ public enum MessageCryptoDisplayStatus {
             case OPENPGP_UI_CANCELED:
                 return CANCELLED;
 
-            case OPENPGP_API_RETURNED_ERROR:
+            case OPENPGP_SIGNED_API_ERROR:
+                return UNENCRYPTED_SIGN_ERROR;
+
+            case OPENPGP_ENCRYPTED_API_ERROR:
                 return ENCRYPTED_ERROR;
+
+            case OPENPGP_ENCRYPTED_NO_PROVIDER:
+                return ENCRYPTED_NO_PROVIDER;
         }
         throw new IllegalStateException("Unhandled case!");
     }
@@ -257,14 +269,14 @@ public enum MessageCryptoDisplayStatus {
 
             case OpenPgpSignatureResult.RESULT_VALID_KEY_CONFIRMED:
             case OpenPgpSignatureResult.RESULT_VALID_KEY_UNCONFIRMED:
-                switch (signatureResult.getSenderResult()) {
-                    case OpenPgpSignatureResult.SENDER_RESULT_UID_CONFIRMED:
+                switch (signatureResult.getSenderStatusResult()) {
+                    case USER_ID_CONFIRMED:
                         return ENCRYPTED_SIGN_VERIFIED;
-                    case OpenPgpSignatureResult.SENDER_RESULT_UID_UNCONFIRMED:
+                    case USER_ID_UNCONFIRMED:
                         return ENCRYPTED_SIGN_UNVERIFIED;
-                    case OpenPgpSignatureResult.SENDER_RESULT_UID_MISSING:
+                    case USER_ID_MISSING:
                         return ENCRYPTED_SIGN_MISMATCH;
-                    case OpenPgpSignatureResult.SENDER_RESULT_NO_SENDER:
+                    case UNKNOWN:
                         return ENCRYPTED_SIGN_UNVERIFIED;
                 }
                 throw new IllegalStateException("unhandled encrypted result case!");
@@ -297,14 +309,14 @@ public enum MessageCryptoDisplayStatus {
 
             case OpenPgpSignatureResult.RESULT_VALID_KEY_CONFIRMED:
             case OpenPgpSignatureResult.RESULT_VALID_KEY_UNCONFIRMED:
-                switch (signatureResult.getSenderResult()) {
-                    case OpenPgpSignatureResult.SENDER_RESULT_UID_CONFIRMED:
+                switch (signatureResult.getSenderStatusResult()) {
+                    case USER_ID_CONFIRMED:
                         return UNENCRYPTED_SIGN_VERIFIED;
-                    case OpenPgpSignatureResult.SENDER_RESULT_UID_UNCONFIRMED:
+                    case USER_ID_UNCONFIRMED:
                         return UNENCRYPTED_SIGN_UNVERIFIED;
-                    case OpenPgpSignatureResult.SENDER_RESULT_UID_MISSING:
+                    case USER_ID_MISSING:
                         return UNENCRYPTED_SIGN_MISMATCH;
-                    case OpenPgpSignatureResult.SENDER_RESULT_NO_SENDER:
+                    case UNKNOWN:
                         return UNENCRYPTED_SIGN_UNVERIFIED;
                 }
                 throw new IllegalStateException("unhandled encrypted result case!");
@@ -339,6 +351,21 @@ public enum MessageCryptoDisplayStatus {
             case ENCRYPTED_SIGN_REVOKED:
             case ENCRYPTED_SIGN_INSECURE:
 
+            case UNENCRYPTED_SIGN_UNKNOWN:
+            case UNENCRYPTED_SIGN_VERIFIED:
+            case UNENCRYPTED_SIGN_UNVERIFIED:
+            case UNENCRYPTED_SIGN_MISMATCH:
+            case UNENCRYPTED_SIGN_EXPIRED:
+            case UNENCRYPTED_SIGN_REVOKED:
+            case UNENCRYPTED_SIGN_INSECURE:
+                return true;
+        }
+        return false;
+    }
+
+    public boolean isUnencryptedSigned() {
+        switch (this) {
+            case UNENCRYPTED_SIGN_ERROR:
             case UNENCRYPTED_SIGN_UNKNOWN:
             case UNENCRYPTED_SIGN_VERIFIED:
             case UNENCRYPTED_SIGN_UNVERIFIED:

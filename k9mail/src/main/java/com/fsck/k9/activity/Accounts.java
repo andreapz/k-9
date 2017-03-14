@@ -33,7 +33,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import timber.log.Timber;
 import android.util.SparseBooleanArray;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -256,12 +256,12 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             try {
                 AccountStats stats = account.getStats(Accounts.this);
                 if (stats == null) {
-                    Log.w(K9.LOG_TAG, "Unable to get account stats");
+                    Timber.w("Unable to get account stats");
                 } else {
                     accountStatusChanged(account, stats);
                 }
             } catch (Exception e) {
-                Log.e(K9.LOG_TAG, "Unable to get account stats", e);
+                Timber.e(e, "Unable to get account stats");
             }
         }
         @Override
@@ -636,7 +636,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
      * Show that account's inbox or folder-list
      * or return false if the account is not available.
      * @param account the account to open ({@link SearchAccount} or {@link Account})
-     * @return false if unsuccessfull
+     * @return false if unsuccessful
      */
     private boolean onOpenAccount(BaseAccount account) {
         if (account instanceof SearchAccount) {
@@ -652,7 +652,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 Toast toast = Toast.makeText(getApplication(), toastText, Toast.LENGTH_SHORT);
                 toast.show();
 
-                Log.i(K9.LOG_TAG, "refusing to open account that is not available");
+                Timber.i("refusing to open account that is not available");
                 return false;
             }
             if (K9.FOLDER_NONE.equals(realAccount.getAutoExpandFolderName())) {
@@ -995,7 +995,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 // Get list of folders from remote server
                 MessagingController.getInstance(mApplication).listFolders(mAccount, true, null);
             } catch (Exception e) {
-                Log.e(K9.LOG_TAG, "Something went while setting account passwords", e);
+                Timber.e(e, "Something went while setting account passwords");
             }
             return null;
         }
@@ -1259,7 +1259,6 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         new String[] {"Commons IO", "http://commons.apache.org/io/"},
         new String[] {"Mime4j", "http://james.apache.org/mime4j/"},
         new String[] {"HtmlCleaner", "http://htmlcleaner.sourceforge.net/"},
-        new String[] {"Android-PullToRefresh", "https://github.com/chrisbanes/Android-PullToRefresh"},
         new String[] {"ckChangeLog", "https://github.com/cketti/ckChangeLog"},
         new String[] {"HoloColorPicker", "https://github.com/LarsWerkman/HoloColorPicker"},
         new String[] {"Glide", "https://github.com/bumptech/glide"},
@@ -1412,7 +1411,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(K9.LOG_TAG, "onActivityResult requestCode = " + requestCode + ", resultCode = " + resultCode + ", data = " + data);
+        Timber.i("onActivityResult requestCode = %d, resultCode = %s, data = %s", requestCode, resultCode, data);
         if (resultCode != RESULT_OK)
             return;
         if (data == null) {
@@ -1795,8 +1794,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
                 holder.chip.setBackgroundColor(realAccount.getChipColor());
 
-                holder.flaggedMessageCountIcon.setBackgroundDrawable( realAccount.generateColorChip(false, false, false, false,true).drawable() );
-                holder.newMessageCountIcon.setBackgroundDrawable( realAccount.generateColorChip(false, false, false, false, false).drawable() );
+                holder.flaggedMessageCountIcon.setBackgroundDrawable( realAccount.generateColorChip(false, true).drawable() );
+                holder.newMessageCountIcon.setBackgroundDrawable( realAccount.generateColorChip(false, false).drawable() );
 
             } else {
                 holder.chip.setBackgroundColor(0xff999999);
@@ -1927,7 +1926,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 mFileName = SettingsExporter.exportToFile(mContext, mIncludeGlobals,
                             mAccountUuids);
             } catch (SettingsImportExportException e) {
-                Log.w(K9.LOG_TAG, "Exception during export", e);
+                Timber.w(e, "Exception during export");
                 return false;
             }
             return true;
@@ -1994,13 +1993,13 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                     }
                 }
             } catch (SettingsImportExportException e) {
-                Log.w(K9.LOG_TAG, "Exception during import", e);
+                Timber.w(e, "Exception during import");
                 return false;
             } catch (FileNotFoundException e) {
-                Log.w(K9.LOG_TAG, "Couldn't open import file", e);
+                Timber.w(e, "Couldn't open import file");
                 return false;
             } catch (Exception e) {
-                Log.w(K9.LOG_TAG, "Unknown error", e);
+                Timber.w(e, "Unknown error");
                 return false;
             }
             return true;
@@ -2067,10 +2066,10 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                     }
                 }
             } catch (SettingsImportExportException e) {
-                Log.w(K9.LOG_TAG, "Exception during export", e);
+                Timber.w(e, "Exception during export");
                 return false;
             } catch (FileNotFoundException e) {
-                Log.w(K9.LOG_TAG, "Couldn't read content from URI " + mUri);
+                Timber.w("Couldn't read content from URI %s", mUri);
                 return false;
             }
             return true;

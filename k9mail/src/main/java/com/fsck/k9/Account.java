@@ -19,7 +19,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
 import com.fsck.k9.helper.Utility;
@@ -58,7 +58,7 @@ public class Account implements BaseAccount, StoreConfig {
     /**
      * Default value for the inbox folder (never changes for POP3 and IMAP)
      */
-    public static final String INBOX = "INBOX";
+    private static final String INBOX = "INBOX";
 
     /**
      * This local folder is used to store messages to be sent.
@@ -119,7 +119,7 @@ public class Account implements BaseAccount, StoreConfig {
      * http://developer.android.com/design/style/color.html
      * Note: Order does matter, it's the order in which they will be picked.
      */
-    public static final Integer[] PREDEFINED_COLORS = new Integer[] {
+    private static final Integer[] PREDEFINED_COLORS = new Integer[] {
             Color.parseColor("#0099CC"),    // blue
             Color.parseColor("#669900"),    // green
             Color.parseColor("#FF8800"),    // orange
@@ -157,7 +157,6 @@ public class Account implements BaseAccount, StoreConfig {
 
     public static final SortType DEFAULT_SORT_TYPE = SortType.SORT_DATE;
     public static final boolean DEFAULT_SORT_ASCENDING = false;
-    public static final String NO_OPENPGP_PROVIDER = "";
     public static final long NO_OPENPGP_KEY = 0;
 
     private DeletePolicy mDeletePolicy = DeletePolicy.NEVER;
@@ -176,7 +175,6 @@ public class Account implements BaseAccount, StoreConfig {
     private int mAutomaticCheckIntervalMinutes;
     private int mDisplayCount;
     private int mChipColor;
-    private long mLastAutomaticCheckTime;
     private long mLatestOldMessageSeenTime;
     private boolean mNotifyNewMail;
     private FolderMode mFolderNotifyNewMailMode;
@@ -197,14 +195,14 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mPushPollOnConnect;
     private boolean mNotifySync;
     private SortType mSortType;
-    private Map<SortType, Boolean> mSortAscending = new HashMap<SortType, Boolean>();
+    private Map<SortType, Boolean> mSortAscending = new HashMap<>();
     private ShowPictures mShowPictures;
     private boolean mIsSignatureBeforeQuotedText;
     private Expunge mExpungePolicy = Expunge.EXPUNGE_IMMEDIATELY;
     private int mMaxPushFolders;
     private int mIdleRefreshMinutes;
     private boolean goToUnreadMessageSearch;
-    private final Map<NetworkType, Boolean> compressionMap = new ConcurrentHashMap<NetworkType, Boolean>();
+    private final Map<NetworkType, Boolean> compressionMap = new ConcurrentHashMap<>();
     private Searchable searchableFolders;
     private boolean subscribedFoldersOnly;
     private int maximumPolledMessageAge;
@@ -221,7 +219,6 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mReplyAfterQuote;
     private boolean mStripSignature;
     private boolean mSyncRemoteDeletions;
-    private String mCryptoApp;
     private long mCryptoKey;
     private boolean mMarkMessageAsReadOnView;
     private boolean mAlwaysShowCcBcc;
@@ -317,7 +314,6 @@ public class Account implements BaseAccount, StoreConfig {
         mReplyAfterQuote = DEFAULT_REPLY_AFTER_QUOTE;
         mStripSignature = DEFAULT_STRIP_SIGNATURE;
         mSyncRemoteDeletions = true;
-        mCryptoApp = NO_OPENPGP_PROVIDER;
         mCryptoKey = NO_OPENPGP_KEY;
         mAllowRemoteSearch = false;
         mRemoteSearchFullText = false;
@@ -328,7 +324,7 @@ public class Account implements BaseAccount, StoreConfig {
 
         searchableFolders = Searchable.ALL;
 
-        identities = new ArrayList<Identity>();
+        identities = new ArrayList<>();
 
         Identity identity = new Identity();
         identity.setSignatureUse(true);
@@ -353,7 +349,7 @@ public class Account implements BaseAccount, StoreConfig {
     private int pickColor(Context context) {
         List<Account> accounts = Preferences.getPreferences(context).getAccounts();
 
-        List<Integer> availableColors = new ArrayList<Integer>(PREDEFINED_COLORS.length);
+        List<Integer> availableColors = new ArrayList<>(PREDEFINED_COLORS.length);
         Collections.addAll(availableColors, PREDEFINED_COLORS);
 
         for (Account account : accounts) {
@@ -393,7 +389,6 @@ public class Account implements BaseAccount, StoreConfig {
         if (mDisplayCount < 0) {
             mDisplayCount = K9.DEFAULT_VISIBLE_LIMIT;
         }
-        mLastAutomaticCheckTime = storage.getLong(mUuid + ".lastAutomaticCheckTime", 0);
         mLatestOldMessageSeenTime = storage.getLong(mUuid + ".latestOldMessageSeenTime", 0);
         mNotifyNewMail = storage.getBoolean(mUuid + ".notifyNewMail", false);
 
@@ -467,8 +462,6 @@ public class Account implements BaseAccount, StoreConfig {
         mIsSignatureBeforeQuotedText = storage.getBoolean(mUuid  + ".signatureBeforeQuotedText", false);
         identities = loadIdentities(storage);
 
-        String cryptoApp = storage.getString(mUuid + ".cryptoApp", NO_OPENPGP_PROVIDER);
-        setCryptoApp(cryptoApp);
         mCryptoKey = storage.getLong(mUuid + ".cryptoKey", NO_OPENPGP_KEY);
         mAllowRemoteSearch = storage.getBoolean(mUuid + ".allowRemoteSearch", false);
         mRemoteSearchFullText = storage.getBoolean(mUuid + ".remoteSearchFullText", false);
@@ -487,11 +480,13 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
     protected synchronized void delete(Preferences preferences) {
+        deleteCertificates();
+
         // Get the list of account UUIDs
         String[] uuids = preferences.getStorage().getString("accountUuids", "").split(",");
 
         // Create a list of all account UUIDs excluding this account
-        List<String> newUuids = new ArrayList<String>(uuids.length);
+        List<String> newUuids = new ArrayList<>(uuids.length);
         for (String uuid : uuids) {
             if (!uuid.equals(mUuid)) {
                 newUuids.add(uuid);
@@ -556,9 +551,12 @@ public class Account implements BaseAccount, StoreConfig {
         editor.remove(mUuid + ".showPicturesEnum");
         editor.remove(mUuid + ".replyAfterQuote");
         editor.remove(mUuid + ".stripSignature");
-        editor.remove(mUuid + ".cryptoApp");
+        editor.remove(mUuid + ".cryptoApp"); // this is no longer set, but cleans up legacy values
         editor.remove(mUuid + ".cryptoAutoSignature");
         editor.remove(mUuid + ".cryptoAutoEncrypt");
+        editor.remove(mUuid + ".cryptoApp");
+        editor.remove(mUuid + ".cryptoKey");
+        editor.remove(mUuid + ".cryptoSupportSignOnly");
         editor.remove(mUuid + ".enabled");
         editor.remove(mUuid + ".markMessageAsReadOnView");
         editor.remove(mUuid + ".alwaysShowCcBcc");
@@ -581,7 +579,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.commit();
     }
 
-    public static int findNewAccountNumber(List<Integer> accountNumbers) {
+    private static int findNewAccountNumber(List<Integer> accountNumbers) {
         int newAccountNumber = -1;
         Collections.sort(accountNumbers);
         for (int accountNumber : accountNumbers) {
@@ -594,9 +592,9 @@ public class Account implements BaseAccount, StoreConfig {
         return newAccountNumber;
     }
 
-    public static List<Integer> getExistingAccountNumbers(Preferences preferences) {
+    private static List<Integer> getExistingAccountNumbers(Preferences preferences) {
         List<Account> accounts = preferences.getAccounts();
-        List<Integer> accountNumbers = new ArrayList<Integer>(accounts.size());
+        List<Integer> accountNumbers = new ArrayList<>(accounts.size());
         for (Account a : accounts) {
             accountNumbers.add(a.getAccountNumber());
         }
@@ -682,7 +680,6 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putInt(mUuid + ".idleRefreshMinutes", mIdleRefreshMinutes);
         editor.putBoolean(mUuid + ".pushPollOnConnect", mPushPollOnConnect);
         editor.putInt(mUuid + ".displayCount", mDisplayCount);
-        editor.putLong(mUuid + ".lastAutomaticCheckTime", mLastAutomaticCheckTime);
         editor.putLong(mUuid + ".latestOldMessageSeenTime", mLatestOldMessageSeenTime);
         editor.putBoolean(mUuid + ".notifyNewMail", mNotifyNewMail);
         editor.putString(mUuid + ".folderNotifyNewMailMode", mFolderNotifyNewMailMode.name());
@@ -731,7 +728,6 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putBoolean(mUuid + ".defaultQuotedTextShown", mDefaultQuotedTextShown);
         editor.putBoolean(mUuid + ".replyAfterQuote", mReplyAfterQuote);
         editor.putBoolean(mUuid + ".stripSignature", mStripSignature);
-        editor.putString(mUuid + ".cryptoApp", mCryptoApp);
         editor.putLong(mUuid + ".cryptoKey", mCryptoKey);
         editor.putBoolean(mUuid + ".allowRemoteSearch", mAllowRemoteSearch);
         editor.putBoolean(mUuid + ".remoteSearchFullText", mRemoteSearchFullText);
@@ -760,17 +756,16 @@ public class Account implements BaseAccount, StoreConfig {
 
     }
 
-    public void resetVisibleLimits() {
+    private void resetVisibleLimits() {
         try {
             getLocalStore().resetVisibleLimits(getDisplayCount());
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "Unable to reset visible limits", e);
+            Timber.e(e, "Unable to reset visible limits");
         }
 
     }
 
     /**
-     * @param context
      * @return <code>null</code> if not available
      * @throws MessagingException
      * @see {@link #isAvailable(Context)}
@@ -800,7 +795,7 @@ public class Account implements BaseAccount, StoreConfig {
 
         // Use the LocalSearch instance to create a WHERE clause to query the content provider
         StringBuilder query = new StringBuilder();
-        List<String> queryArgs = new ArrayList<String>();
+        List<String> queryArgs = new ArrayList<>();
         ConditionsTreeNode conditions = search.getConditions();
         SqlQueryBuilder.buildWhereClause(this, conditions, query, queryArgs);
 
@@ -809,12 +804,12 @@ public class Account implements BaseAccount, StoreConfig {
 
         Cursor cursor = cr.query(uri, projection, selection, selectionArgs, null);
         try {
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 stats.unreadMessageCount = cursor.getInt(0);
                 stats.flaggedMessageCount = cursor.getInt(1);
             }
         } finally {
-            cursor.close();
+            Utility.closeQuietly(cursor);
         }
 
         LocalStore localStore = getLocalStore();
@@ -831,7 +826,7 @@ public class Account implements BaseAccount, StoreConfig {
         cacheChips();
     }
 
-    public synchronized void cacheChips() {
+    private synchronized void cacheChips() {
         mReadColorChip = new ColorChip(mChipColor, true, ColorChip.CIRCULAR);
         mUnreadColorChip = new ColorChip(mChipColor, false, ColorChip.CIRCULAR);
         mFlaggedReadColorChip = new ColorChip(mChipColor, true, ColorChip.STAR);
@@ -843,8 +838,7 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
 
-    public ColorChip generateColorChip(boolean messageRead, boolean toMe, boolean ccMe,
-            boolean fromMe, boolean messageFlagged) {
+    public ColorChip generateColorChip(boolean messageRead, boolean messageFlagged) {
         ColorChip chip;
 
         if (messageRead) {
@@ -867,10 +861,6 @@ public class Account implements BaseAccount, StoreConfig {
     @Override
     public String getUuid() {
         return mUuid;
-    }
-
-    public Uri getContentUri() {
-        return Uri.parse("content://accounts/" + getUuid());
     }
 
     public synchronized String getStoreUri() {
@@ -963,13 +953,12 @@ public class Account implements BaseAccount, StoreConfig {
                 switchLocalStorage(id);
                 successful = true;
             } catch (MessagingException e) {
-                Log.e(K9.LOG_TAG, "Switching local storage provider from " +
-                      mLocalStorageProviderId + " to " + id + " failed.", e);
-            } finally {
-                // if migration to/from SD-card failed once, it will fail again.
-                if (!successful) {
-                    return;
-                }
+                Timber.e(e, "Switching local storage provider from %s to %s failed.", mLocalStorageProviderId, id);
+            }
+
+            // if migration to/from SD-card failed once, it will fail again.
+            if (!successful) {
+                return;
             }
 
             mLocalStorageProviderId = id;
@@ -1005,14 +994,6 @@ public class Account implements BaseAccount, StoreConfig {
             this.mDisplayCount = K9.DEFAULT_VISIBLE_LIMIT;
         }
         resetVisibleLimits();
-    }
-
-    public synchronized long getLastAutomaticCheckTime() {
-        return mLastAutomaticCheckTime;
-    }
-
-    public synchronized void setLastAutomaticCheckTime(long lastAutomaticCheckTime) {
-        this.mLastAutomaticCheckTime = lastAutomaticCheckTime;
     }
 
     public synchronized long getLatestOldMessageSeenTime() {
@@ -1330,9 +1311,9 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
     private synchronized List<Identity> loadIdentities(Storage storage) {
-        List<Identity> newIdentities = new ArrayList<Identity>();
+        List<Identity> newIdentities = new ArrayList<>();
         int ident = 0;
-        boolean gotOne = false;
+        boolean gotOne;
         do {
             gotOne = false;
             String name = storage.getString(mUuid + "." + IDENTITY_NAME_KEY + "." + ident, null);
@@ -1374,7 +1355,7 @@ public class Account implements BaseAccount, StoreConfig {
 
     private synchronized void deleteIdentities(Storage storage, StorageEditor editor) {
         int ident = 0;
-        boolean gotOne = false;
+        boolean gotOne;
         do {
             gotOne = false;
             String email = storage.getString(mUuid + "." + IDENTITY_EMAIL_KEY + "." + ident, null);
@@ -1411,7 +1392,7 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
     public synchronized void setIdentities(List<Identity> newIdentities) {
-        identities = new ArrayList<Identity>(newIdentities);
+        identities = new ArrayList<>(newIdentities);
     }
 
     public synchronized Identity getIdentity(int i) {
@@ -1475,14 +1456,14 @@ public class Account implements BaseAccount, StoreConfig {
     /**
      * Are we storing out localStore on the SD-card instead of the local device
      * memory?<br/>
-     * Only to be called durin initial account-setup!<br/>
+     * Only to be called during initial account-setup!<br/>
      * Side-effect: changes {@link #mLocalStorageProviderId}.
      *
      * @param newStorageProviderId
      *            Never <code>null</code>.
      * @throws MessagingException
      */
-    public void switchLocalStorage(final String newStorageProviderId) throws MessagingException {
+    private void switchLocalStorage(final String newStorageProviderId) throws MessagingException {
         if (!mLocalStorageProviderId.equals(newStorageProviderId)) {
             getLocalStore().switchLocalStorage(newStorageProviderId);
         }
@@ -1610,18 +1591,6 @@ public class Account implements BaseAccount, StoreConfig {
         mStripSignature = stripSignature;
     }
 
-    public String getCryptoApp() {
-        return mCryptoApp;
-    }
-
-    public void setCryptoApp(String cryptoApp) {
-        if (cryptoApp == null || cryptoApp.equals("apg")) {
-            mCryptoApp = NO_OPENPGP_PROVIDER;
-        } else {
-            mCryptoApp = cryptoApp;
-        }
-    }
-
     public long getCryptoKey() {
         return mCryptoKey;
     }
@@ -1670,17 +1639,6 @@ public class Account implements BaseAccount, StoreConfig {
         lastSelectedFolderName = folderName;
     }
 
-    public synchronized String getOpenPgpProvider() {
-        if (!isOpenPgpProviderConfigured()) {
-            return null;
-        }
-        return getCryptoApp();
-    }
-
-    public synchronized boolean isOpenPgpProviderConfigured() {
-        return !NO_OPENPGP_PROVIDER.equals(getCryptoApp());
-    }
-
     public synchronized NotificationSetting getNotificationSetting() {
         return mNotificationSetting;
     }
@@ -1691,10 +1649,8 @@ public class Account implements BaseAccount, StoreConfig {
      */
     public boolean isAvailable(Context context) {
         String localStorageProviderId = getLocalStorageProviderId();
-        if (localStorageProviderId == null) {
-            return true; // defaults to internal memory
-        }
-        return StorageManager.getInstance(context).isReady(localStorageProviderId);
+        boolean storageProviderIsInternalMemory = localStorageProviderId == null;
+        return storageProviderIsInternalMemory || StorageManager.getInstance(context).isReady(localStorageProviderId);
     }
 
     public synchronized boolean isEnabled() {
@@ -1835,7 +1791,7 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
     private void excludeSpecialFolder(LocalSearch search, String folderName) {
-        if (!K9.FOLDER_NONE.equals(folderName)) {
+        if (folderName != null && !K9.FOLDER_NONE.equals(folderName)) {
             search.and(SearchField.FOLDER, folderName, Attribute.NOT_EQUALS);
         }
     }
@@ -1843,8 +1799,7 @@ public class Account implements BaseAccount, StoreConfig {
     /**
      * Add a new certificate for the incoming or outgoing server to the local key store.
      */
-    public void addCertificate(CheckDirection direction,
-            X509Certificate certificate) throws CertificateException {
+    public void addCertificate(CheckDirection direction, X509Certificate certificate) throws CertificateException {
         Uri uri;
         if (direction == CheckDirection.INCOMING) {
             uri = Uri.parse(getStoreUri());
@@ -1860,8 +1815,7 @@ public class Account implements BaseAccount, StoreConfig {
      * new host/port, then try and delete any (possibly non-existent) certificate stored for the
      * old host/port.
      */
-    public void deleteCertificate(String newHost, int newPort,
-            CheckDirection direction) {
+    public void deleteCertificate(String newHost, int newPort, CheckDirection direction) {
         Uri uri;
         if (direction == CheckDirection.INCOMING) {
             uri = Uri.parse(getStoreUri());
@@ -1884,7 +1838,7 @@ public class Account implements BaseAccount, StoreConfig {
      * Examine the settings for the account and attempt to delete (possibly non-existent)
      * certificates for the incoming and outgoing servers.
      */
-    public void deleteCertificates() {
+    private void deleteCertificates() {
         LocalKeyStore localKeyStore = LocalKeyStore.getInstance();
 
         String storeUri = getStoreUri();

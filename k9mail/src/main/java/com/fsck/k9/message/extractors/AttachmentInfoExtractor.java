@@ -10,7 +10,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
-import android.util.Log;
+import timber.log.Timber;
 import android.support.annotation.WorkerThread;
 
 import com.fsck.k9.Globals;
@@ -49,9 +49,7 @@ public class AttachmentInfoExtractor {
         List<AttachmentViewInfo> attachments = new ArrayList<>();
         for (Part part : attachmentParts) {
             AttachmentViewInfo attachmentViewInfo = extractAttachmentInfo(part);
-            if (!attachmentViewInfo.inlineAttachment) {
-                attachments.add(attachmentViewInfo);
-            }
+            attachments.add(attachmentViewInfo);
         }
 
         return attachments;
@@ -101,7 +99,7 @@ public class AttachmentInfoExtractor {
             uri = DecryptedFileProvider.getUriForProvidedFile(
                     context, file, decryptedTempFileBody.getEncoding(), mimeType);
         } catch (IOException e) {
-            Log.e(K9.LOG_TAG, "Decrypted temp file (no longer?) exists!", e);
+            Timber.e(e, "Decrypted temp file (no longer?) exists!");
             uri = null;
         }
         return uri;

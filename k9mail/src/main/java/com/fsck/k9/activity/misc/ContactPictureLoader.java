@@ -22,6 +22,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.widget.ImageView;
@@ -38,7 +39,7 @@ public class ContactPictureLoader {
     /**
      * Pattern to extract the letter to be displayed as fallback image.
      */
-    private static final Pattern EXTRACT_LETTER_PATTERN = Pattern.compile("[a-zA-Z]");
+    private static final Pattern EXTRACT_LETTER_PATTERN = Pattern.compile("\\p{L}\\p{M}*");
 
     /**
      * Letter to use when {@link #EXTRACT_LETTER_PATTERN} couldn't find a match.
@@ -73,6 +74,21 @@ public class ContactPictureLoader {
         0xffFF8800,
         0xffCC0000
     };
+
+    @VisibleForTesting
+    protected static String calcUnknownContactLetter(Address address) {
+        String letter = null;
+        String personal = address.getPersonal();
+        String str = (personal != null) ? personal : address.getAddress();
+
+        Matcher m = EXTRACT_LETTER_PATTERN.matcher(str);
+        if (m.find()) {
+            letter = m.group(0).toUpperCase(Locale.US);
+        }
+
+        return (TextUtils.isEmpty(letter)) ?
+                FALLBACK_CONTACT_LETTER : letter;
+    }
 
     /**
      * Constructor.
@@ -114,7 +130,7 @@ public class ContactPictureLoader {
      * Load a contact picture and display it using the supplied {@link ImageView} instance.
      *
      * <p>
-     * If a picture is found in the cache, it is displayed in the {@code QuickContactBadge}
+     * If a picture is found in the cache, it is displayed in the {@code ContactBadge}
      * immediately. Otherwise a {@link ContactPictureRetrievalTask} is started to try to load the
      * contact picture in a background thread. Depending on the result the contact picture or a
      * fallback picture is then stored in the bitmap cache.
@@ -124,7 +140,7 @@ public class ContactPictureLoader {
      *         The {@link Address} instance holding the email address that is used to search the
      *         contacts database.
      * @param imageView
-     *         The {@code QuickContactBadge} instance to receive the picture.
+     *         The {@code ContactBadge} instance to receive the picture.
      *
      * @see #mBitmapCache
      * @see #calculateFallbackBitmap(Address)
@@ -158,20 +174,6 @@ public class ContactPictureLoader {
         int val = address.hashCode();
         int colorIndex = (val & Integer.MAX_VALUE) % CONTACT_DUMMY_COLORS_ARGB.length;
         return CONTACT_DUMMY_COLORS_ARGB[colorIndex];
-    }
-
-    private String calcUnknownContactLetter(Address address) {
-        String letter = null;
-        String personal = address.getPersonal();
-        String str = (personal != null) ? personal : address.getAddress();
-
-        Matcher m = EXTRACT_LETTER_PATTERN.matcher(str);
-        if (m.find()) {
-            letter = m.group(0).toUpperCase(Locale.US);
-        }
-
-        return (TextUtils.isEmpty(letter)) ?
-                FALLBACK_CONTACT_LETTER : letter.substring(0, 1);
     }
 
     /**
@@ -240,7 +242,7 @@ public class ContactPictureLoader {
             }
         }
 
-        // No task associated with the QuickContactBadge, or an existing task was cancelled
+        // No task associated with the ContactBadge, or an existing task was cancelled
         return true;
     }
 
